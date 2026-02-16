@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LogOut, Loader2 } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiPost } from "@/lib/api";
@@ -24,9 +25,14 @@ export function LogoutButton() {
       whileTap={{ scale: 0.98 }}
       onClick={() => logoutMutation.mutate()}
       disabled={logoutMutation.isPending}
-      className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 text-sm transition disabled:opacity-50"
+      className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-slate-400 hover:text-red-400 bg-slate-800/50 hover:bg-red-500/10 border border-white/[0.06] hover:border-red-500/30 transition-all duration-200 disabled:opacity-50"
     >
-      Đăng xuất
+      {logoutMutation.isPending ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <LogOut className="w-4 h-4" />
+      )}
+      <span className="text-sm font-medium hidden sm:inline">Đăng xuất</span>
     </motion.button>
   );
 }

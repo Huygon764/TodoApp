@@ -1,0 +1,25 @@
+# Todo App - Production
+# Usage: docker compose -f docker-compose.prod.yml up -d --build
+
+# On VPS, set IMAGE=ghcr.io/<your-github-username>/todo-app:latest (CI pushes there)
+services:
+  todo-app:
+    image: ${IMAGE:-todo-app:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

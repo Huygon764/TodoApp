@@ -54,7 +54,8 @@ export const logout = catchAsync(async (_req: Request, res: Response) => {
     maxAge: 0,
     path: "/",
     sameSite: "lax",
-    secure: env.nodeEnv === "production",
+    // secure: env.nodeEnv === "production",
+    secure: false, // false because on vps dont have domain name, only ip address, later when buy domain name, can change this
   });
   sendSuccess(res, 200, undefined, "Đã đăng xuất");
 });

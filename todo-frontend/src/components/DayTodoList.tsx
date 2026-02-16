@@ -1,7 +1,28 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Plus, Trash2, Check, Circle, TrendingUp } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
+
+// Extend DayTodoItem với unique ID
+interface DayTodoItemWithId extends DayTodoItem {
+  id: string;
+}
+
+// Generate unique ID
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+// Add ID to items if not exists
+const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] => {
+  return items.map((item, index) => ({
+    ...item,
+    id: `item-${index}-${item.title.slice(0, 10)}`,
+  }));
+};
+
+// Remove ID before sending to API
+const removeIdsFromItems = (items: DayTodoItemWithId[]): DayTodoItem[] => {
+  return items.map(({ id, ...rest }) => rest);
+};
 
 interface DayTodoListProps {
   dayTodo: DayTodo | null;
@@ -15,8 +36,25 @@ export function DayTodoList({
   onUpdateItems,
 }: DayTodoListProps) {
   const [newTitle, setNewTitle] = useState("");
-  const items = dayTodo?.items ?? [];
-  
+  const [items, setItems] = useState<DayTodoItemWithId[]>([]);
+  const [pendingToggle, setPendingToggle] = useState<string | null>(null);
+
+  // Sync items from props
+  useEffect(() => {
+    const rawItems = dayTodo?.items ?? [];
+    const itemsWithIds = addIdsToItems(rawItems);
+    
+    // Sort: incomplete first, completed last
+    const sorted = [...itemsWithIds].sort((a, b) => {
+      if (a.completed === b.completed) {
+        return a.order - b.order;
+      }
+      return a.completed ? 1 : -1;
+    });
+    
+    setItems(sorted);
+  }, [dayTodo]);
+
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -24,24 +62,60 @@ export function DayTodoList({
   const handleAdd = () => {
     const t = newTitle.trim();
     if (!t) return;
-    const nextOrder = items.length;
-    onUpdateItems([
-      ...items,
-      { title: t, completed: false, order: nextOrder },
-    ]);
+    
+    const newItem: DayTodoItemWithId = {
+      id: generateId(),
+      title: t,
+      completed: false,
+      order: items.length,
+    };
+    
+    const newItems = [...items, newItem];
+    setItems(newItems);
+    onUpdateItems(removeIdsFromItems(newItems));
     setNewTitle("");
   };
 
-  const handleToggle = (index: number) => {
-    const next = items.map((item, i) =>
-      i === index ? { ...item, completed: !item.completed } : item
+  const handleToggle = (id: string) => {
+    // Prevent double click during animation
+    if (pendingToggle) return;
+    
+    setPendingToggle(id);
+    
+    // Step 1: Toggle completed status (checkbox animation)
+    const toggled = items.map(item =>
+      item.id === id ? { ...item, completed: !item.completed } : item
     );
-    onUpdateItems(next);
+    setItems(toggled);
+    
+    // Step 2: Delay reorder for smooth animation
+    setTimeout(() => {
+      const incomplete = toggled.filter(it => !it.completed);
+      const completed = toggled.filter(it => it.completed);
+      
+      const reordered = [
+        ...incomplete.map((it, idx) => ({ ...it, order: idx })),
+        ...completed.map((it, idx) => ({ ...it, order: incomplete.length + idx })),
+      ];
+      
+      setItems(reordered);
+      onUpdateItems(removeIdsFromItems(reordered));
+      setPendingToggle(null);
+    }, 400); // Delay để animation checkbox hoàn thành trước
   };
 
-  const handleDelete = (index: number) => {
-    const next = items.filter((_, i) => i !== index);
-    onUpdateItems(next);
+  const handleDelete = (id: string) => {
+    const filtered = items.filter(item => item.id !== id);
+    const reordered = filtered.map((it, idx) => ({ ...it, order: idx }));
+    
+    setItems(reordered);
+    onUpdateItems(removeIdsFromItems(reordered));
+  };
+
+  const handleReorder = (newOrder: DayTodoItemWithId[]) => {
+    const reordered = newOrder.map((it, idx) => ({ ...it, order: idx }));
+    setItems(reordered);
+    onUpdateItems(removeIdsFromItems(reordered));
   };
 
   if (isLoading) {
@@ -65,10 +139,7 @@ export function DayTodoList({
       {/* Card glow */}
       <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 rounded-3xl blur-xl opacity-50" />
       
-      <motion.div
-        layout
-        className="relative rounded-3xl bg-slate-800/50 border border-white/[0.06] backdrop-blur-sm overflow-hidden"
-      >
+      <div className="relative rounded-3xl bg-slate-800/50 border border-white/[0.06] backdrop-blur-sm overflow-hidden">
         {/* Header with Stats */}
         <div className="p-6 pb-4 border-b border-white/[0.04]">
           <div className="flex items-center justify-between mb-4">
@@ -87,7 +158,14 @@ export function DayTodoList({
             </div>
             {totalCount > 0 && (
               <div className="text-right">
-                <span className="text-2xl font-bold text-emerald-400">{progressPercent}%</span>
+                <motion.span 
+                  key={progressPercent}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-2xl font-bold text-emerald-400"
+                >
+                  {progressPercent}%
+                </motion.span>
               </div>
             )}
           </div>
@@ -139,7 +217,7 @@ export function DayTodoList({
           </div>
         </div>
 
-        {/* Todo List */}
+        {/* Todo List with Reorder */}
         <div className="p-4 min-h-[200px] max-h-[400px] overflow-y-auto">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-500">
@@ -148,70 +226,113 @@ export function DayTodoList({
               <p className="text-sm">Thêm công việc mới để bắt đầu</p>
             </div>
           ) : (
-            <ul className="space-y-2">
+            <Reorder.Group 
+              axis="y" 
+              values={items} 
+              onReorder={handleReorder}
+              className="space-y-2"
+            >
               <AnimatePresence mode="popLayout">
-                {items.map((item, index) => (
-                  <motion.li
-                    key={`${index}-${item.title}`}
+                {items.map((item) => (
+                  <Reorder.Item
+                    key={item.id}
+                    value={item}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0,
+                      transition: {
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 25,
+                      }
+                    }}
+                    exit={{ 
+                      opacity: 0, 
+                      x: -100,
+                      transition: { duration: 0.2 }
+                    }}
                     layout
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.2 }}
+                    layoutId={item.id}
+                    drag={false} // Disable drag, chỉ dùng animation
                     className="group"
                   >
-                    <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 ${
-                      item.completed 
-                        ? 'bg-emerald-500/5 border-emerald-500/20' 
-                        : 'bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50 hover:border-white/[0.08]'
-                    }`}>
+                    <motion.div 
+                      className={`flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 ${
+                        item.completed 
+                          ? 'bg-emerald-500/5 border-emerald-500/20' 
+                          : 'bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50 hover:border-white/[0.08]'
+                      }`}
+                      animate={{
+                        scale: pendingToggle === item.id ? 0.98 : 1,
+                      }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {/* Checkbox */}
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => handleToggle(index)}
-                        className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
+                        onClick={() => handleToggle(item.id)}
+                        disabled={pendingToggle !== null}
+                        className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
                           item.completed
                             ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-slate-500 hover:border-emerald-400'
-                        }`}
+                            : 'border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10'
+                        } disabled:cursor-not-allowed`}
                       >
-                        {item.completed && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                          >
-                            <Check className="w-4 h-4 text-white" />
-                          </motion.div>
-                        )}
+                        <AnimatePresence mode="wait">
+                          {item.completed && (
+                            <motion.div
+                              initial={{ scale: 0, rotate: -45 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              exit={{ scale: 0, rotate: 45 }}
+                              transition={{ 
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 15,
+                              }}
+                            >
+                              <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </motion.button>
                       
-                      <span className={`flex-1 transition-all duration-200 ${
-                        item.completed 
-                          ? 'line-through text-slate-500' 
-                          : 'text-slate-200'
-                      }`}>
+                      {/* Title */}
+                      <motion.span 
+                        className={`flex-1 transition-all duration-300 ${
+                          item.completed 
+                            ? 'line-through text-slate-500' 
+                            : 'text-slate-200'
+                        }`}
+                        animate={{
+                          x: item.completed ? 4 : 0,
+                        }}
+                      >
                         {item.title}
-                      </span>
+                      </motion.span>
                       
+                      {/* Delete Button */}
                       <motion.button
                         type="button"
+                        initial={{ opacity: 0, scale: 0.8 }}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDelete(index)}
+                        onClick={() => handleDelete(item.id)}
                         className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
                         aria-label="Xóa"
                       >
                         <Trash2 className="w-4 h-4" />
                       </motion.button>
-                    </div>
-                  </motion.li>
+                    </motion.div>
+                  </Reorder.Item>
                 ))}
               </AnimatePresence>
-            </ul>
+            </Reorder.Group>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

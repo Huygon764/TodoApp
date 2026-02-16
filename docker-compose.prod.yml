@@ -4,7 +4,7 @@
 # On VPS, set IMAGE=ghcr.io/<your-github-username>/todo-app:latest (CI pushes there)
 services:
   todo-app:
-    image: ${IMAGE:-todo-app:latest}
+    image: ghcr.io/huygon764:todo-app:latest
     build:
       context: .
       dockerfile: Dockerfile

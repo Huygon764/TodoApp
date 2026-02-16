@@ -2,6 +2,8 @@
 
 A daily todo list application with default templates, progress tracking, and beautiful UI.
 
+<img width="843" height="800" alt="image" src="https://github.com/user-attachments/assets/7d702f52-460e-4800-8e63-decb9c177b43" />
+
 ## Tech Stack
 
 - **Backend:** Node.js 22, Express, TypeScript, MongoDB, JWT Auth

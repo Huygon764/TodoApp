@@ -14,7 +14,8 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   sameSite: "lax" as const,
-  secure: env.nodeEnv === "production",
+  // secure: env.nodeEnv === "production",
+  secure: false, // false because on vps dont have domain name, only ip address, later when buy domain name, can change this
   path: "/",
 };
 

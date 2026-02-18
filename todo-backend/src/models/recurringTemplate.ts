@@ -28,7 +28,7 @@ const recurringTemplateSchema = new Schema<IRecurringTemplateDocument>(
       default: [],
     },
   },
-  { timestamps: true, collection: "goaltemplates" }
+  { timestamps: true, collection: "recurringtemplates" }
 );
 
 recurringTemplateSchema.index({ userId: 1, type: 1 }, { unique: true });

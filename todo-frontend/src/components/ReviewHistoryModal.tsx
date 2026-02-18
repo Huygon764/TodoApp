@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, FileText, Sparkles } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
-import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsInRange } from "@/lib/datePeriod";
+import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsInRange, getMonthsInRange, formatWeekPeriodLabel } from "@/lib/datePeriod";
 import type { Review } from "@/types";
 import { ReviewModal } from "./ReviewModal";
 
@@ -28,15 +28,17 @@ export function ReviewHistoryModal({
   onOpenSlot,
 }: ReviewHistoryModalProps) {
   const { t } = useTranslation();
-  const [selectedMonth, setSelectedMonth] = useState(getMonthPeriod());
+  const currentMonth = getMonthPeriod();
+  const [selectedFromMonth, setSelectedFromMonth] = useState(currentMonth);
+  const [selectedToMonth, setSelectedToMonth] = useState(currentMonth);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [editingSlot, setEditingSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { from, to } = getWeekRangeForMonth(selectedMonth);
-  const weekPeriods = getWeekPeriodsInRange(from, to);
+  const fromMonth = selectedFromMonth <= selectedToMonth ? selectedFromMonth : selectedToMonth;
+  const toMonth = selectedFromMonth <= selectedToMonth ? selectedToMonth : selectedFromMonth;
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -52,10 +54,14 @@ export function ReviewHistoryModal({
     setAnalysisLoading(true);
     setAnalysisResult(null);
     try {
-      const res = await apiPost<{ analysis: string }>(API_PATHS.REVIEWS_ANALYZE, {
+      const res = await apiPost<{ analysis?: string; error?: string; message?: string }>(API_PATHS.REVIEWS_ANALYZE, {
         reviewIds: Array.from(selectedIds),
       });
-      setAnalysisResult(res.data?.analysis ?? "");
+      if (res.data?.error === "QUOTA_EXCEEDED") {
+        setAnalysisResult(res.data?.message ?? "Rate limit exceeded. Please try again later.");
+      } else {
+        setAnalysisResult(res.data?.analysis ?? "");
+      }
     } catch {
       setAnalysisResult("Analysis failed. Check GEMINI_API_KEY configuration.");
     } finally {
@@ -64,10 +70,10 @@ export function ReviewHistoryModal({
   };
 
   const { data: reviews = [] } = useQuery({
-    queryKey: ["reviews", selectedMonth],
+    queryKey: ["reviews", fromMonth, toMonth],
     queryFn: async () => {
       const res = await apiGet<{ reviews: Review[] }>(
-        API_PATHS.REVIEWS_QUERY({ month: selectedMonth })
+        API_PATHS.REVIEWS_QUERY({ fromMonth, toMonth })
       );
       return res.data?.reviews ?? [];
     },
@@ -77,14 +83,18 @@ export function ReviewHistoryModal({
   const getReviewForSlot = (type: "week" | "month", period: string) =>
     reviews.find((r) => r.type === type && r.period === period);
 
-  const slots: Array<{ type: "week" | "month"; period: string; label: string }> = [
-    { type: "month", period: selectedMonth, label: formatMonthLabel(selectedMonth) },
-    ...weekPeriods.map((p, i) => ({
-      type: "week" as const,
-      period: p,
-      label: `${t("goalModal.tabWeek")} ${i + 1}`,
-    })),
-  ];
+  const monthPeriods = getMonthsInRange(fromMonth, toMonth);
+  const slots: Array<{ type: "week" | "month"; period: string; label: string }> = [];
+  const seenWeekPeriods = new Set<string>();
+  for (const m of monthPeriods) {
+    slots.push({ type: "month", period: m, label: formatMonthLabel(m) });
+    const { from: weekFrom, to: weekTo } = getWeekRangeForMonth(m);
+    for (const p of getWeekPeriodsInRange(weekFrom, weekTo)) {
+      if (seenWeekPeriods.has(p)) continue;
+      seenWeekPeriods.add(p);
+      slots.push({ type: "week", period: p, label: formatWeekPeriodLabel(p) });
+    }
+  }
 
   const monthOptions = getMonthOptions();
 
@@ -105,7 +115,7 @@ export function ReviewHistoryModal({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, pointerEvents: "none" }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
           />
@@ -144,22 +154,49 @@ export function ReviewHistoryModal({
                   </motion.button>
                 </div>
 
-                <div className="p-4 border-b border-white/[0.04]">
-                  <label className="block text-sm text-slate-400 mb-2">
-                    {t("reviewHistory.filterMonth")}
-                  </label>
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 appearance-none cursor-pointer flex items-center gap-2"
-                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
-                  >
-                    {monthOptions.map((ym) => (
-                      <option key={ym} value={ym}>
-                        {formatMonthLabel(ym)}
-                      </option>
-                    ))}
-                  </select>
+                <div className="p-4 border-b border-white/[0.04] space-y-3">
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-2">
+                      {t("reviewHistory.fromMonth")}
+                    </label>
+                    <select
+                      value={selectedFromMonth}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setSelectedFromMonth(v);
+                        if (v > selectedToMonth) setSelectedToMonth(v);
+                      }}
+                      className="w-full px-3 py-2.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 appearance-none cursor-pointer"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
+                    >
+                      {monthOptions.map((ym) => (
+                        <option key={ym} value={ym}>
+                          {formatMonthLabel(ym)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-2">
+                      {t("reviewHistory.toMonth")}
+                    </label>
+                    <select
+                      value={selectedToMonth}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setSelectedToMonth(v);
+                        if (v < selectedFromMonth) setSelectedFromMonth(v);
+                      }}
+                      className="w-full px-3 py-2.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 appearance-none cursor-pointer"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
+                    >
+                      {monthOptions.map((ym) => (
+                        <option key={ym} value={ym}>
+                          {formatMonthLabel(ym)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="p-4 max-h-[50vh] overflow-y-auto space-y-3">

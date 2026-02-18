@@ -83,8 +83,10 @@
   },
   "reviewHistory": {
     "title": "Lịch sử review",
-    "subtitle": "Xem theo tháng",
+    "subtitle": "Xem theo khoảng tháng",
     "filterMonth": "Tháng",
+    "fromMonth": "Từ tháng",
+    "toMonth": "Đến tháng",
     "empty": "Chưa có review nào trong tháng này",
     "noEntry": "Chưa có",
     "selectToAnalyze": "Chọn review để phân tích AI",

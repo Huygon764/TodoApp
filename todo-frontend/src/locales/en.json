@@ -83,8 +83,10 @@
   },
   "reviewHistory": {
     "title": "Review history",
-    "subtitle": "View by month",
+    "subtitle": "View by month range",
     "filterMonth": "Month",
+    "fromMonth": "From month",
+    "toMonth": "To month",
     "empty": "No reviews this month",
     "noEntry": "No entry",
     "selectToAnalyze": "Select reviews to analyze with AI",

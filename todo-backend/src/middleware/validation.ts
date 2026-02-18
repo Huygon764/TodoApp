@@ -161,6 +161,14 @@ export const validateGetReviewsQuery = [
     .optional()
     .matches(periodWeekRegex)
     .withMessage("to must be YYYY-Wnn"),
+  query("fromMonth")
+    .optional()
+    .matches(periodMonthRegex)
+    .withMessage("fromMonth must be YYYY-MM"),
+  query("toMonth")
+    .optional()
+    .matches(periodMonthRegex)
+    .withMessage("toMonth must be YYYY-MM"),
 ];
 
 export const validatePostReviewBody = [

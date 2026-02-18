@@ -4,10 +4,15 @@ import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import { generateAnalysis } from "../services/geminiService.js";
 import type { IReviewDocument } from "../types/index.js";
-import { getWeekRangeForMonth } from "../utils/datePeriod.js";
+import {
+  getWeekRangeForMonth,
+  getWeekPeriodsInRange,
+  getMonthsInRange,
+} from "../utils/datePeriod.js";
 
 /**
  * GET /api/reviews
+ * - ?fromMonth=2026-01&toMonth=2026-03 → all reviews in that month range
  * - ?type=week&period=2026-W08 → single review for that week
  * - ?type=month&period=2026-02 → single review for that month
  * - ?month=2026-02 → all reviews for that month (1 month + weeks in month)
@@ -15,13 +20,35 @@ import { getWeekRangeForMonth } from "../utils/datePeriod.js";
  */
 export const getReviews = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const { type, period, month, from, to } = req.query as {
+  const { type, period, month, from, to, fromMonth, toMonth } = req.query as {
     type?: string;
     period?: string;
     month?: string;
     from?: string;
     to?: string;
+    fromMonth?: string;
+    toMonth?: string;
   };
+
+  if (fromMonth && toMonth) {
+    const monthPeriods = getMonthsInRange(fromMonth, toMonth);
+    const weekPeriodsSet = new Set<string>();
+    for (const m of monthPeriods) {
+      const { from: weekFrom, to: weekTo } = getWeekRangeForMonth(m);
+      for (const p of getWeekPeriodsInRange(weekFrom, weekTo)) {
+        weekPeriodsSet.add(p);
+      }
+    }
+    const weekPeriods = Array.from(weekPeriodsSet);
+    const reviews = await Review.find({
+      userId,
+      $or: [
+        { type: "month", period: { $in: monthPeriods } },
+        { type: "week", period: { $in: weekPeriods } },
+      ],
+    }).sort({ type: 1, period: 1 });
+    return sendSuccess(res, 200, { reviews });
+  }
 
   if (month) {
     const { from: weekFrom, to: weekTo } = getWeekRangeForMonth(month);
@@ -51,6 +78,7 @@ export const getReviews = catchAsync(async (req: Request, res: Response) => {
 /**
  * POST /api/reviews
  * Body: { type, period, goodThings?, badThings?, notes? }
+ * Uses findOneAndUpdate with upsert to avoid E11000 duplicate key when a review already exists.
  */
 export const createReview = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
@@ -62,26 +90,19 @@ export const createReview = catchAsync(async (req: Request, res: Response) => {
     notes?: string;
   };
 
-  let review = await Review.findOne({ userId, type, period });
-
-  if (review) {
-    if (Array.isArray(goodThings)) review.goodThings = goodThings.filter(Boolean);
-    if (Array.isArray(badThings)) review.badThings = badThings.filter(Boolean);
-    if (typeof notes === "string") review.notes = notes;
-    await review.save();
-    return sendSuccess(res, 200, { review });
-  }
-
-  review = await Review.create({
-    userId,
-    type,
-    period,
+  const update = {
     goodThings: Array.isArray(goodThings) ? goodThings.filter(Boolean) : [],
     badThings: Array.isArray(badThings) ? badThings.filter(Boolean) : [],
     notes: typeof notes === "string" ? notes : "",
-  });
+  };
 
-  sendSuccess(res, 201, { review });
+  const review = await Review.findOneAndUpdate(
+    { userId, type, period },
+    { $set: update },
+    { new: true, upsert: true, runValidators: true }
+  );
+
+  sendSuccess(res, 200, { review });
 });
 
 /**
@@ -154,6 +175,19 @@ export const analyzeReviews = catchAsync(async (req: Request, res: Response) => 
 
   const fullPrompt = `You are a supportive coach. Analyze these weekly self-reviews and give concise, constructive feedback (2-4 short paragraphs). Focus on patterns, encouragement, and 1-2 concrete suggestions. Write in the same language as the reviews.\n\n${prompt}`;
 
-  const analysis = await generateAnalysis(fullPrompt);
-  sendSuccess(res, 200, { analysis });
+  try {
+    const analysis = await generateAnalysis(fullPrompt);
+    sendSuccess(res, 200, { analysis });
+  } catch (e) {
+    const err = e as Error & { status?: number; retryAfterSeconds?: number };
+    if (err.status === 429) {
+      const sec = err.retryAfterSeconds ?? 15;
+      return sendSuccess(res, 200, {
+        analysis: "",
+        error: "QUOTA_EXCEEDED",
+        message: `Gemini API rate limit exceeded. Please try again in ${sec} seconds or check your quota at https://ai.google.dev/gemini-api/docs/rate-limits.`,
+      });
+    }
+    throw e;
+  }
 });

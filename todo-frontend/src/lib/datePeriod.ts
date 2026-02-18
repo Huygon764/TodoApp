@@ -89,6 +89,24 @@ export function getMonthOptions(count = 12): string[] {
   return out;
 }
 
+/** List month period strings (YYYY-MM) from fromMonth to toMonth (inclusive). */
+export function getMonthsInRange(fromMonth: string, toMonth: string): string[] {
+  const [fy, fm] = fromMonth.split("-").map(Number);
+  const [ty, tm] = toMonth.split("-").map(Number);
+  const out: string[] = [];
+  let y = fy;
+  let m = fm;
+  while (y < ty || (y === ty && m <= tm)) {
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
+
 /** Format month period for display e.g. "February 2026" */
 export function formatMonthLabel(periodStr: string): string {
   const [y, m] = periodStr.split("-").map(Number);

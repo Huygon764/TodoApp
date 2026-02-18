@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem } from "@/types";
@@ -185,6 +185,19 @@ export function HomePage() {
               <Target className="w-5 h-5" />
             </motion.button>
             <motion.button
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setReviewModalSlot(null);
+                setIsReviewModalOpen(true);
+              }}
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200 cursor-pointer"
+              title={t("dayTodo.reviewMyself")}
+            >
+              <FileText className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsDefaultModalOpen(true)}
@@ -223,7 +236,6 @@ export function HomePage() {
             dayTodo={dayTodo}
             isLoading={dayLoading}
             onUpdateItems={(items) => patchDayMutation.mutate(items)}
-            onOpenReview={() => setIsReviewModalOpen(true)}
           />
         </motion.section>
 

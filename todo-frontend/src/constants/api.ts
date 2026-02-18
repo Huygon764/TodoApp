@@ -22,6 +22,8 @@ export const API_PATHS = {
     month?: string;
     from?: string;
     to?: string;
+    fromMonth?: string;
+    toMonth?: string;
   }) => {
     const sp = new URLSearchParams();
     if (params.type) sp.set("type", params.type);
@@ -29,6 +31,8 @@ export const API_PATHS = {
     if (params.month) sp.set("month", params.month);
     if (params.from) sp.set("from", params.from);
     if (params.to) sp.set("to", params.to);
+    if (params.fromMonth) sp.set("fromMonth", params.fromMonth);
+    if (params.toMonth) sp.set("toMonth", params.toMonth);
     return `/api/reviews?${sp.toString()}`;
   },
   REVIEW: (id: string) => `/api/reviews/${id}`,

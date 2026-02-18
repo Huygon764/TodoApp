@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, FileText, History } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import { getWeekPeriod, getMonthPeriod } from "@/lib/datePeriod";
+import { getWeekPeriod, getMonthPeriod, formatWeekPeriodLabel } from "@/lib/datePeriod";
 import type { Review } from "@/types";
 
 interface ReviewModalProps {
@@ -181,7 +181,7 @@ export function ReviewModal({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, pointerEvents: "none" }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           />
@@ -207,7 +207,7 @@ export function ReviewModal({
                         </h2>
                         <p className="text-sm text-slate-500">
                           {activeTab === "week"
-                            ? t("reviewModal.weekLabel", { period })
+                            ? formatWeekPeriodLabel(period)
                             : t("reviewModal.monthLabel", { period })}
                         </p>
                       </div>

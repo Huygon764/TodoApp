@@ -1,13 +1,24 @@
 # Todo App
 
-A daily todo list application with default templates, progress tracking, and beautiful UI.
+A daily todo list app with default list, recurring templates, week/month/year goals, self-reviews, and AI-powered review analysis. Includes calendar date picker, progress tracking, and i18n (EN/VI).
 
 <img width="843" height="800" alt="image" src="https://github.com/user-attachments/assets/7d702f52-460e-4800-8e63-decb9c177b43" />
 
+## Features
+
+- **Day todo** – Daily list with default items; items from recurring templates auto-merge on Monday and on the 1st of the month.
+- **Default list** – Template items copied into each new day when you first open it.
+- **Recurring templates** – Week/month templates whose items are merged into the day todo on week start (Monday) and month start.
+- **Goals** – Week, month, and year goals with period-based CRUD and optional templates.
+- **Reviews** – Week/month self-reviews with history; filter by period or month range.
+- **AI analysis** – Gemini integration to analyze review content (optional; requires `GEMINI_API_KEY`).
+- **Calendar** – Popover date picker for quick navigation.
+- **i18n** – English and Vietnamese.
+
 ## Tech Stack
 
-- **Backend:** Node.js 22, Express, TypeScript, MongoDB, JWT Auth
-- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS 4, Framer Motion, React Query
+- **Backend:** Node.js 22, Express, TypeScript, MongoDB, JWT (httpOnly cookie)
+- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS 4, Framer Motion, React Query, i18next
 
 ## Prerequisites
 
@@ -38,21 +49,25 @@ yarn install
 
 ### 3. Setup environment variables
 
-**Backend** (`todo-backend/.env`):
+**Backend** (`todo-backend/.env`). See `todo-backend/.env.example` for a full list.
 
 ```env
 NODE_ENV=development
-PORT=3000
+PORT=5000
 MONGODB_URI=mongodb://localhost:27017/todo-app
 JWT_SECRET=your-secret-key-here
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
+FRONTEND_URL=http://localhost:5173
+BCRYPT_ROUNDS=12
 
-# Telegram Bot (optional)
+# Optional: Telegram bot (admin /register, /remove, /list)
 TELEGRAM_BOT_TOKEN=your-bot-token
-TELEGRAM_ADMIN_IDS=123456789
+TELEGRAM_CHAT_ID=your_chat_id
+TELEGRAM_WEBHOOK_DOMAIN=
+
+# Optional: Gemini AI for review analysis
+GEMINI_API_KEY=
 ```
-
-
 
 ### 4. Run development servers
 
@@ -66,40 +81,5 @@ cd todo-frontend
 yarn dev
 ```
 
-- Backend: http://localhost:3000
+- Backend: http://localhost:5000
 - Frontend: http://localhost:5173
-
-## Available Scripts
-
-| Directory | Command | Description |
-|-----------|---------|-------------|
-| `todo-backend` | `yarn dev` | Start dev server with hot reload |
-| `todo-backend` | `yarn build` | Build for production |
-| `todo-backend` | `yarn typecheck` | Run TypeScript check |
-| `todo-frontend` | `yarn dev` | Start Vite dev server |
-| `todo-frontend` | `yarn build` | Build for production |
-| `todo-frontend` | `yarn typecheck` | Run TypeScript check |
-
-## Project Structure
-
-```
-TodoApp/
-├── todo-backend/       # Express API server
-│   ├── src/
-│   │   ├── config/     # Environment config
-│   │   ├── models/     # MongoDB models
-│   │   ├── routes/     # API routes
-│   │   ├── controllers/
-│   │   └── middleware/
-│   └── package.json
-├── todo-frontend/      # React application
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── lib/
-│   │   └── types/
-│   └── package.json
-├── Dockerfile
-├── docker-compose.prod.yml
-└── README.md
-```

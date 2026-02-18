@@ -2,12 +2,29 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, Target, Settings } from "lucide-react";
+import { X, Plus, Trash2, Check, Circle, Target, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import { GoalTemplateModal } from "./GoalTemplateModal";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import { getWeekPeriod, getMonthPeriod, formatWeekPeriodLabel } from "@/lib/datePeriod";
+import {
+  getWeekPeriod,
+  getMonthPeriod,
+  getYearPeriod,
+  formatWeekPeriodLabel,
+  formatMonthLabel,
+  getPrevWeekPeriod,
+  getNextWeekPeriod,
+  getPrevMonthPeriod,
+  getNextMonthPeriod,
+  getPrevYearPeriod,
+  getNextYearPeriod,
+  getWeekOptionsForPicker,
+  getMonthOptionsForPicker,
+  getYearOptionsForPicker,
+} from "@/lib/datePeriod";
 import type { Goal, GoalItem } from "@/types";
+
+export type GoalPeriodType = "week" | "month" | "year";
 
 interface GoalModalProps {
   isOpen: boolean;
@@ -29,16 +46,34 @@ function removeIdsFromItems(
 
 export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"week" | "month">("week");
+  const [activeTab, setActiveTab] = useState<GoalPeriodType>("week");
+  const [selectedWeekPeriod, setSelectedWeekPeriod] = useState(getWeekPeriod());
+  const [selectedMonthPeriod, setSelectedMonthPeriod] = useState(getMonthPeriod());
+  const [selectedYearPeriod, setSelectedYearPeriod] = useState(getYearPeriod());
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const period =
-    activeTab === "week" ? getWeekPeriod() : getMonthPeriod();
+    activeTab === "week"
+      ? selectedWeekPeriod
+      : activeTab === "month"
+        ? selectedMonthPeriod
+        : selectedYearPeriod;
   const queryKey = ["goal", activeTab, period];
+
+  // Reset to current periods when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedWeekPeriod(getWeekPeriod());
+      setSelectedMonthPeriod(getMonthPeriod());
+      setSelectedYearPeriod(getYearPeriod());
+    }
+  }, [isOpen]);
 
   const { data, isLoading } = useQuery({
     queryKey,
@@ -67,7 +102,20 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             period,
             items,
           }),
-    onSuccess: () => {
+    onMutate: async (items: GoalItem[]) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData(queryKey, {
+        goal: goal ? { ...goal, items } : null,
+      });
+      return { previous };
+    },
+    onError: (_err, _items, context) => {
+      if (context?.previous != null) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
     },
   });
@@ -92,6 +140,42 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isOpen, onClose, isTemplateModalOpen]);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (pickerRef.current?.contains(e.target as Node)) return;
+      setPickerOpen(false);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [pickerOpen]);
+
+  const handlePrevPeriod = () => {
+    if (activeTab === "week") setSelectedWeekPeriod((p) => getPrevWeekPeriod(p));
+    else if (activeTab === "month") setSelectedMonthPeriod((p) => getPrevMonthPeriod(p));
+    else setSelectedYearPeriod((p) => getPrevYearPeriod(p));
+  };
+
+  const handleNextPeriod = () => {
+    if (activeTab === "week") setSelectedWeekPeriod((p) => getNextWeekPeriod(p));
+    else if (activeTab === "month") setSelectedMonthPeriod((p) => getNextMonthPeriod(p));
+    else setSelectedYearPeriod((p) => getNextYearPeriod(p));
+  };
+
+  const pickerOptions =
+    activeTab === "week"
+      ? getWeekOptionsForPicker(2, 6)
+      : activeTab === "month"
+        ? getMonthOptionsForPicker(1, 6)
+        : getYearOptionsForPicker(1, 3);
+
+  const periodLabel =
+    activeTab === "week"
+      ? `${period} (${formatWeekPeriodLabel(period)})`
+      : activeTab === "month"
+        ? formatMonthLabel(period)
+        : t("goalModal.yearLabel", { period });
 
   const handleAdd = () => {
     const t = newTitle.trim();
@@ -120,10 +204,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         order: incomplete.length + idx,
       })),
     ];
-    setTimeout(() => {
-      patchMutation.mutate(removeIdsFromItems(reordered));
-      setPendingToggle(null);
-    }, 400);
+    patchMutation.mutate(removeIdsFromItems(reordered));
+    // Clear pending after brief scale animation (like DayTodoList)
+    setTimeout(() => setPendingToggle(null), 150);
   };
 
   const handleDelete = (clientId: string) => {
@@ -134,8 +217,12 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     if (goal) deleteItemMutation.mutate(reordered);
   };
 
-  const labelWeek = `${period} (${formatWeekPeriodLabel(period)})`;
-  const labelMonth = t("goalModal.monthLabel", { period });
+  const handleSelectPeriod = (p: string) => {
+    if (activeTab === "week") setSelectedWeekPeriod(p);
+    else if (activeTab === "month") setSelectedMonthPeriod(p);
+    else setSelectedYearPeriod(p);
+    setPickerOpen(false);
+  };
 
   return (
     <AnimatePresence>
@@ -146,7 +233,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 cursor-pointer"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -170,9 +257,55 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       <h2 className="text-xl font-semibold text-white">
                         {t("goalModal.title")}
                       </h2>
-                      <p className="text-sm text-slate-500">
-                        {activeTab === "week" ? labelWeek : labelMonth}
-                      </p>
+                      <div ref={pickerRef} className="relative mt-1">
+                        <div className="flex items-center gap-1">
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handlePrevPeriod}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-700/50 transition-colors cursor-pointer"
+                            aria-label={t("dateNav.prevAria")}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </motion.button>
+                          <button
+                            type="button"
+                            onClick={() => setPickerOpen((o) => !o)}
+                            className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors text-left truncate cursor-pointer"
+                          >
+                            {periodLabel}
+                          </button>
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleNextPeriod}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-700/50 transition-colors cursor-pointer"
+                            aria-label={t("dateNav.nextAria")}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                        {pickerOpen && (
+                          <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-slate-800 border border-white/[0.08] shadow-xl z-10 py-1">
+                            {pickerOptions.map((opt) => (
+                              <button
+                                key={opt.period}
+                                type="button"
+                                onClick={() => handleSelectPeriod(opt.period)}
+                                className={`w-full px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
+                                  opt.period === period
+                                    ? "bg-violet-500/20 text-violet-300"
+                                    : "text-slate-300 hover:bg-slate-700/50"
+                                }`}
+                              >
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
@@ -181,7 +314,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => setIsTemplateModalOpen(true)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
                       title={t("goalModal.templateTitle")}
                     >
                       <Settings className="w-5 h-5" />
@@ -191,7 +324,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={onClose}
-                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </motion.button>
@@ -200,18 +333,22 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
                 {/* Tabs */}
                 <div className="flex border-b border-white/[0.04]">
-                  {(["week", "month"] as const).map((tab) => (
+                  {(["week", "month", "year"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
                       onClick={() => setActiveTab(tab)}
-                      className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                      className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${
                         activeTab === tab
                           ? "text-violet-400 border-b-2 border-violet-400 bg-violet-500/5"
                           : "text-slate-500 hover:text-slate-300"
                       }`}
                     >
-                      {tab === "week" ? t("goalModal.tabWeek") : t("goalModal.tabMonth")}
+                      {tab === "week"
+                        ? t("goalModal.tabWeek")
+                        : tab === "month"
+                          ? t("goalModal.tabMonth")
+                          : t("goalModal.tabYear")}
                     </button>
                   ))}
                 </div>
@@ -238,7 +375,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAdd}
                       disabled={!newTitle.trim() || patchMutation.isPending}
-                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {t("goalModal.add")}
                     </motion.button>
@@ -269,7 +406,12 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                             key={item.id}
                             layout
                             initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
+                            animate={{
+                              opacity: 1,
+                              x: 0,
+                              scale: pendingToggle === item.id ? 0.98 : 1,
+                              transition: { duration: 0.15 },
+                            }}
                             exit={{ opacity: 0, x: 10 }}
                             className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
                               item.completed
@@ -283,7 +425,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               whileTap={{ scale: 0.9 }}
                               onClick={() => handleToggle(item.id)}
                               disabled={pendingToggle !== null}
-                              className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                              className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                 item.completed
                                   ? "bg-violet-500 border-violet-500"
                                   : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
@@ -324,8 +466,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               whileTap={{ scale: 0.9 }}
                               onClick={() => handleDelete(item.id)}
                               disabled={deleteItemMutation.isPending}
-                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-                                aria-label={t("goalModal.deleteAria")}
+                              className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                              aria-label={t("goalModal.deleteAria")}
                             >
                               <Trash2 className="w-4 h-4" />
                             </motion.button>

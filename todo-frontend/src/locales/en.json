@@ -32,23 +32,26 @@
     "title": "Goals",
     "weekLabel": "Week {{period}}",
     "monthLabel": "Month {{period}}",
+    "yearLabel": "Year {{period}}",
     "templateTitle": "Goal template",
     "addPlaceholder": "Add goal...",
     "add": "Add",
     "empty": "No goals yet",
     "tabWeek": "Week",
     "tabMonth": "Month",
+    "tabYear": "Year",
     "deleteAria": "Delete"
   },
   "goalTemplateModal": {
     "title": "Goal template",
-    "subtitle": "Auto-copy to new week/month",
+    "subtitle": "Auto-copy to new week/month/year",
     "tabWeek": "Week",
     "tabMonth": "Month",
+    "tabYear": "Year",
     "addPlaceholder": "Add template...",
     "add": "Add",
     "empty": "No templates yet",
-    "footerTip": "On the first day of the week (Monday) and first day of the month, goals will be created from this template",
+    "footerTip": "On the first day of the week (Monday), first day of the month, and first day of the year, goals will be created from this template",
     "deleteAria": "Delete"
   },
   "reviewModal": {
@@ -82,7 +85,7 @@
     "badLabel": "To improve"
   },
   "home": {
-    "goalsTitle": "Week / month goals",
+    "goalsTitle": "Week / month / year goals",
     "defaultTemplateTitle": "Default template",
     "defaultTemplateDesc": "{{count}} items • Auto-copy each new day",
     "templateDefault": "Default template",

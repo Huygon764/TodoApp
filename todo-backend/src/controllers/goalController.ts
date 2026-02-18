@@ -4,19 +4,21 @@ import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import {
   getWeekPeriod,
   getMonthPeriod,
+  getYearPeriod,
   isFirstDayOfWeek,
   isFirstDayOfMonth,
+  isFirstDayOfYear,
 } from "../utils/datePeriod.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IGoalItem } from "../types/index.js";
 
 /**
- * GET /api/goals?type=week|month&period=...
- * Returns one goal doc. Creates from template if first day of week/month, else empty.
+ * GET /api/goals?type=week|month|year&period=...
+ * Returns one goal doc. Creates from template if first day of week/month/year, else empty.
  */
 export const getGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const type = req.query.type as "week" | "month";
+  const type = req.query.type as "week" | "month" | "year";
   const period = req.query.period as string;
   const now = new Date();
 
@@ -30,7 +32,10 @@ export const getGoal = catchAsync(async (req: Request, res: Response) => {
         isFirstDayOfWeek(now)) ||
       (type === "month" &&
         period === getMonthPeriod(now) &&
-        isFirstDayOfMonth(now));
+        isFirstDayOfMonth(now)) ||
+      (type === "year" &&
+        period === getYearPeriod(now) &&
+        isFirstDayOfYear(now));
 
     if (shouldUseTemplate) {
       const template = await GoalTemplate.findOne({ userId, type });
@@ -61,7 +66,7 @@ export const getGoal = catchAsync(async (req: Request, res: Response) => {
 export const createGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { type, period, items } = req.body as {
-    type: "week" | "month";
+    type: "week" | "month" | "year";
     period: string;
     items?: IGoalItem[];
   };

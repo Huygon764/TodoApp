@@ -31,6 +31,16 @@ export function isFirstDayOfMonth(d: Date = new Date()): boolean {
   return d.getDate() === 1;
 }
 
+/** Year period as YYYY */
+export function getYearPeriod(d: Date = new Date()): string {
+  return String(d.getFullYear());
+}
+
+/** True if date is January 1st */
+export function isFirstDayOfYear(d: Date = new Date()): boolean {
+  return d.getMonth() === 0 && d.getDate() === 1;
+}
+
 /** Week range (from/to) that touches the given month (YYYY-MM) */
 export function getWeekRangeForMonth(monthStr: string): { from: string; to: string } {
   const [y, m] = monthStr.split("-").map(Number);

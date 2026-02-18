@@ -20,7 +20,7 @@ const goalTemplateSchema = new Schema<IGoalTemplateDocument>(
     type: {
       type: String,
       required: true,
-      enum: ["week", "month"],
+      enum: ["week", "month", "year"],
       index: true,
     },
     items: {

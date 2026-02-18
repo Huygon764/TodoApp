@@ -41,7 +41,7 @@ export interface GoalItem {
 export interface Goal {
   _id: string;
   userId: string;
-  type: "week" | "month";
+  type: "week" | "month" | "year";
   period: string;
   items: GoalItem[];
   createdAt: string;
@@ -56,7 +56,7 @@ export interface GoalTemplateItem {
 export interface GoalTemplate {
   _id: string;
   userId: string;
-  type: "week" | "month";
+  type: "week" | "month" | "year";
   items: GoalTemplateItem[];
   createdAt: string;
   updatedAt: string;

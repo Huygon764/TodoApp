@@ -49,14 +49,15 @@ export const validateMongoIdParam = [
   param("id").isMongoId().withMessage("Invalid ID format"),
 ];
 
-// Week: YYYY-W01..W53, Month: YYYY-MM
+// Week: YYYY-W01..W53, Month: YYYY-MM, Year: YYYY
 const periodWeekRegex = /^\d{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$/;
 const periodMonthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+const periodYearRegex = /^\d{4}$/;
 
 export const validateGetGoalsQuery = [
   query("type")
-    .isIn(["week", "month"])
-    .withMessage("type must be week or month"),
+    .isIn(["week", "month", "year"])
+    .withMessage("type must be week, month or year"),
   query("period")
     .notEmpty()
     .withMessage("period is required")
@@ -68,14 +69,17 @@ export const validateGetGoalsQuery = [
       if (type === "month" && !periodMonthRegex.test(value)) {
         throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
       }
+      if (type === "year" && !periodYearRegex.test(value)) {
+        throw new Error("period for year must be YYYY (e.g. 2024)");
+      }
       return true;
     }),
 ];
 
 export const validatePostGoalBody = [
   body("type")
-    .isIn(["week", "month"])
-    .withMessage("type must be week or month"),
+    .isIn(["week", "month", "year"])
+    .withMessage("type must be week, month or year"),
   body("period")
     .notEmpty()
     .withMessage("period is required")
@@ -86,6 +90,9 @@ export const validatePostGoalBody = [
       }
       if (type === "month" && !periodMonthRegex.test(value)) {
         throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
+      }
+      if (type === "year" && !periodYearRegex.test(value)) {
+        throw new Error("period for year must be YYYY (e.g. 2024)");
       }
       return true;
     }),
@@ -116,14 +123,14 @@ export const validateGoalItemIndexParam = [
 
 export const validateGetGoalTemplatesQuery = [
   query("type")
-    .isIn(["week", "month"])
-    .withMessage("type must be week or month"),
+    .isIn(["week", "month", "year"])
+    .withMessage("type must be week, month or year"),
 ];
 
 export const validatePostGoalTemplateBody = [
   body("type")
-    .isIn(["week", "month"])
-    .withMessage("type must be week or month"),
+    .isIn(["week", "month", "year"])
+    .withMessage("type must be week, month or year"),
   body("title")
     .trim()
     .notEmpty()
@@ -135,8 +142,8 @@ export const validatePostGoalTemplateBody = [
 
 export const validateGoalTemplateTypeParam = [
   param("type")
-    .isIn(["week", "month"])
-    .withMessage("type must be week or month"),
+    .isIn(["week", "month", "year"])
+    .withMessage("type must be week, month or year"),
 ];
 
 export const validateGetReviewsQuery = [

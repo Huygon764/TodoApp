@@ -21,7 +21,7 @@ const goalSchema = new Schema<IGoalDocument>(
     type: {
       type: String,
       required: true,
-      enum: ["week", "month"],
+      enum: ["week", "month", "year"],
       index: true,
     },
     period: {

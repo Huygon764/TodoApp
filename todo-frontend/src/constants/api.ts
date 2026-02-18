@@ -6,14 +6,14 @@ export const API_PATHS = {
   DEFAULT: "/api/default",
   DEFAULT_BY_ID: (id: string) => `/api/default/${id}`,
   GOALS: "/api/goals",
-  GOALS_QUERY: (type: "week" | "month", period: string) =>
+  GOALS_QUERY: (type: "week" | "month" | "year", period: string) =>
     `/api/goals?type=${type}&period=${encodeURIComponent(period)}`,
   GOAL: (id: string) => `/api/goals/${id}`,
   GOAL_ITEM: (id: string, idx: number) => `/api/goals/${id}/items/${idx}`,
   GOAL_TEMPLATES: "/api/goals/templates",
-  GOAL_TEMPLATES_QUERY: (type: "week" | "month") =>
+  GOAL_TEMPLATES_QUERY: (type: "week" | "month" | "year") =>
     `/api/goals/templates?type=${type}`,
-  GOAL_TEMPLATE_ITEM: (type: "week" | "month", idx: number) =>
+  GOAL_TEMPLATE_ITEM: (type: "week" | "month" | "year", idx: number) =>
     `/api/goals/templates/${type}/items/${idx}`,
   REVIEWS: "/api/reviews",
   REVIEWS_QUERY: (params: {

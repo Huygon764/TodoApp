@@ -88,3 +88,107 @@ export function getMonthOptions(count = 12): string[] {
   }
   return out;
 }
+
+/** Format month period for display e.g. "February 2026" */
+export function formatMonthLabel(periodStr: string): string {
+  const [y, m] = periodStr.split("-").map(Number);
+  const d = new Date(y, m - 1, 1);
+  return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+
+/** Prev/next week period (YYYY-Wnn) */
+export function getPrevWeekPeriod(period: string): string {
+  const { start } = getWeekDateRange(period);
+  start.setDate(start.getDate() - 7);
+  return getWeekPeriod(start);
+}
+
+export function getNextWeekPeriod(period: string): string {
+  const { start } = getWeekDateRange(period);
+  start.setDate(start.getDate() + 7);
+  return getWeekPeriod(start);
+}
+
+/** Prev/next month period (YYYY-MM) */
+export function getPrevMonthPeriod(period: string): string {
+  const [y, m] = period.split("-").map(Number);
+  const d = new Date(y, m - 2, 1); // m is 1-based, so m-2 = previous month
+  return getMonthPeriod(d);
+}
+
+export function getNextMonthPeriod(period: string): string {
+  const [y, m] = period.split("-").map(Number);
+  const d = new Date(y, m, 1); // m is 1-based, month index m = next month
+  return getMonthPeriod(d);
+}
+
+/** Year period as YYYY */
+export function getYearPeriod(d: Date = new Date()): string {
+  return String(d.getFullYear());
+}
+
+/** Prev/next year period */
+export function getPrevYearPeriod(period: string): string {
+  const y = parseInt(period, 10);
+  return String(y - 1);
+}
+
+export function getNextYearPeriod(period: string): string {
+  const y = parseInt(period, 10);
+  return String(y + 1);
+}
+
+/** Format year for display */
+export function formatYearLabel(period: string): string {
+  return period;
+}
+
+/** Week options for picker: backWeeks + current + forwardWeeks */
+export function getWeekOptionsForPicker(
+  backWeeks = 2,
+  forwardWeeks = 6
+): { period: string; label: string }[] {
+  const now = new Date();
+  const current = getWeekPeriod(now);
+  const { start } = getWeekDateRange(current);
+  const startDate = new Date(start);
+  startDate.setDate(startDate.getDate() - backWeeks * 7);
+  const from = getWeekPeriod(startDate);
+  const endDate = new Date(start);
+  endDate.setDate(endDate.getDate() + forwardWeeks * 7);
+  const to = getWeekPeriod(endDate);
+  const periods = getWeekPeriodsInRange(from, to);
+  return periods.map((p) => ({
+    period: p,
+    label: formatWeekPeriodLabel(p),
+  }));
+}
+
+/** Month options for picker: backMonths + current + forwardMonths */
+export function getMonthOptionsForPicker(
+  backMonths = 1,
+  forwardMonths = 6
+): { period: string; label: string }[] {
+  const out: { period: string; label: string }[] = [];
+  const d = new Date();
+  for (let i = -backMonths; i <= forwardMonths; i++) {
+    const x = new Date(d.getFullYear(), d.getMonth() + i, 1);
+    const p = getMonthPeriod(x);
+    out.push({ period: p, label: formatMonthLabel(p) });
+  }
+  return out;
+}
+
+/** Year options for picker: backYears + current + forwardYears */
+export function getYearOptionsForPicker(
+  backYears = 1,
+  forwardYears = 3
+): { period: string; label: string }[] {
+  const out: { period: string; label: string }[] = [];
+  const y = new Date().getFullYear();
+  for (let i = -backYears; i <= forwardYears; i++) {
+    const p = String(y + i);
+    out.push({ period: p, label: formatYearLabel(p) });
+  }
+  return out;
+}

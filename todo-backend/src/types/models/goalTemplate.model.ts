@@ -7,7 +7,7 @@ export interface IGoalTemplateItem {
 
 export interface IGoalTemplate {
   userId: Types.ObjectId;
-  type: "week" | "month";
+  type: "week" | "month" | "year";
   items: IGoalTemplateItem[];
   createdAt: Date;
   updatedAt: Date;

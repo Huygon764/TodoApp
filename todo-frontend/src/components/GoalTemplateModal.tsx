@@ -7,10 +7,12 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import type { GoalTemplate } from "@/types";
 
+type GoalTemplateTab = "week" | "month" | "year";
+
 interface GoalTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: "week" | "month";
+  initialTab?: GoalTemplateTab;
 }
 
 export function GoalTemplateModal({
@@ -19,7 +21,7 @@ export function GoalTemplateModal({
   initialTab = "week",
 }: GoalTemplateModalProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"week" | "month">(initialTab);
+  const [activeTab, setActiveTab] = useState<GoalTemplateTab>(initialTab);
   const [newTitle, setNewTitle] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -128,7 +130,7 @@ export function GoalTemplateModal({
                 </div>
 
                 <div className="flex border-b border-white/[0.04]">
-                  {(["week", "month"] as const).map((tab) => (
+                  {(["week", "month", "year"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -139,7 +141,11 @@ export function GoalTemplateModal({
                           : "text-slate-500 hover:text-slate-300"
                       }`}
                     >
-                      {tab === "week" ? t("goalTemplateModal.tabWeek") : t("goalTemplateModal.tabMonth")}
+                      {tab === "week"
+                        ? t("goalTemplateModal.tabWeek")
+                        : tab === "month"
+                          ? t("goalTemplateModal.tabMonth")
+                          : t("goalTemplateModal.tabYear")}
                     </button>
                   ))}
                 </div>

@@ -32,23 +32,26 @@
     "title": "Mục tiêu",
     "weekLabel": "Tuần {{period}}",
     "monthLabel": "Tháng {{period}}",
+    "yearLabel": "Năm {{period}}",
     "templateTitle": "Template mục tiêu",
     "addPlaceholder": "Thêm mục tiêu...",
     "add": "Thêm",
     "empty": "Chưa có mục tiêu nào",
     "tabWeek": "Tuần",
     "tabMonth": "Tháng",
+    "tabYear": "Năm",
     "deleteAria": "Xóa"
   },
   "goalTemplateModal": {
     "title": "Template mục tiêu",
-    "subtitle": "Tự động copy vào tuần/tháng mới",
+    "subtitle": "Tự động copy vào tuần/tháng/năm mới",
     "tabWeek": "Tuần",
     "tabMonth": "Tháng",
+    "tabYear": "Năm",
     "addPlaceholder": "Thêm template...",
     "add": "Thêm",
     "empty": "Chưa có template nào",
-    "footerTip": "Ngày đầu tuần (Thứ 2) và ngày đầu tháng sẽ tự tạo mục tiêu từ template",
+    "footerTip": "Ngày đầu tuần (Thứ 2), ngày đầu tháng và ngày đầu năm sẽ tự tạo mục tiêu từ template",
     "deleteAria": "Xóa"
   },
   "reviewModal": {
@@ -82,7 +85,7 @@
     "badLabel": "Cần cải thiện"
   },
   "home": {
-    "goalsTitle": "Mục tiêu tuần / tháng",
+    "goalsTitle": "Mục tiêu tuần / tháng / năm",
     "defaultTemplateTitle": "Template mặc định",
     "defaultTemplateDesc": "{{count}} items • Tự động copy mỗi ngày mới",
     "templateDefault": "Template mặc định",

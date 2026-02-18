@@ -8,7 +8,7 @@ export interface IGoalItem {
 
 export interface IGoal {
   userId: Types.ObjectId;
-  type: "week" | "month";
+  type: "week" | "month" | "year";
   period: string;
   items: IGoalItem[];
   createdAt: Date;

@@ -4,13 +4,13 @@ import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 
 /**
- * GET /api/goals/templates?type=week|month
+ * GET /api/goals/templates?type=week|month|year
  * Returns template for type. Creates with empty items if not found.
  */
 export const getGoalTemplate = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const type = req.query.type as "week" | "month";
+    const type = req.query.type as "week" | "month" | "year";
 
     let template = await GoalTemplate.findOne({ userId, type });
 
@@ -35,7 +35,7 @@ export const addGoalTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { type, title, order } = req.body as {
-      type: "week" | "month";
+      type: "week" | "month" | "year";
       title: string;
       order?: number;
     };
@@ -77,7 +77,7 @@ export const deleteGoalTemplateItem = catchAsync(
 
     const template = await GoalTemplate.findOne({
       userId,
-      type: type as "week" | "month",
+      type: type as "week" | "month" | "year",
     });
     if (!template) {
       throw notFound(MESSAGES.GOAL_TEMPLATE.NOT_FOUND);

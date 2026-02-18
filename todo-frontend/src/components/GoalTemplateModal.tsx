@@ -7,12 +7,13 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import type { GoalTemplate } from "@/types";
 
-type GoalTemplateTab = "week" | "month" | "year";
+/** Recurring template: week/month only; items are added to day todo on Monday / 1st of month */
+type RecurringTab = "week" | "month";
 
 interface GoalTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: GoalTemplateTab;
+  initialTab?: RecurringTab;
 }
 
 export function GoalTemplateModal({
@@ -21,7 +22,7 @@ export function GoalTemplateModal({
   initialTab = "week",
 }: GoalTemplateModalProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<GoalTemplateTab>(initialTab);
+  const [activeTab, setActiveTab] = useState<RecurringTab>(initialTab);
   const [newTitle, setNewTitle] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -32,7 +33,7 @@ export function GoalTemplateModal({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ template: GoalTemplate }>(
-        API_PATHS.GOAL_TEMPLATES_QUERY(activeTab)
+        API_PATHS.GOAL_TEMPLATES_QUERY(activeTab as "week" | "month" | "year")
       );
       return res.data?.template ?? null;
     },
@@ -45,7 +46,7 @@ export function GoalTemplateModal({
   const addMutation = useMutation({
     mutationFn: (title: string) =>
       apiPost<{ template: GoalTemplate }>(API_PATHS.GOAL_TEMPLATES, {
-        type: activeTab,
+        type: activeTab as "week" | "month" | "year",
         title,
         order: items.length,
       }),
@@ -73,7 +74,7 @@ export function GoalTemplateModal({
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (isOpen && initialTab) setActiveTab(initialTab);
+    if (isOpen && initialTab) setActiveTab(initialTab as RecurringTab);
   }, [isOpen, initialTab]);
 
   const addItem = () => {
@@ -111,10 +112,10 @@ export function GoalTemplateModal({
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">
-                        {t("goalTemplateModal.title")}
+                        {t("recurringModal.title")}
                       </h2>
                       <p className="text-sm text-slate-500">
-                        {t("goalTemplateModal.subtitle")}
+                        {t("recurringModal.subtitle")}
                       </p>
                     </div>
                   </div>
@@ -130,7 +131,7 @@ export function GoalTemplateModal({
                 </div>
 
                 <div className="flex border-b border-white/[0.04]">
-                  {(["week", "month", "year"] as const).map((tab) => (
+                  {(["week", "month"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -142,10 +143,8 @@ export function GoalTemplateModal({
                       }`}
                     >
                       {tab === "week"
-                        ? t("goalTemplateModal.tabWeek")
-                        : tab === "month"
-                          ? t("goalTemplateModal.tabMonth")
-                          : t("goalTemplateModal.tabYear")}
+                        ? t("recurringModal.tabWeek")
+                        : t("recurringModal.tabMonth")}
                     </button>
                   ))}
                 </div>
@@ -161,7 +160,7 @@ export function GoalTemplateModal({
                         value={newTitle}
                         onChange={(e) => setNewTitle(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addItem()}
-                        placeholder={t("goalTemplateModal.addPlaceholder")}
+                        placeholder={t("recurringModal.addPlaceholder")}
                         className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/50 hover:border-slate-600 transition-all duration-200"
                       />
                     </div>
@@ -173,7 +172,7 @@ export function GoalTemplateModal({
                       disabled={!newTitle.trim() || addMutation.isPending}
                       className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {t("goalTemplateModal.add")}
+                      {t("recurringModal.add")}
                     </motion.button>
                   </div>
                 </div>
@@ -182,7 +181,7 @@ export function GoalTemplateModal({
                   {items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-slate-500">
                       <ListTodo className="w-10 h-10 mb-2 opacity-30" />
-                      <p>{t("goalTemplateModal.empty")}</p>
+                      <p>{t("recurringModal.empty")}</p>
                     </div>
                   ) : (
                     <ul className="space-y-2">
@@ -206,7 +205,7 @@ export function GoalTemplateModal({
                               onClick={() => deleteMutation.mutate(index)}
                               disabled={deleteMutation.isPending}
                               className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-                              aria-label={t("goalTemplateModal.deleteAria")}
+                              aria-label={t("recurringModal.deleteAria")}
                             >
                               <Trash2 className="w-4 h-4" />
                             </motion.button>
@@ -219,7 +218,7 @@ export function GoalTemplateModal({
 
                 <div className="p-4 border-t border-white/[0.06] bg-slate-900/30">
                   <p className="text-xs text-slate-500 text-center">
-                    {t("goalTemplateModal.footerTip")}
+                    {t("recurringModal.footerTip")}
                   </p>
                 </div>
               </div>

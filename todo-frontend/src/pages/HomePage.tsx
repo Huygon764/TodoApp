@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings, Target, Languages } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem } from "@/types";
@@ -10,6 +10,7 @@ import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { DefaultListModal } from "@/components/DefaultListModal";
+import { GoalTemplateModal } from "@/components/GoalTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
@@ -97,6 +98,7 @@ export function HomePage() {
   const { t, i18n } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(todayString);
   const [isDefaultModalOpen, setIsDefaultModalOpen] = useState(false);
+  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isReviewHistoryModalOpen, setIsReviewHistoryModalOpen] = useState(false);
@@ -255,6 +257,38 @@ export function HomePage() {
             </div>
           </motion.button>
         </motion.section>
+
+        {/* Recurring template (week start / month start → day todo) */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setIsRecurringModalOpen(true)}
+            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-amber-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                  <CalendarRange className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-slate-200">{t("home.recurringTemplateTitle")}</p>
+                  <p className="text-sm text-slate-500">{t("home.recurringTemplateDesc")}</p>
+                </div>
+              </div>
+              <div className="text-slate-500 group-hover:text-amber-400 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </motion.button>
+        </motion.section>
       </main>
 
       {/* Default List Modal */}
@@ -264,6 +298,13 @@ export function HomePage() {
         items={defaultItems}
         onAddItem={(title) => addDefaultMutation.mutate(title)}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
+      />
+
+      {/* Recurring template modal (adds to day todo on Monday / 1st of month) */}
+      <GoalTemplateModal
+        isOpen={isRecurringModalOpen}
+        onClose={() => setIsRecurringModalOpen(false)}
+        initialTab="week"
       />
 
       {/* Goal Modal */}

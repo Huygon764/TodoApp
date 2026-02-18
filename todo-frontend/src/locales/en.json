@@ -54,6 +54,17 @@
     "footerTip": "On the first day of the week (Monday), first day of the month, and first day of the year, goals will be created from this template",
     "deleteAria": "Delete"
   },
+  "recurringModal": {
+    "title": "Recurring template",
+    "subtitle": "Added to the day's todo list on week start or month start",
+    "tabWeek": "Week start (Monday)",
+    "tabMonth": "Month start (1st)",
+    "addPlaceholder": "Add item...",
+    "add": "Add",
+    "empty": "No items yet",
+    "footerTip": "Items are automatically added to the day's todo list on Mondays and on the first day of each month when you open that day. Not related to goals.",
+    "deleteAria": "Delete"
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Week {{period}}",
@@ -89,6 +100,8 @@
     "defaultTemplateTitle": "Default template",
     "defaultTemplateDesc": "{{count}} items • Auto-copy each new day",
     "templateDefault": "Default template",
+    "recurringTemplateTitle": "Recurring template",
+    "recurringTemplateDesc": "Added to day todo on Monday and 1st of month",
     "logout": "Log out"
   },
   "common": {

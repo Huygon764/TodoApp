@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, Target, Settings, ChevronLeft, ChevronRight } from "lucide-react";
-import { GoalTemplateModal } from "./GoalTemplateModal";
+import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import {
@@ -53,7 +52,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -133,13 +131,12 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   useEffect(() => {
     if (!isOpen) return;
     const handlePointerDown = (e: PointerEvent) => {
-      if (isTemplateModalOpen) return;
       if (contentRef.current?.contains(e.target as Node)) return;
       onClose();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose, isTemplateModalOpen]);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -313,16 +310,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       type="button"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => setIsTemplateModalOpen(true)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
-                      title={t("goalModal.templateTitle")}
-                    >
-                      <Settings className="w-5 h-5" />
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
                       onClick={onClose}
                       className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
                     >
@@ -480,12 +467,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               </div>
             </div>
           </motion.div>
-
-          <GoalTemplateModal
-            isOpen={isTemplateModalOpen}
-            onClose={() => setIsTemplateModalOpen(false)}
-            initialTab={activeTab}
-          />
         </>
       )}
     </AnimatePresence>

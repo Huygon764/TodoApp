@@ -1,58 +1,26 @@
 import type { Request, Response } from "express";
-import { Goal, GoalTemplate } from "../models/index.js";
+import { Goal } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
-import {
-  getWeekPeriod,
-  getMonthPeriod,
-  getYearPeriod,
-  isFirstDayOfWeek,
-  isFirstDayOfMonth,
-  isFirstDayOfYear,
-} from "../utils/datePeriod.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IGoalItem } from "../types/index.js";
 
 /**
  * GET /api/goals?type=week|month|year&period=...
- * Returns one goal doc. Creates from template if first day of week/month/year, else empty.
+ * Returns one goal doc. Creates with empty items if not found (user adds items manually).
  */
 export const getGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const type = req.query.type as "week" | "month" | "year";
   const period = req.query.period as string;
-  const now = new Date();
 
   let goal = await Goal.findOne({ userId, type, period });
 
   if (!goal) {
-    let items: IGoalItem[] = [];
-    const shouldUseTemplate =
-      (type === "week" &&
-        period === getWeekPeriod(now) &&
-        isFirstDayOfWeek(now)) ||
-      (type === "month" &&
-        period === getMonthPeriod(now) &&
-        isFirstDayOfMonth(now)) ||
-      (type === "year" &&
-        period === getYearPeriod(now) &&
-        isFirstDayOfYear(now));
-
-    if (shouldUseTemplate) {
-      const template = await GoalTemplate.findOne({ userId, type });
-      if (template?.items?.length) {
-        items = template.items.map((t, i) => ({
-          title: t.title,
-          completed: false,
-          order: i,
-        }));
-      }
-    }
-
     goal = await Goal.create({
       userId,
       type,
       period,
-      items,
+      items: [],
     });
   }
 

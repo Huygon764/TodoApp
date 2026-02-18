@@ -54,6 +54,17 @@
     "footerTip": "Ngày đầu tuần (Thứ 2), ngày đầu tháng và ngày đầu năm sẽ tự tạo mục tiêu từ template",
     "deleteAria": "Xóa"
   },
+  "recurringModal": {
+    "title": "Template định kỳ",
+    "subtitle": "Tự thêm vào todo của ngày khi đầu tuần hoặc đầu tháng",
+    "tabWeek": "Đầu tuần (Thứ 2)",
+    "tabMonth": "Đầu tháng (ngày 1)",
+    "addPlaceholder": "Thêm item...",
+    "add": "Thêm",
+    "empty": "Chưa có item nào",
+    "footerTip": "Các item được tự động thêm vào todo của ngày vào Thứ Hai và ngày 1 mỗi tháng khi bạn mở ngày đó. Không liên quan mục tiêu.",
+    "deleteAria": "Xóa"
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Tuần {{period}}",
@@ -89,6 +100,8 @@
     "defaultTemplateTitle": "Template mặc định",
     "defaultTemplateDesc": "{{count}} items • Tự động copy mỗi ngày mới",
     "templateDefault": "Template mặc định",
+    "recurringTemplateTitle": "Template định kỳ",
+    "recurringTemplateDesc": "Tự thêm vào todo ngày Thứ 2 và ngày 1 mỗi tháng",
     "logout": "Đăng xuất"
   },
   "common": {

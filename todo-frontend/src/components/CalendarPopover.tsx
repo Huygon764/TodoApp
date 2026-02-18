@@ -89,7 +89,10 @@ export function CalendarPopover({
 
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
-    onSelectDate(date.toISOString().slice(0, 10));
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    onSelectDate(`${y}-${m}-${d}`);
     onClose();
   };
 

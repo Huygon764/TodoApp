@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem } from "@/types";
@@ -9,6 +10,9 @@ import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { DefaultListModal } from "@/components/DefaultListModal";
+import { GoalModal } from "@/components/GoalModal";
+import { ReviewModal } from "@/components/ReviewModal";
+import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
 
 function todayString(): string {
   const d = new Date();
@@ -74,22 +78,36 @@ const AnimatedBackground = () => {
 };
 
 // App Logo Component
-const AppLogo = () => (
-  <div className="flex items-center gap-3">
-    <div className="relative w-9 h-9">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl rotate-3 opacity-50 blur-[2px]" />
-      <div className="relative w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-        <CheckCircle2 className="w-5 h-5 text-white" />
+const AppLogo = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative w-9 h-9">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl rotate-3 opacity-50 blur-[2px]" />
+        <div className="relative w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <CheckCircle2 className="w-5 h-5 text-white" />
+        </div>
       </div>
+      <span className="text-xl font-bold text-white">{t("appName")}</span>
     </div>
-    <span className="text-xl font-bold text-white">Todo App</span>
-  </div>
-);
+  );
+};
 
 export function HomePage() {
+  const { t, i18n } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(todayString);
   const [isDefaultModalOpen, setIsDefaultModalOpen] = useState(false);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isReviewHistoryModalOpen, setIsReviewHistoryModalOpen] = useState(false);
+  const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const queryClient = useQueryClient();
+
+  const toggleLang = () => {
+    const next = i18n.language === "vi" ? "en" : "vi";
+    i18n.changeLanguage(next);
+    if (typeof localStorage !== "undefined") localStorage.setItem("lang", next);
+  };
 
   const { data: dayData, isLoading: dayLoading } = useQuery({
     queryKey: ["day", selectedDate],
@@ -146,11 +164,30 @@ export function HomePage() {
           <AppLogo />
           <div className="flex items-center gap-2">
             <motion.button
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleLang}
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-slate-200 transition-all duration-200"
+              title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
+            >
+              <Languages className="w-5 h-5" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsGoalModalOpen(true)}
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-violet-400 hover:border-violet-500/30 transition-all duration-200"
+              title={t("home.goalsTitle")}
+            >
+              <Target className="w-5 h-5" />
+            </motion.button>
+            <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsDefaultModalOpen(true)}
               className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200"
-              title="Quản lý template mặc định"
+              title={t("home.defaultTemplateTitle")}
             >
               <Settings className="w-5 h-5" />
             </motion.button>
@@ -184,6 +221,7 @@ export function HomePage() {
             dayTodo={dayTodo}
             isLoading={dayLoading}
             onUpdateItems={(items) => patchDayMutation.mutate(items)}
+            onOpenReview={() => setIsReviewModalOpen(true)}
           />
         </motion.section>
 
@@ -205,8 +243,8 @@ export function HomePage() {
                   <ListTodo className="w-5 h-5" />
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-slate-200">Template mặc định</p>
-                  <p className="text-sm text-slate-500">{defaultItems.length} items • Tự động copy mỗi ngày mới</p>
+                  <p className="font-medium text-slate-200">{t("home.templateDefault")}</p>
+                  <p className="text-sm text-slate-500">{t("home.defaultTemplateDesc", { count: defaultItems.length })}</p>
                 </div>
               </div>
               <div className="text-slate-500 group-hover:text-emerald-400 transition-colors">
@@ -226,6 +264,39 @@ export function HomePage() {
         items={defaultItems}
         onAddItem={(title) => addDefaultMutation.mutate(title)}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
+      />
+
+      {/* Goal Modal */}
+      <GoalModal
+        isOpen={isGoalModalOpen}
+        onClose={() => setIsGoalModalOpen(false)}
+      />
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setReviewModalSlot(null);
+        }}
+        type={reviewModalSlot?.type}
+        period={reviewModalSlot?.period}
+        onOpenHistory={() => {
+          setIsReviewModalOpen(false);
+          setReviewModalSlot(null);
+          setIsReviewHistoryModalOpen(true);
+        }}
+      />
+
+      {/* Review History Modal */}
+      <ReviewHistoryModal
+        isOpen={isReviewHistoryModalOpen}
+        onClose={() => setIsReviewHistoryModalOpen(false)}
+        onOpenSlot={(type, period) => {
+          setReviewModalSlot({ type, period });
+          setIsReviewHistoryModalOpen(false);
+          setIsReviewModalOpen(true);
+        }}
       />
     </div>
   );

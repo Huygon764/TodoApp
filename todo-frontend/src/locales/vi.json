@@ -1,0 +1,93 @@
+{
+  "appName": "Todo App",
+  "dayTodo": {
+    "title": "Công việc hôm nay",
+    "completedCount": "{{done}}/{{total}} hoàn thành",
+    "addPlaceholder": "Thêm công việc mới...",
+    "add": "Thêm",
+    "emptyTitle": "Chưa có công việc nào",
+    "emptySub": "Thêm công việc mới để bắt đầu",
+    "deleteAria": "Xóa",
+    "reviewMyself": "Review myself",
+    "view": "Xem"
+  },
+  "defaultModal": {
+    "title": "Template mặc định",
+    "subtitle": "Tự động copy sang mỗi ngày mới",
+    "addPlaceholder": "Thêm template mới...",
+    "add": "Thêm",
+    "empty": "Chưa có template nào",
+    "footerTip": "Các template sẽ được tự động thêm vào danh sách công việc mỗi ngày mới",
+    "deleteAria": "Xóa"
+  },
+  "dateNav": {
+    "prevAria": "Ngày trước",
+    "nextAria": "Ngày sau",
+    "chooseDateAria": "Chọn ngày",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "tomorrow": "Ngày mai"
+  },
+  "goalModal": {
+    "title": "Mục tiêu",
+    "weekLabel": "Tuần {{period}}",
+    "monthLabel": "Tháng {{period}}",
+    "templateTitle": "Template mục tiêu",
+    "addPlaceholder": "Thêm mục tiêu...",
+    "add": "Thêm",
+    "empty": "Chưa có mục tiêu nào",
+    "tabWeek": "Tuần",
+    "tabMonth": "Tháng",
+    "deleteAria": "Xóa"
+  },
+  "goalTemplateModal": {
+    "title": "Template mục tiêu",
+    "subtitle": "Tự động copy vào tuần/tháng mới",
+    "tabWeek": "Tuần",
+    "tabMonth": "Tháng",
+    "addPlaceholder": "Thêm template...",
+    "add": "Thêm",
+    "empty": "Chưa có template nào",
+    "footerTip": "Ngày đầu tuần (Thứ 2) và ngày đầu tháng sẽ tự tạo mục tiêu từ template",
+    "deleteAria": "Xóa"
+  },
+  "reviewModal": {
+    "title": "Review myself",
+    "weekLabel": "Tuần {{period}}",
+    "monthLabel": "Tháng {{period}}",
+    "saved": "Đã lưu",
+    "historyTitle": "Lịch sử review",
+    "goodLabel": "Điều tốt",
+    "goodPlaceholder": "Thêm điểm tốt...",
+    "addRow": "Thêm dòng",
+    "badLabel": "Điều cần cải thiện",
+    "badPlaceholder": "Thêm điểm cần cải thiện...",
+    "notesLabel": "Ghi chú / Nhật ký",
+    "notesPlaceholder": "Ghi chú thêm...",
+    "save": "Lưu",
+    "saving": "Đang lưu..."
+  },
+  "reviewHistory": {
+    "title": "Lịch sử review",
+    "subtitle": "Xem theo tháng",
+    "filterMonth": "Tháng",
+    "empty": "Chưa có review nào trong tháng này",
+    "noEntry": "Chưa có",
+    "selectToAnalyze": "Chọn review để phân tích AI",
+    "analyzeBtn": "Phân tích AI",
+    "analyzing": "Đang phân tích...",
+    "aiResponse": "Phản hồi AI",
+    "weekLabel": "Tuần {{period}}",
+    "goodLabel": "Tốt",
+    "badLabel": "Cần cải thiện"
+  },
+  "home": {
+    "goalsTitle": "Mục tiêu tuần / tháng",
+    "defaultTemplateTitle": "Template mặc định",
+    "defaultTemplateDesc": "{{count}} items • Tự động copy mỗi ngày mới",
+    "templateDefault": "Template mặc định"
+  },
+  "common": {
+    "deleteAria": "Xóa"
+  }
+}

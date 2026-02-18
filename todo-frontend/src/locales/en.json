@@ -1,0 +1,93 @@
+{
+  "appName": "Todo App",
+  "dayTodo": {
+    "title": "Today's tasks",
+    "completedCount": "{{done}}/{{total}} done",
+    "addPlaceholder": "Add a new task...",
+    "add": "Add",
+    "emptyTitle": "No tasks yet",
+    "emptySub": "Add a task to get started",
+    "deleteAria": "Delete",
+    "reviewMyself": "Review myself",
+    "view": "View"
+  },
+  "defaultModal": {
+    "title": "Default template",
+    "subtitle": "Auto-copied to each new day",
+    "addPlaceholder": "Add new template...",
+    "add": "Add",
+    "empty": "No templates yet",
+    "footerTip": "Templates are automatically added to your task list each new day",
+    "deleteAria": "Delete"
+  },
+  "dateNav": {
+    "prevAria": "Previous day",
+    "nextAria": "Next day",
+    "chooseDateAria": "Choose date",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow"
+  },
+  "goalModal": {
+    "title": "Goals",
+    "weekLabel": "Week {{period}}",
+    "monthLabel": "Month {{period}}",
+    "templateTitle": "Goal template",
+    "addPlaceholder": "Add goal...",
+    "add": "Add",
+    "empty": "No goals yet",
+    "tabWeek": "Week",
+    "tabMonth": "Month",
+    "deleteAria": "Delete"
+  },
+  "goalTemplateModal": {
+    "title": "Goal template",
+    "subtitle": "Auto-copy to new week/month",
+    "tabWeek": "Week",
+    "tabMonth": "Month",
+    "addPlaceholder": "Add template...",
+    "add": "Add",
+    "empty": "No templates yet",
+    "footerTip": "On the first day of the week (Monday) and first day of the month, goals will be created from this template",
+    "deleteAria": "Delete"
+  },
+  "reviewModal": {
+    "title": "Review myself",
+    "weekLabel": "Week {{period}}",
+    "monthLabel": "Month {{period}}",
+    "saved": "Saved",
+    "historyTitle": "Review history",
+    "goodLabel": "Good things",
+    "goodPlaceholder": "Add a good point...",
+    "addRow": "Add row",
+    "badLabel": "Things to improve",
+    "badPlaceholder": "Add something to improve...",
+    "notesLabel": "Notes / Diary",
+    "notesPlaceholder": "Additional notes...",
+    "save": "Save",
+    "saving": "Saving..."
+  },
+  "reviewHistory": {
+    "title": "Review history",
+    "subtitle": "View by month",
+    "filterMonth": "Month",
+    "empty": "No reviews this month",
+    "noEntry": "No entry",
+    "selectToAnalyze": "Select reviews to analyze with AI",
+    "analyzeBtn": "Analyze with AI",
+    "analyzing": "Analyzing...",
+    "aiResponse": "AI feedback",
+    "weekLabel": "Week {{period}}",
+    "goodLabel": "Good",
+    "badLabel": "To improve"
+  },
+  "home": {
+    "goalsTitle": "Week / month goals",
+    "defaultTemplateTitle": "Default template",
+    "defaultTemplateDesc": "{{count}} items • Auto-copy each new day",
+    "templateDefault": "Default template"
+  },
+  "common": {
+    "deleteAria": "Delete"
+  }
+}

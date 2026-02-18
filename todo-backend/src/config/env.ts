@@ -13,6 +13,7 @@ interface Env {
   telegramBotToken: string | null;
   telegramChatId: string | null;
   telegramWebhookDomain: string | null;
+  geminiApiKey: string | null;
 }
 
 function requireEnv(key: string): string {
@@ -38,4 +39,5 @@ export const env: Env = {
   telegramBotToken: optionalEnv("TELEGRAM_BOT_TOKEN"),
   telegramChatId: optionalEnv("TELEGRAM_CHAT_ID"),
   telegramWebhookDomain: optionalEnv("TELEGRAM_WEBHOOK_DOMAIN"),
+  geminiApiKey: optionalEnv("GEMINI_API_KEY"),
 };

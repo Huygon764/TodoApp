@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
@@ -12,7 +13,10 @@ function addDays(dateStr: string, delta: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function formatDisplayDate(dateStr: string): string {
+function formatDisplayDate(
+  dateStr: string,
+  t: (key: string) => string
+): string {
   const d = new Date(dateStr + "T12:00:00");
   const today = new Date();
   const yesterday = new Date(today);
@@ -24,9 +28,9 @@ function formatDisplayDate(dateStr: string): string {
   const isYesterday = d.toDateString() === yesterday.toDateString();
   const isTomorrow = d.toDateString() === tomorrow.toDateString();
 
-  if (isToday) return "Hôm nay";
-  if (isYesterday) return "Hôm qua";
-  if (isTomorrow) return "Ngày mai";
+  if (isToday) return t("dateNav.today");
+  if (isYesterday) return t("dateNav.yesterday");
+  if (isTomorrow) return t("dateNav.tomorrow");
 
   return d.toLocaleDateString("vi-VN", {
     weekday: "long",
@@ -36,6 +40,7 @@ function formatDisplayDate(dateStr: string): string {
 }
 
 export function DateNav({ date, onDateChange }: DateNavProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative">
       {/* Card glow */}
@@ -48,14 +53,14 @@ export function DateNav({ date, onDateChange }: DateNavProps) {
           whileTap={{ scale: 0.95 }}
           className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all duration-200"
           onClick={() => onDateChange(addDays(date, -1))}
-          aria-label="Ngày trước"
+          aria-label={t("dateNav.prevAria")}
         >
           <ChevronLeft className="w-5 h-5" />
         </motion.button>
 
         <div className="flex-1 flex justify-center">
           <label className="relative block w-full max-w-[240px] group cursor-pointer">
-            <span className="sr-only">Chọn ngày</span>
+            <span className="sr-only">{t("dateNav.chooseDateAria")}</span>
             
             {/* Hidden input - chỉ dùng để trigger date picker */}
             <input
@@ -68,7 +73,7 @@ export function DateNav({ date, onDateChange }: DateNavProps) {
             {/* Custom display */}
             <div className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] group-hover:border-slate-600 transition-all duration-200">
               <Calendar className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition-colors" />
-              <span className="text-slate-200 font-medium">{formatDisplayDate(date)}</span>
+              <span className="text-slate-200 font-medium">{formatDisplayDate(date, t)}</span>
             </div>
           </label>
         </div>
@@ -79,7 +84,7 @@ export function DateNav({ date, onDateChange }: DateNavProps) {
           whileTap={{ scale: 0.95 }}
           className="p-3 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all duration-200"
           onClick={() => onDateChange(addDays(date, 1))}
-          aria-label="Ngày sau"
+          aria-label={t("dateNav.nextAria")}
         >
           <ChevronRight className="w-5 h-5" />
         </motion.button>

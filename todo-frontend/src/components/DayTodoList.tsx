@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Trash2, Check, Circle, TrendingUp } from "lucide-react";
+import { Plus, Trash2, Check, Circle, TrendingUp, FileText } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 
 // Extend DayTodoItem với unique ID
@@ -28,13 +29,16 @@ interface DayTodoListProps {
   dayTodo: DayTodo | null;
   isLoading: boolean;
   onUpdateItems: (items: DayTodoItem[]) => void;
+  onOpenReview?: () => void;
 }
 
 export function DayTodoList({
   dayTodo,
   isLoading,
   onUpdateItems,
+  onOpenReview,
 }: DayTodoListProps) {
+  const { t } = useTranslation();
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
@@ -149,10 +153,10 @@ export function DayTodoList({
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">
-                  Công việc hôm nay
+                  {t("dayTodo.title")}
                 </h2>
                 <p className="text-sm text-slate-500">
-                  {completedCount}/{totalCount} hoàn thành
+                  {t("dayTodo.completedCount", { done: completedCount, total: totalCount })}
                 </p>
               </div>
             </div>
@@ -196,7 +200,7 @@ export function DayTodoList({
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder="Thêm công việc mới..."
+                placeholder={t("dayTodo.addPlaceholder")}
                 className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 
                   focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 
                   hover:border-slate-600 transition-all duration-200"
@@ -212,7 +216,7 @@ export function DayTodoList({
                 text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-emerald-500 disabled:hover:to-teal-500"
             >
-              Thêm
+              {t("dayTodo.add")}
             </motion.button>
           </div>
         </div>
@@ -222,8 +226,8 @@ export function DayTodoList({
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-500">
               <Circle className="w-12 h-12 mb-3 opacity-30" />
-              <p>Chưa có công việc nào</p>
-              <p className="text-sm">Thêm công việc mới để bắt đầu</p>
+              <p>{t("dayTodo.emptyTitle")}</p>
+              <p className="text-sm">{t("dayTodo.emptySub")}</p>
             </div>
           ) : (
             <Reorder.Group 
@@ -313,15 +317,14 @@ export function DayTodoList({
                         {item.title}
                       </motion.span>
                       
-                      {/* Delete Button */}
+                      {/* Delete Button - always visible */}
                       <motion.button
                         type="button"
-                        initial={{ opacity: 0, scale: 0.8 }}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDelete(item.id)}
-                        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                        aria-label="Xóa"
+                        className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                        aria-label={t("dayTodo.deleteAria")}
                       >
                         <Trash2 className="w-4 h-4" />
                       </motion.button>
@@ -330,6 +333,27 @@ export function DayTodoList({
                 ))}
               </AnimatePresence>
             </Reorder.Group>
+          )}
+
+          {/* Review myself - fixed row */}
+          {onOpenReview && (
+            <motion.button
+              type="button"
+              onClick={onOpenReview}
+              className="mt-3 w-full flex items-center gap-4 p-4 rounded-xl border border-white/[0.04] bg-slate-700/20 hover:bg-slate-700/40 hover:border-emerald-500/30 transition-all duration-200 text-left group"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex-shrink-0 w-7 h-7 rounded-lg border-2 border-slate-500 flex items-center justify-center group-hover:border-emerald-400 group-hover:bg-emerald-500/10 transition-colors">
+                <FileText className="w-4 h-4 text-slate-400 group-hover:text-emerald-400" />
+              </div>
+              <span className="flex-1 text-slate-200 font-medium">
+                {t("dayTodo.reviewMyself")}
+              </span>
+              <span className="text-slate-500 text-sm group-hover:text-emerald-400 transition-colors">
+                {t("dayTodo.view")}
+              </span>
+            </motion.button>
           )}
         </div>
       </div>

@@ -31,3 +31,45 @@ export interface DefaultItem {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface GoalItem {
+  title: string;
+  completed: boolean;
+  order: number;
+}
+
+export interface Goal {
+  _id: string;
+  userId: string;
+  type: "week" | "month";
+  period: string;
+  items: GoalItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoalTemplateItem {
+  title: string;
+  order: number;
+}
+
+export interface GoalTemplate {
+  _id: string;
+  userId: string;
+  type: "week" | "month";
+  items: GoalTemplateItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Review {
+  _id: string;
+  userId: string;
+  type: "week" | "month";
+  period: string;
+  goodThings: string[];
+  badThings: string[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}

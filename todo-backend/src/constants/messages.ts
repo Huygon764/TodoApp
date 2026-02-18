@@ -28,4 +28,16 @@ export const MESSAGES = {
   DEFAULT: {
     NOT_FOUND: "Không tìm thấy item",
   },
+
+  GOAL: {
+    NOT_FOUND: "Không tìm thấy goal",
+  },
+
+  GOAL_TEMPLATE: {
+    NOT_FOUND: "Không tìm thấy template",
+  },
+
+  REVIEW: {
+    NOT_FOUND: "Không tìm thấy review",
+  },
 } as const;

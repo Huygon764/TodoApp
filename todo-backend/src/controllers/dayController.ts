@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { DayTodo, DefaultItem, GoalTemplate } from "../models/index.js";
+import { DayTodo, DefaultItem, RecurringTemplate } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IDayTodoItem } from "../types/index.js";
@@ -59,7 +59,7 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       order: i,
     }));
     if (isMonday) {
-      const weekTemplate = await GoalTemplate.findOne({
+      const weekTemplate = await RecurringTemplate.findOne({
         userId,
         type: "week",
       });
@@ -68,7 +68,7 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       }
     }
     if (isFirstOfMonth) {
-      const monthTemplate = await GoalTemplate.findOne({
+      const monthTemplate = await RecurringTemplate.findOne({
         userId,
         type: "month",
       });
@@ -98,7 +98,7 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
 
     // List 2: merge recurring template on Monday (week) or 1st of month (month)
     if (isMonday) {
-      const weekTemplate = await GoalTemplate.findOne({
+      const weekTemplate = await RecurringTemplate.findOne({
         userId,
         type: "week",
       });
@@ -113,7 +113,7 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       }
     }
     if (isFirstOfMonth) {
-      const monthTemplate = await GoalTemplate.findOne({
+      const monthTemplate = await RecurringTemplate.findOne({
         userId,
         type: "month",
       });

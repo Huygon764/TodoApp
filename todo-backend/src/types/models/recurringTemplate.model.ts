@@ -1,18 +1,18 @@
 import type { Document, Types } from "mongoose";
 
-export interface IGoalTemplateItem {
+export interface IRecurringTemplateItem {
   title: string;
   order: number;
 }
 
-export interface IGoalTemplate {
+export interface IRecurringTemplate {
   userId: Types.ObjectId;
   type: "week" | "month" | "year";
-  items: IGoalTemplateItem[];
+  items: IRecurringTemplateItem[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IGoalTemplateDocument extends IGoalTemplate, Document {
+export interface IRecurringTemplateDocument extends IRecurringTemplate, Document {
   _id: Types.ObjectId;
 }

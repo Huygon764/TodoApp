@@ -5,35 +5,35 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
-import type { GoalTemplate } from "@/types";
+import type { RecurringTemplate } from "@/types";
 
 /** Recurring template: week/month only; items are added to day todo on Monday / 1st of month */
 type RecurringTab = "week" | "month";
 
-interface GoalTemplateModalProps {
+interface RecurringTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: RecurringTab;
 }
 
-export function GoalTemplateModal({
+export function RecurringTemplateModal({
   isOpen,
   onClose,
   initialTab = "week",
-}: GoalTemplateModalProps) {
+}: RecurringTemplateModalProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<RecurringTab>(initialTab);
   const [newTitle, setNewTitle] = useState("");
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  const queryKey = ["goalTemplate", activeTab];
+  const queryKey = ["recurringTemplate", activeTab];
 
   const { data } = useQuery({
     queryKey,
     queryFn: async () => {
-      const res = await apiGet<{ template: GoalTemplate }>(
-        API_PATHS.GOAL_TEMPLATES_QUERY(activeTab as "week" | "month" | "year")
+      const res = await apiGet<{ template: RecurringTemplate }>(
+        API_PATHS.RECURRING_TEMPLATES_QUERY(activeTab as "week" | "month" | "year")
       );
       return res.data?.template ?? null;
     },
@@ -45,7 +45,7 @@ export function GoalTemplateModal({
 
   const addMutation = useMutation({
     mutationFn: (title: string) =>
-      apiPost<{ template: GoalTemplate }>(API_PATHS.GOAL_TEMPLATES, {
+      apiPost<{ template: RecurringTemplate }>(API_PATHS.RECURRING_TEMPLATES, {
         type: activeTab as "week" | "month" | "year",
         title,
         order: items.length,
@@ -57,7 +57,7 @@ export function GoalTemplateModal({
 
   const deleteMutation = useMutation({
     mutationFn: (idx: number) =>
-      apiDelete(API_PATHS.GOAL_TEMPLATE_ITEM(activeTab, idx)),
+      apiDelete(API_PATHS.RECURRING_TEMPLATE_ITEM(activeTab, idx)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
     },
@@ -78,9 +78,9 @@ export function GoalTemplateModal({
   }, [isOpen, initialTab]);
 
   const addItem = () => {
-    const t = newTitle.trim();
-    if (!t) return;
-    addMutation.mutate(t);
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    addMutation.mutate(trimmed);
     setNewTitle("");
   };
 

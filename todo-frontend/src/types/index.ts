@@ -48,16 +48,16 @@ export interface Goal {
   updatedAt: string;
 }
 
-export interface GoalTemplateItem {
+export interface RecurringTemplateItem {
   title: string;
   order: number;
 }
 
-export interface GoalTemplate {
+export interface RecurringTemplate {
   _id: string;
   userId: string;
   type: "week" | "month" | "year";
-  items: GoalTemplateItem[];
+  items: RecurringTemplateItem[];
   createdAt: string;
   updatedAt: string;
 }

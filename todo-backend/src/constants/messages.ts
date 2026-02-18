@@ -33,7 +33,7 @@ export const MESSAGES = {
     NOT_FOUND: "Không tìm thấy goal",
   },
 
-  GOAL_TEMPLATE: {
+  RECURRING_TEMPLATE: {
     NOT_FOUND: "Không tìm thấy template",
   },
 

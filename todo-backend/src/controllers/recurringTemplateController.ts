@@ -1,21 +1,21 @@
 import type { Request, Response } from "express";
-import { GoalTemplate } from "../models/index.js";
+import { RecurringTemplate } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 
 /**
- * GET /api/goals/templates?type=week|month|year
+ * GET /api/recurring-templates?type=week|month|year
  * Returns template for type. Creates with empty items if not found.
  */
-export const getGoalTemplate = catchAsync(
+export const getRecurringTemplate = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const type = req.query.type as "week" | "month" | "year";
 
-    let template = await GoalTemplate.findOne({ userId, type });
+    let template = await RecurringTemplate.findOne({ userId, type });
 
     if (!template) {
-      template = await GoalTemplate.create({
+      template = await RecurringTemplate.create({
         userId,
         type,
         items: [],
@@ -27,11 +27,11 @@ export const getGoalTemplate = catchAsync(
 );
 
 /**
- * POST /api/goals/templates
+ * POST /api/recurring-templates
  * Body: { type, title, order? }
  * Adds one item to the template.
  */
-export const addGoalTemplateItem = catchAsync(
+export const addRecurringTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { type, title, order } = req.body as {
@@ -40,10 +40,10 @@ export const addGoalTemplateItem = catchAsync(
       order?: number;
     };
 
-    let template = await GoalTemplate.findOne({ userId, type });
+    let template = await RecurringTemplate.findOne({ userId, type });
 
     if (!template) {
-      template = await GoalTemplate.create({
+      template = await RecurringTemplate.create({
         userId,
         type,
         items: [],
@@ -67,24 +67,24 @@ export const addGoalTemplateItem = catchAsync(
 );
 
 /**
- * DELETE /api/goals/templates/:type/items/:idx
+ * DELETE /api/recurring-templates/:type/items/:idx
  */
-export const deleteGoalTemplateItem = catchAsync(
+export const deleteRecurringTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { type, idx } = req.params;
     const index = parseInt(idx!, 10);
 
-    const template = await GoalTemplate.findOne({
+    const template = await RecurringTemplate.findOne({
       userId,
       type: type as "week" | "month" | "year",
     });
     if (!template) {
-      throw notFound(MESSAGES.GOAL_TEMPLATE.NOT_FOUND);
+      throw notFound(MESSAGES.RECURRING_TEMPLATE.NOT_FOUND);
     }
 
     if (index < 0 || index >= template.items.length) {
-      throw notFound(MESSAGES.GOAL_TEMPLATE.NOT_FOUND);
+      throw notFound(MESSAGES.RECURRING_TEMPLATE.NOT_FOUND);
     }
 
     template.items.splice(index, 1);

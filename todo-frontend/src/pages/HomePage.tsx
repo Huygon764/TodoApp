@@ -10,7 +10,7 @@ import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { DefaultListModal } from "@/components/DefaultListModal";
-import { GoalTemplateModal } from "@/components/GoalTemplateModal";
+import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
@@ -313,7 +313,7 @@ export function HomePage() {
       />
 
       {/* Recurring template modal (adds to day todo on Monday / 1st of month) */}
-      <GoalTemplateModal
+      <RecurringTemplateModal
         isOpen={isRecurringModalOpen}
         onClose={() => setIsRecurringModalOpen(false)}
         initialTab="week"

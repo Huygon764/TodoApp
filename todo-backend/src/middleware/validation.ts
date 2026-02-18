@@ -121,13 +121,13 @@ export const validateGoalItemIndexParam = [
     .withMessage("idx must be a non-negative integer"),
 ];
 
-export const validateGetGoalTemplatesQuery = [
+export const validateGetRecurringTemplatesQuery = [
   query("type")
     .isIn(["week", "month", "year"])
     .withMessage("type must be week, month or year"),
 ];
 
-export const validatePostGoalTemplateBody = [
+export const validatePostRecurringTemplateBody = [
   body("type")
     .isIn(["week", "month", "year"])
     .withMessage("type must be week, month or year"),
@@ -140,7 +140,7 @@ export const validatePostGoalTemplateBody = [
   body("order").optional().isInt({ min: 0 }),
 ];
 
-export const validateGoalTemplateTypeParam = [
+export const validateRecurringTemplateTypeParam = [
   param("type")
     .isIn(["week", "month", "year"])
     .withMessage("type must be week, month or year"),

@@ -10,11 +10,11 @@ export const API_PATHS = {
     `/api/goals?type=${type}&period=${encodeURIComponent(period)}`,
   GOAL: (id: string) => `/api/goals/${id}`,
   GOAL_ITEM: (id: string, idx: number) => `/api/goals/${id}/items/${idx}`,
-  GOAL_TEMPLATES: "/api/goals/templates",
-  GOAL_TEMPLATES_QUERY: (type: "week" | "month" | "year") =>
-    `/api/goals/templates?type=${type}`,
-  GOAL_TEMPLATE_ITEM: (type: "week" | "month" | "year", idx: number) =>
-    `/api/goals/templates/${type}/items/${idx}`,
+  RECURRING_TEMPLATES: "/api/recurring-templates",
+  RECURRING_TEMPLATES_QUERY: (type: "week" | "month" | "year") =>
+    `/api/recurring-templates?type=${type}`,
+  RECURRING_TEMPLATE_ITEM: (type: "week" | "month" | "year", idx: number) =>
+    `/api/recurring-templates/${type}/items/${idx}`,
   REVIEWS: "/api/reviews",
   REVIEWS_QUERY: (params: {
     type?: "week" | "month";

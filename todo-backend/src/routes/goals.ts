@@ -14,12 +14,10 @@ import {
   patchGoal,
   deleteGoalItem,
 } from "../controllers/goalController.js";
-import goalTemplatesRouter from "./goalTemplates.js";
 
 const router = Router();
 
 router.use(authenticate);
-router.use("/templates", goalTemplatesRouter);
 
 router.get(
   "/",

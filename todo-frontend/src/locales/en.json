@@ -85,7 +85,8 @@
     "goalsTitle": "Week / month goals",
     "defaultTemplateTitle": "Default template",
     "defaultTemplateDesc": "{{count}} items • Auto-copy each new day",
-    "templateDefault": "Default template"
+    "templateDefault": "Default template",
+    "logout": "Log out"
   },
   "common": {
     "deleteAria": "Delete"

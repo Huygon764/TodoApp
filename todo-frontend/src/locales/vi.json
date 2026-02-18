@@ -85,7 +85,8 @@
     "goalsTitle": "Mục tiêu tuần / tháng",
     "defaultTemplateTitle": "Template mặc định",
     "defaultTemplateDesc": "{{count}} items • Tự động copy mỗi ngày mới",
-    "templateDefault": "Template mặc định"
+    "templateDefault": "Template mặc định",
+    "logout": "Đăng xuất"
   },
   "common": {
     "deleteAria": "Xóa"

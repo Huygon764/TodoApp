@@ -168,7 +168,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleLang}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-slate-200 transition-all duration-200"
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-slate-200 transition-all duration-200 cursor-pointer"
               title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
             >
               <Languages className="w-5 h-5" />
@@ -177,7 +177,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsGoalModalOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-violet-400 hover:border-violet-500/30 transition-all duration-200"
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-violet-400 hover:border-violet-500/30 transition-all duration-200 cursor-pointer"
               title={t("home.goalsTitle")}
             >
               <Target className="w-5 h-5" />
@@ -186,7 +186,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsDefaultModalOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200"
+              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200 cursor-pointer"
               title={t("home.defaultTemplateTitle")}
             >
               <Settings className="w-5 h-5" />
@@ -235,7 +235,7 @@ export function HomePage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => setIsDefaultModalOpen(true)}
-            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group"
+            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

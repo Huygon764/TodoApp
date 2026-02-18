@@ -214,7 +214,7 @@ export function DayTodoList({
               disabled={!newTitle.trim()}
               className="px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 
                 text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20
-                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-emerald-500 disabled:hover:to-teal-500"
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-emerald-500 disabled:hover:to-teal-500 cursor-pointer"
             >
               {t("dayTodo.add")}
             </motion.button>
@@ -258,7 +258,7 @@ export function DayTodoList({
                     }}
                     layout
                     layoutId={item.id}
-                    drag={false} // Disable drag, chỉ dùng animation
+                    drag={false}
                     className="group"
                   >
                     <motion.div 
@@ -279,7 +279,7 @@ export function DayTodoList({
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleToggle(item.id)}
                         disabled={pendingToggle !== null}
-                        className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
+                        className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           item.completed
                             ? 'bg-emerald-500 border-emerald-500'
                             : 'border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10'
@@ -323,7 +323,7 @@ export function DayTodoList({
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                        className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
                         aria-label={t("dayTodo.deleteAria")}
                       >
                         <Trash2 className="w-4 h-4" />

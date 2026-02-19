@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
@@ -52,6 +52,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
+  const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
+  const initialOrderRef = useRef<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -86,10 +88,31 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
   const goal = data ?? null;
   const itemsWithIds = addIdsToItems(goal?.items ?? []);
-  const sortedItems = [...itemsWithIds].sort((a, b) => {
+  const sortedItemsFromGoal = [...itemsWithIds].sort((a, b) => {
     if (a.completed === b.completed) return a.order - b.order;
     return a.completed ? 1 : -1;
   });
+
+  useEffect(() => {
+    if (isOpen && goal != null) {
+      const next = addIdsToItems(goal.items ?? []).sort((a, b) => {
+        if (a.completed === b.completed) return a.order - b.order;
+        return a.completed ? 1 : -1;
+      });
+      setLocalItems(next);
+      initialOrderRef.current = next.map((i) => i.id).join(",");
+    }
+  }, [isOpen, goal]);
+
+  const sortedItems =
+    localItems.length > 0
+      ? [...localItems].sort((a, b) => {
+          if (a.completed === b.completed) return a.order - b.order;
+          return a.completed ? 1 : -1;
+        })
+      : sortedItemsFromGoal;
+  const incomplete = sortedItems.filter((i) => !i.completed);
+  const completed = sortedItems.filter((i) => i.completed);
 
   const patchMutation = useMutation({
     mutationFn: (items: GoalItem[]) =>
@@ -128,15 +151,16 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     },
   });
 
+  const handleCloseRef = useRef<() => void>(onClose);
   useEffect(() => {
     if (!isOpen) return;
     const handlePointerDown = (e: PointerEvent) => {
       if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
+      handleCloseRef.current();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -221,6 +245,43 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     setPickerOpen(false);
   };
 
+  const reorderIncomplete = (newIncomplete: (GoalItem & { id: string })[]) => {
+    const withOrder = newIncomplete.map((it, idx) => ({ ...it, order: idx }));
+    const completedWithOrder = completed.map((it, idx) => ({
+      ...it,
+      order: withOrder.length + idx,
+    }));
+    setLocalItems([...withOrder, ...completedWithOrder]);
+  };
+
+  const reorderCompleted = (newCompleted: (GoalItem & { id: string })[]) => {
+    const withOrder = newCompleted.map((it, idx) => ({
+      ...it,
+      order: incomplete.length + idx,
+    }));
+    setLocalItems([
+      ...incomplete.map((it, idx) => ({ ...it, order: idx })),
+      ...withOrder,
+    ]);
+  };
+
+  const handleClose = () => {
+    const currentOrder = localItems.map((i) => i.id).join(",");
+    const shouldSave =
+      currentOrder !== initialOrderRef.current && goal != null;
+    if (shouldSave) {
+      const payload = [...localItems]
+        .sort((a, b) => a.order - b.order)
+        .map((it, idx) => ({ ...it, order: idx }));
+      const itemsToSave = removeIdsFromItems(payload);
+      onClose();
+      patchMutation.mutate(itemsToSave);
+    } else {
+      onClose();
+    }
+  };
+  handleCloseRef.current = handleClose;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -228,14 +289,14 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
+            exit={{ opacity: 0, pointerEvents: "none" }}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 cursor-pointer"
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20, pointerEvents: "none" }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
@@ -310,7 +371,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       type="button"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={onClose}
+                      onClick={handleClose}
                       className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
                     >
                       <X className="w-5 h-5" />
@@ -386,82 +447,170 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       <p>{t("goalModal.empty")}</p>
                     </div>
                   ) : (
-                    <ul className="space-y-2">
-                      <AnimatePresence mode="popLayout">
-                        {sortedItems.map((item) => (
-                          <motion.li
+                    <div className="space-y-2">
+                      <Reorder.Group
+                        axis="y"
+                        values={incomplete}
+                        onReorder={reorderIncomplete}
+                        className="space-y-2"
+                      >
+                        {incomplete.map((item) => (
+                          <Reorder.Item
                             key={item.id}
-                            layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{
-                              opacity: 1,
-                              x: 0,
-                              scale: pendingToggle === item.id ? 0.98 : 1,
-                              transition: { duration: 0.15 },
-                            }}
-                            exit={{ opacity: 0, x: 10 }}
-                            className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
-                              item.completed
-                                ? "bg-violet-500/5 border-violet-500/20"
-                                : "bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50"
-                            }`}
+                            value={item}
+                            drag
+                            className="cursor-grab active:cursor-grabbing"
                           >
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.15 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => handleToggle(item.id)}
-                              disabled={pendingToggle !== null}
-                              className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                            <motion.div
+                              layout
+                              className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
                                 item.completed
-                                  ? "bg-violet-500 border-violet-500"
-                                  : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
-                              } disabled:cursor-not-allowed`}
-                            >
-                              <AnimatePresence mode="wait">
-                                {item.completed && (
-                                  <motion.div
-                                    initial={{ scale: 0, rotate: -45 }}
-                                    animate={{ scale: 1, rotate: 0 }}
-                                    exit={{ scale: 0, rotate: 45 }}
-                                    transition={{
-                                      type: "spring",
-                                      stiffness: 500,
-                                      damping: 15,
-                                    }}
-                                  >
-                                    <Check
-                                      className="w-4 h-4 text-white"
-                                      strokeWidth={3}
-                                    />
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </motion.button>
-                            <span
-                              className={`flex-1 ${
-                                item.completed
-                                  ? "line-through text-slate-500"
-                                  : "text-slate-200"
+                                  ? "bg-violet-500/5 border-violet-500/20"
+                                  : "bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50"
                               }`}
+                              animate={{
+                                scale: pendingToggle === item.id ? 0.98 : 1,
+                                transition: { duration: 0.15 },
+                              }}
                             >
-                              {item.title}
-                            </span>
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => handleDelete(item.id)}
-                              disabled={deleteItemMutation.isPending}
-                              className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
-                              aria-label={t("goalModal.deleteAria")}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </motion.button>
-                          </motion.li>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.15 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleToggle(item.id)}
+                                disabled={pendingToggle !== null}
+                                className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                                  item.completed
+                                    ? "bg-violet-500 border-violet-500"
+                                    : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                } disabled:cursor-not-allowed`}
+                              >
+                                <AnimatePresence mode="wait">
+                                  {item.completed && (
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -45 }}
+                                      animate={{ scale: 1, rotate: 0 }}
+                                      exit={{ scale: 0, rotate: 45 }}
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 15,
+                                      }}
+                                    >
+                                      <Check
+                                        className="w-4 h-4 text-white"
+                                        strokeWidth={3}
+                                      />
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </motion.button>
+                              <span
+                                className={`flex-1 ${
+                                  item.completed
+                                    ? "line-through text-slate-500"
+                                    : "text-slate-200"
+                                }`}
+                              >
+                                {item.title}
+                              </span>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleDelete(item.id)}
+                                disabled={deleteItemMutation.isPending}
+                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                aria-label={t("goalModal.deleteAria")}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </motion.button>
+                            </motion.div>
+                          </Reorder.Item>
                         ))}
-                      </AnimatePresence>
-                    </ul>
+                      </Reorder.Group>
+                      <Reorder.Group
+                        axis="y"
+                        values={completed}
+                        onReorder={reorderCompleted}
+                        className="space-y-2"
+                      >
+                        {completed.map((item) => (
+                          <Reorder.Item
+                            key={item.id}
+                            value={item}
+                            drag
+                            className="cursor-grab active:cursor-grabbing"
+                          >
+                            <motion.div
+                              layout
+                              className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
+                                item.completed
+                                  ? "bg-violet-500/5 border-violet-500/20"
+                                  : "bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50"
+                              }`}
+                              animate={{
+                                scale: pendingToggle === item.id ? 0.98 : 1,
+                                transition: { duration: 0.15 },
+                              }}
+                            >
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.15 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleToggle(item.id)}
+                                disabled={pendingToggle !== null}
+                                className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                                  item.completed
+                                    ? "bg-violet-500 border-violet-500"
+                                    : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                } disabled:cursor-not-allowed`}
+                              >
+                                <AnimatePresence mode="wait">
+                                  {item.completed && (
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -45 }}
+                                      animate={{ scale: 1, rotate: 0 }}
+                                      exit={{ scale: 0, rotate: 45 }}
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 15,
+                                      }}
+                                    >
+                                      <Check
+                                        className="w-4 h-4 text-white"
+                                        strokeWidth={3}
+                                      />
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </motion.button>
+                              <span
+                                className={`flex-1 ${
+                                  item.completed
+                                    ? "line-through text-slate-500"
+                                    : "text-slate-200"
+                                }`}
+                              >
+                                {item.title}
+                              </span>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleDelete(item.id)}
+                                disabled={deleteItemMutation.isPending}
+                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                aria-label={t("goalModal.deleteAria")}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </motion.button>
+                            </motion.div>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    </div>
                   )}
                 </div>
               </div>

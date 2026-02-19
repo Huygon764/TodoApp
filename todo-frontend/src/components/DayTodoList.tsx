@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Plus, Trash2, Check, Circle, TrendingUp } from "lucide-react";
@@ -40,6 +40,8 @@ export function DayTodoList({
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
+  const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const REORDER_DEBOUNCE_MS = 600;
 
   // Sync items from props
   useEffect(() => {
@@ -117,8 +119,18 @@ export function DayTodoList({
   const handleReorder = (newOrder: DayTodoItemWithId[]) => {
     const reordered = newOrder.map((it, idx) => ({ ...it, order: idx }));
     setItems(reordered);
-    onUpdateItems(removeIdsFromItems(reordered));
+    if (reorderDebounceRef.current) clearTimeout(reorderDebounceRef.current);
+    reorderDebounceRef.current = setTimeout(() => {
+      onUpdateItems(removeIdsFromItems(reordered));
+      reorderDebounceRef.current = null;
+    }, REORDER_DEBOUNCE_MS);
   };
+
+  useEffect(() => {
+    return () => {
+      if (reorderDebounceRef.current) clearTimeout(reorderDebounceRef.current);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -256,7 +268,7 @@ export function DayTodoList({
                     }}
                     layout
                     layoutId={item.id}
-                    drag={false}
+                    drag
                     className="group"
                   >
                     <motion.div 

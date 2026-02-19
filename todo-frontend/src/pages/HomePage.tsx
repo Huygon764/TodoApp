@@ -10,7 +10,7 @@ import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
 import { LogoutButton } from "@/components/LogoutButton";
-import { DefaultListModal } from "@/components/DefaultListModal";
+import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
 import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
@@ -159,6 +159,18 @@ export function HomePage() {
         title,
         order: (defaultData?.length ?? 0),
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["default"] });
+    },
+  });
+
+  const reorderDefaultMutation = useMutation({
+    mutationFn: (updates: DefaultOrderUpdate[]) =>
+      Promise.all(
+        updates.map((u) =>
+          apiPatch(API_PATHS.DEFAULT_BY_ID(u.id), { order: u.order })
+        )
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default"] });
     },
@@ -322,6 +334,7 @@ export function HomePage() {
         items={defaultItems}
         onAddItem={(title) => addDefaultMutation.mutate(title)}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
+        onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
       />
 
       {/* Recurring template modal (adds to day todo on Monday / 1st of month) */}

@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { X, Plus, Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete } from "@/lib/api";
 import type { DefaultItem } from "@/types";
+
+export type DefaultOrderUpdate = { id: string; order: number };
 
 interface DefaultListModalProps {
   isOpen: boolean;
@@ -13,6 +15,7 @@ interface DefaultListModalProps {
   items: DefaultItem[];
   onAddItem: (title: string) => void;
   onInvalidate: () => void;
+  onReorder?: (updates: DefaultOrderUpdate[]) => void;
 }
 
 export function DefaultListModal({
@@ -21,20 +24,47 @@ export function DefaultListModal({
   items,
   onAddItem,
   onInvalidate,
+  onReorder,
 }: DefaultListModalProps) {
   const { t } = useTranslation();
   const [newTitle, setNewTitle] = useState("");
+  const [localItems, setLocalItems] = useState<DefaultItem[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
+  }, [isOpen, items]);
 
   useEffect(() => {
     if (!isOpen) return;
     const handlePointerDown = (e: PointerEvent) => {
       if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
+      handleCloseRef.current();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
+
+  const handleClose = () => {
+    if (onReorder && localItems.length > 0) {
+      const updates: DefaultOrderUpdate[] = [];
+      localItems.forEach((item, idx) => {
+        const original = items.find((i) => i._id === item._id);
+        if (original != null && original.order !== idx) {
+          updates.push({ id: item._id, order: idx });
+        }
+      });
+      if (updates.length > 0) onReorder(updates);
+    }
+    onClose();
+  };
+
+  const handleReorder = (newOrder: DefaultItem[]) => {
+    setLocalItems(newOrder.map((it, idx) => ({ ...it, order: idx })));
+  };
+
+  const handleCloseRef = useRef<() => void>(() => {});
+  handleCloseRef.current = handleClose;
 
   const addItem = () => {
     const t = newTitle.trim();
@@ -57,7 +87,7 @@ export function DefaultListModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           />
 
@@ -88,7 +118,7 @@ export function DefaultListModal({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
                   >
                     <X className="w-5 h-5" />
@@ -130,39 +160,50 @@ export function DefaultListModal({
 
                 {/* List */}
                 <div className="p-4 max-h-[300px] overflow-y-auto">
-                  {items.length === 0 ? (
+                  {localItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-slate-500">
                       <ListTodo className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("defaultModal.empty")}</p>
                     </div>
                   ) : (
-                    <ul className="space-y-2">
+                    <Reorder.Group
+                      axis="y"
+                      values={localItems}
+                      onReorder={handleReorder}
+                      className="space-y-2"
+                    >
                       <AnimatePresence mode="popLayout">
-                        {items.map((item) => (
-                          <motion.li
+                        {localItems.map((item) => (
+                          <Reorder.Item
                             key={item._id}
-                            layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
+                            value={item}
+                            drag
+                            className="cursor-grab active:cursor-grabbing"
                           >
-                            <span className="flex-1 text-slate-200">{item.title}</span>
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => deleteMutation.mutate(item._id)}
-                              disabled={deleteMutation.isPending}
-                              className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-                              aria-label={t("defaultModal.deleteAria")}
+                            <motion.li
+                              layout
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 10 }}
+                              className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200 list-none"
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </motion.button>
-                          </motion.li>
+                              <span className="flex-1 text-slate-200">{item.title}</span>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => deleteMutation.mutate(item._id)}
+                                disabled={deleteMutation.isPending}
+                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                aria-label={t("defaultModal.deleteAria")}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </motion.button>
+                            </motion.li>
+                          </Reorder.Item>
                         ))}
                       </AnimatePresence>
-                    </ul>
+                    </Reorder.Group>
                   )}
                 </div>
 

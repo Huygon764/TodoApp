@@ -5,6 +5,7 @@ import { DayPicker } from "react-day-picker";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
+import { getTodayInTimezone } from "@/lib/datePeriod";
 
 interface CalendarPopoverProps {
   isOpen: boolean;
@@ -12,10 +13,7 @@ interface CalendarPopoverProps {
   selectedDate: string;
   onSelectDate: (date: string) => void;
   anchorRef: React.RefObject<HTMLDivElement | null>;
-}
-
-function todayString(): string {
-  return new Date().toISOString().slice(0, 10);
+  timezone?: string;
 }
 
 const dayPickerClassNames = {
@@ -47,6 +45,7 @@ export function CalendarPopover({
   selectedDate,
   onSelectDate,
   anchorRef,
+  timezone,
 }: CalendarPopoverProps) {
   const { t, i18n } = useTranslation();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -97,7 +96,7 @@ export function CalendarPopover({
   };
 
   const handleTodayClick = () => {
-    onSelectDate(todayString());
+    onSelectDate(getTodayInTimezone(timezone));
     onClose();
   };
 

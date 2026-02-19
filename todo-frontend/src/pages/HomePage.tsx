@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import type { DayTodo, DayTodoItem, DefaultItem } from "@/types";
+import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
+import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -14,11 +15,6 @@ import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
-
-function todayString(): string {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
-}
 
 // Subtle Animated Background
 const AnimatedBackground = () => {
@@ -96,7 +92,22 @@ const AppLogo = () => {
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
-  const [selectedDate, setSelectedDate] = useState(todayString);
+  const { data: user } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
+      const res = await apiGet<{ user: User }>(API_PATHS.AUTH_ME);
+      return res.data?.user ?? null;
+    },
+    retry: false,
+  });
+  const [selectedDate, setSelectedDate] = useState(() => getTodayInTimezone());
+  const hasInitializedDate = useRef(false);
+  useEffect(() => {
+    if (user && !hasInitializedDate.current) {
+      hasInitializedDate.current = true;
+      setSelectedDate(getTodayInTimezone(user.timezone));
+    }
+  }, [user]);
   const [isDefaultModalOpen, setIsDefaultModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
@@ -222,6 +233,7 @@ export function HomePage() {
           <DateNav
             date={selectedDate}
             onDateChange={setSelectedDate}
+            timezone={user?.timezone}
           />
         </motion.section>
 

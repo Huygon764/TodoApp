@@ -1,4 +1,19 @@
 /**
+ * Returns today's date as YYYY-MM-DD in the given timezone, or local browser date if no tz.
+ */
+export function getTodayInTimezone(tz?: string): string {
+  const d = new Date();
+  if (tz?.trim()) {
+    try {
+      return d.toLocaleDateString("en-CA", { timeZone: tz.trim() });
+    } catch {
+      // fallback to local if invalid tz
+    }
+  }
+  return d.toLocaleDateString("en-CA");
+}
+
+/**
  * ISO 8601 week: returns year and week number for a date (week contains Thursday).
  */
 function getISOWeek(d: Date): { year: number; week: number } {

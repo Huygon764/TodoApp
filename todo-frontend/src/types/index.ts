@@ -4,6 +4,7 @@ export interface User {
   displayName: string;
   isActive: boolean;
   lastLogin: string | null;
+  timezone?: string;
   createdAt: string;
   updatedAt: string;
 }

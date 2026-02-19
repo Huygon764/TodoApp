@@ -135,7 +135,11 @@ export function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: () =>
-      apiPost<{ message: string }>(API_PATHS.AUTH_LOGIN, { username, password }),
+      apiPost<{ message: string }>(API_PATHS.AUTH_LOGIN, {
+        username,
+        password,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auth"] });
       navigate(from, { replace: true });

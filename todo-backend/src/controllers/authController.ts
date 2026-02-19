@@ -19,8 +19,21 @@ const COOKIE_OPTIONS = {
   path: "/",
 };
 
+function isValidTimezone(tz: string): boolean {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const login = catchAsync(async (req: Request, res: Response) => {
-  const { username, password } = req.body as { username?: string; password?: string };
+  const { username, password, timezone } = req.body as {
+    username?: string;
+    password?: string;
+    timezone?: string;
+  };
 
   if (!username || !password) {
     throw badRequest(MESSAGES.AUTH.CREDENTIALS_REQUIRED);
@@ -33,6 +46,10 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 
   if (!user.isActive) {
     throw unauthorized(MESSAGES.AUTH.USER_INACTIVE);
+  }
+
+  if (typeof timezone === "string" && timezone.trim() && isValidTimezone(timezone.trim())) {
+    user.timezone = timezone.trim();
   }
 
   await user.updateLastLogin();

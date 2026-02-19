@@ -6,6 +6,7 @@ export interface IUser {
   displayName: string;
   isActive: boolean;
   lastLogin: Date | null;
+  timezone?: string;
   createdAt: Date;
   updatedAt: Date;
 }

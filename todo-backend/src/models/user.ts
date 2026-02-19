@@ -39,6 +39,12 @@ const userSchema = new Schema<IUserDocument, IUserModel>(
       type: Date,
       default: null,
     },
+    timezone: {
+      type: String,
+      trim: true,
+      maxlength: [60, "Timezone cannot exceed 60 characters"],
+      default: undefined,
+    },
   },
   { timestamps: true }
 );

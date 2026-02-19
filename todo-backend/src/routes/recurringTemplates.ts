@@ -5,11 +5,13 @@ import {
   validatePostRecurringTemplateBody,
   validateRecurringTemplateTypeParam,
   validateGoalItemIndexParam,
+  validatePatchRecurringTemplateItemBody,
 } from "../middleware/validation.js";
 import { validateRequest } from "../middleware/validateRequest.js";
 import {
   getRecurringTemplate,
   addRecurringTemplateItem,
+  patchRecurringTemplateItem,
   deleteRecurringTemplateItem,
 } from "../controllers/recurringTemplateController.js";
 
@@ -29,6 +31,15 @@ router.post(
   validatePostRecurringTemplateBody,
   validateRequest,
   addRecurringTemplateItem
+);
+
+router.patch(
+  "/:type/items/:idx",
+  validateRecurringTemplateTypeParam,
+  validateGoalItemIndexParam,
+  validatePatchRecurringTemplateItemBody,
+  validateRequest,
+  patchRecurringTemplateItem
 );
 
 router.delete(

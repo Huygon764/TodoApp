@@ -53,10 +53,17 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [newTitle, setNewTitle] = useState("");
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
   const initialOrderRef = useRef<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (editingId) editInputRef.current?.focus();
+  }, [editingId]);
 
   const period =
     activeTab === "week"
@@ -252,6 +259,31 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       order: withOrder.length + idx,
     }));
     setLocalItems([...withOrder, ...completedWithOrder]);
+  };
+
+  const handleTitleClick = (id: string) => {
+    const item = localItems.find((i) => i.id === id);
+    if (item) {
+      setEditingId(id);
+      setEditValue(item.title);
+    }
+  };
+
+  const saveGoalTitle = (id: string) => {
+    const trimmed = editValue.trim();
+    setEditingId(null);
+    setEditValue("");
+    if (trimmed === "") return;
+    const updated = localItems.map((it) =>
+      it.id === id ? { ...it, title: trimmed } : it
+    );
+    setLocalItems(updated);
+    if (goal) patchMutation.mutate(removeIdsFromItems(updated));
+  };
+
+  const cancelGoalEdit = () => {
+    setEditingId(null);
+    setEditValue("");
   };
 
   const reorderCompleted = (newCompleted: (GoalItem & { id: string })[]) => {
@@ -505,15 +537,36 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                   )}
                                 </AnimatePresence>
                               </motion.button>
-                              <span
-                                className={`flex-1 ${
-                                  item.completed
-                                    ? "line-through text-slate-500"
-                                    : "text-slate-200"
-                                }`}
-                              >
-                                {item.title}
-                              </span>
+                              {editingId === item.id ? (
+                                <input
+                                  ref={editInputRef}
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveGoalTitle(item.id);
+                                    if (e.key === "Escape") cancelGoalEdit();
+                                  }}
+                                  onBlur={() => saveGoalTitle(item.id)}
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                />
+                              ) : (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => handleTitleClick(item.id)}
+                                  onKeyDown={(e) =>
+                                    e.key === "Enter" && handleTitleClick(item.id)
+                                  }
+                                  className={`flex-1 cursor-text ${
+                                    item.completed
+                                      ? "line-through text-slate-500"
+                                      : "text-slate-200"
+                                  }`}
+                                >
+                                  {item.title}
+                                </span>
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
@@ -586,15 +639,36 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                   )}
                                 </AnimatePresence>
                               </motion.button>
-                              <span
-                                className={`flex-1 ${
-                                  item.completed
-                                    ? "line-through text-slate-500"
-                                    : "text-slate-200"
-                                }`}
-                              >
-                                {item.title}
-                              </span>
+                              {editingId === item.id ? (
+                                <input
+                                  ref={editInputRef}
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveGoalTitle(item.id);
+                                    if (e.key === "Escape") cancelGoalEdit();
+                                  }}
+                                  onBlur={() => saveGoalTitle(item.id)}
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                />
+                              ) : (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => handleTitleClick(item.id)}
+                                  onKeyDown={(e) =>
+                                    e.key === "Enter" && handleTitleClick(item.id)
+                                  }
+                                  className={`flex-1 cursor-text ${
+                                    item.completed
+                                      ? "line-through text-slate-500"
+                                      : "text-slate-200"
+                                  }`}
+                                >
+                                  {item.title}
+                                </span>
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}

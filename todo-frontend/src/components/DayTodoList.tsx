@@ -40,8 +40,15 @@ export function DayTodoList({
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const REORDER_DEBOUNCE_MS = 600;
+
+  useEffect(() => {
+    if (editingId) editInputRef.current?.focus();
+  }, [editingId]);
 
   // Sync items from props
   useEffect(() => {
@@ -114,6 +121,31 @@ export function DayTodoList({
     
     setItems(reordered);
     onUpdateItems(removeIdsFromItems(reordered));
+  };
+
+  const handleTitleClick = (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (item) {
+      setEditingId(id);
+      setEditValue(item.title);
+    }
+  };
+
+  const saveTitle = (id: string) => {
+    const trimmed = editValue.trim();
+    setEditingId(null);
+    setEditValue("");
+    if (trimmed === "") return;
+    const updated = items.map((it) =>
+      it.id === id ? { ...it, title: trimmed } : it
+    );
+    setItems(updated);
+    onUpdateItems(removeIdsFromItems(updated));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
   };
 
   const handleReorder = (newOrder: DayTodoItemWithId[]) => {
@@ -313,19 +345,38 @@ export function DayTodoList({
                         </AnimatePresence>
                       </motion.button>
                       
-                      {/* Title */}
-                      <motion.span 
-                        className={`flex-1 transition-all duration-300 ${
-                          item.completed 
-                            ? 'line-through text-slate-500' 
-                            : 'text-slate-200'
-                        }`}
-                        animate={{
-                          x: item.completed ? 4 : 0,
-                        }}
-                      >
-                        {item.title}
-                      </motion.span>
+                      {/* Title - inline edit */}
+                      {editingId === item.id ? (
+                        <input
+                          ref={editInputRef}
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveTitle(item.id);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          onBlur={() => saveTitle(item.id)}
+                          className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                        />
+                      ) : (
+                        <motion.span
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleTitleClick(item.id)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleTitleClick(item.id)
+                          }
+                          className={`flex-1 transition-all duration-300 cursor-text ${
+                            item.completed
+                              ? "line-through text-slate-500"
+                              : "text-slate-200"
+                          }`}
+                          animate={{ x: item.completed ? 4 : 0 }}
+                        >
+                          {item.title}
+                        </motion.span>
+                      )}
                       
                       {/* Delete Button - always visible */}
                       <motion.button

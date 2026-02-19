@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { X, Plus, Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
-import { apiDelete } from "@/lib/api";
+import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
 
 export type DefaultOrderUpdate = { id: string; order: number };
@@ -29,11 +29,18 @@ export function DefaultListModal({
   const { t } = useTranslation();
   const [newTitle, setNewTitle] = useState("");
   const [localItems, setLocalItems] = useState<DefaultItem[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
   }, [isOpen, items]);
+
+  useEffect(() => {
+    if (editingId) editInputRef.current?.focus();
+  }, [editingId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,6 +84,36 @@ export function DefaultListModal({
     mutationFn: (id: string) => apiDelete(API_PATHS.DEFAULT_BY_ID(id)),
     onSuccess: () => onInvalidate(),
   });
+
+  const patchTitleMutation = useMutation({
+    mutationFn: ({ id, title }: { id: string; title: string }) =>
+      apiPatch(API_PATHS.DEFAULT_BY_ID(id), { title }),
+    onSuccess: () => onInvalidate(),
+  });
+
+  const handleTitleClick = (id: string) => {
+    const item = localItems.find((i) => i._id === id);
+    if (item) {
+      setEditingId(id);
+      setEditValue(item.title);
+    }
+  };
+
+  const saveDefaultTitle = (id: string) => {
+    const trimmed = editValue.trim();
+    setEditingId(null);
+    setEditValue("");
+    if (trimmed === "") return;
+    setLocalItems((prev) =>
+      prev.map((it) => (it._id === id ? { ...it, title: trimmed } : it))
+    );
+    patchTitleMutation.mutate({ id, title: trimmed });
+  };
+
+  const cancelDefaultEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
 
   return (
     <AnimatePresence>
@@ -187,7 +224,32 @@ export function DefaultListModal({
                               exit={{ opacity: 0, x: 10 }}
                               className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200 list-none"
                             >
-                              <span className="flex-1 text-slate-200">{item.title}</span>
+                              {editingId === item._id ? (
+                                <input
+                                  ref={editInputRef}
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveDefaultTitle(item._id);
+                                    if (e.key === "Escape") cancelDefaultEdit();
+                                  }}
+                                  onBlur={() => saveDefaultTitle(item._id)}
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                />
+                              ) : (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => handleTitleClick(item._id)}
+                                  onKeyDown={(e) =>
+                                    e.key === "Enter" && handleTitleClick(item._id)
+                                  }
+                                  className="flex-1 text-slate-200 cursor-text"
+                                >
+                                  {item.title}
+                                </span>
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}

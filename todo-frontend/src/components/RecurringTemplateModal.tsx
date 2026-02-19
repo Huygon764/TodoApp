@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
-import { apiGet, apiPost, apiDelete } from "@/lib/api";
+import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
 
 /** Recurring template: week/month only; items are added to day todo on Monday / 1st of month */
@@ -24,8 +24,15 @@ export function RecurringTemplateModal({
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<RecurringTab>(initialTab);
   const [newTitle, setNewTitle] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (editingIndex !== null) editInputRef.current?.focus();
+  }, [editingIndex]);
 
   const queryKey = ["recurringTemplate", activeTab];
 
@@ -62,6 +69,35 @@ export function RecurringTemplateModal({
       queryClient.invalidateQueries({ queryKey });
     },
   });
+
+  const patchTitleMutation = useMutation({
+    mutationFn: ({ idx, title }: { idx: number; title: string }) =>
+      apiPatch(API_PATHS.RECURRING_TEMPLATE_ITEM(activeTab, idx), { title }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  const handleTitleClick = (index: number) => {
+    const item = items[index];
+    if (item) {
+      setEditingIndex(index);
+      setEditValue(item.title);
+    }
+  };
+
+  const saveRecurringTitle = (index: number) => {
+    const trimmed = editValue.trim();
+    setEditingIndex(null);
+    setEditValue("");
+    if (trimmed === "") return;
+    patchTitleMutation.mutate({ idx: index, title: trimmed });
+  };
+
+  const cancelRecurringEdit = () => {
+    setEditingIndex(null);
+    setEditValue("");
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -195,9 +231,32 @@ export function RecurringTemplateModal({
                             exit={{ opacity: 0, x: 10 }}
                             className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
                           >
-                            <span className="flex-1 text-slate-200">
-                              {item.title}
-                            </span>
+                            {editingIndex === index ? (
+                              <input
+                                ref={editInputRef}
+                                type="text"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") saveRecurringTitle(index);
+                                  if (e.key === "Escape") cancelRecurringEdit();
+                                }}
+                                onBlur={() => saveRecurringTitle(index)}
+                                className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                              />
+                            ) : (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => handleTitleClick(index)}
+                                onKeyDown={(e) =>
+                                  e.key === "Enter" && handleTitleClick(index)
+                                }
+                                className="flex-1 text-slate-200 cursor-text"
+                              >
+                                {item.title}
+                              </span>
+                            )}
                             <motion.button
                               type="button"
                               whileHover={{ scale: 1.1 }}

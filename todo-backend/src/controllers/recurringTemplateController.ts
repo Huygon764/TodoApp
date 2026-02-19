@@ -67,6 +67,36 @@ export const addRecurringTemplateItem = catchAsync(
 );
 
 /**
+ * PATCH /api/recurring-templates/:type/items/:idx
+ * Body: { title }
+ */
+export const patchRecurringTemplateItem = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const { type, idx } = req.params;
+    const index = parseInt(idx!, 10);
+    const { title } = req.body as { title: string };
+
+    const template = await RecurringTemplate.findOne({
+      userId,
+      type: type as "week" | "month" | "year",
+    });
+    if (!template) {
+      throw notFound(MESSAGES.RECURRING_TEMPLATE.NOT_FOUND);
+    }
+
+    if (index < 0 || index >= template.items.length) {
+      throw notFound(MESSAGES.RECURRING_TEMPLATE.NOT_FOUND);
+    }
+
+    template.items[index]!.title = title.trim();
+    await template.save();
+
+    sendSuccess(res, 200, { template });
+  }
+);
+
+/**
  * DELETE /api/recurring-templates/:type/items/:idx
  */
 export const deleteRecurringTemplateItem = catchAsync(

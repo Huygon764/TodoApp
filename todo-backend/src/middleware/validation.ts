@@ -146,6 +146,15 @@ export const validateRecurringTemplateTypeParam = [
     .withMessage("type must be week, month or year"),
 ];
 
+export const validatePatchRecurringTemplateItemBody = [
+  body("title")
+    .trim()
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ max: 500 })
+    .withMessage("Title cannot exceed 500 characters"),
+];
+
 export const validateGetReviewsQuery = [
   query("type").optional().isIn(["week", "month"]),
   query("period").optional().trim().isString(),

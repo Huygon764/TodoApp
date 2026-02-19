@@ -153,6 +153,12 @@ export const patchDay = catchAsync(async (req: Request, res: Response) => {
       title: item.title ?? "",
       completed: Boolean(item.completed),
       order: typeof item.order === "number" ? item.order : i,
+      subTasks: Array.isArray(item.subTasks)
+        ? item.subTasks.map((st) => ({
+            title: st.title ?? "",
+            completed: Boolean(st.completed),
+          }))
+        : undefined,
     }));
     await dayTodo.save();
   }

@@ -40,13 +40,21 @@ export const createGoal = catchAsync(async (req: Request, res: Response) => {
   };
 
   const existing = await Goal.findOne({ userId, type, period });
+  const mapGoalItem = (item: IGoalItem, i: number) => ({
+    title: item.title ?? "",
+    completed: Boolean(item.completed),
+    order: typeof item.order === "number" ? item.order : i,
+    subTasks: Array.isArray(item.subTasks)
+      ? item.subTasks.map((st) => ({
+          title: st.title ?? "",
+          completed: Boolean(st.completed),
+        }))
+      : undefined,
+  });
+
   if (existing) {
     if (Array.isArray(items) && items.length > 0) {
-      existing.items = items.map((item, i) => ({
-        title: item.title ?? "",
-        completed: Boolean(item.completed),
-        order: typeof item.order === "number" ? item.order : i,
-      }));
+      existing.items = items.map(mapGoalItem);
       await existing.save();
       return sendSuccess(res, 200, { goal: existing });
     }
@@ -54,11 +62,7 @@ export const createGoal = catchAsync(async (req: Request, res: Response) => {
   }
 
   const goalItems: IGoalItem[] = Array.isArray(items)
-    ? items.map((item, i) => ({
-        title: item.title ?? "",
-        completed: Boolean(item.completed),
-        order: typeof item.order === "number" ? item.order : i,
-      }))
+    ? items.map(mapGoalItem)
     : [];
 
   const goal = await Goal.create({
@@ -90,6 +94,12 @@ export const patchGoal = catchAsync(async (req: Request, res: Response) => {
       title: item.title ?? "",
       completed: Boolean(item.completed),
       order: typeof item.order === "number" ? item.order : i,
+      subTasks: Array.isArray(item.subTasks)
+        ? item.subTasks.map((st) => ({
+            title: st.title ?? "",
+            completed: Boolean(st.completed),
+          }))
+        : undefined,
     }));
     await goal.save();
   }

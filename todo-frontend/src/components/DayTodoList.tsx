@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Trash2, Check, Circle, TrendingUp } from "lucide-react";
+import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 
 // Extend DayTodoItem với unique ID
@@ -12,11 +12,12 @@ interface DayTodoItemWithId extends DayTodoItem {
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-// Add ID to items if not exists
+// Add ID to items if not exists; normalize subTasks array
 const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] => {
   return items.map((item, index) => ({
     ...item,
     id: `item-${index}-${item.title.slice(0, 10)}`,
+    subTasks: item.subTasks ?? [],
   }));
 };
 
@@ -42,6 +43,8 @@ export function DayTodoList({
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const editInputRef = useRef<HTMLInputElement>(null);
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const REORDER_DEBOUNCE_MS = 600;
@@ -79,6 +82,7 @@ export function DayTodoList({
       title: t,
       completed: false,
       order: items.length,
+      subTasks: [],
     };
     
     const newItems = [...items, newItem];
@@ -88,31 +92,78 @@ export function DayTodoList({
   };
 
   const handleToggle = (id: string) => {
-    // Prevent double click during animation
     if (pendingToggle) return;
-    
     setPendingToggle(id);
-    
-    // Step 1: Toggle completed status (checkbox animation)
-    const toggled = items.map(item =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    );
+
+    const toggled = items.map((item) => {
+      if (item.id !== id) return item;
+      const nextCompleted = !item.completed;
+      const subTasks = item.subTasks ?? [];
+      if (nextCompleted && subTasks.length > 0) {
+        return {
+          ...item,
+          completed: true,
+          subTasks: subTasks.map((st) => ({ ...st, completed: true })),
+        };
+      }
+      return { ...item, completed: nextCompleted };
+    });
     setItems(toggled);
-    
-    // Step 2: Delay reorder for smooth animation
+
     setTimeout(() => {
-      const incomplete = toggled.filter(it => !it.completed);
-      const completed = toggled.filter(it => it.completed);
-      
+      const incomplete = toggled.filter((it) => !it.completed);
+      const completed = toggled.filter((it) => it.completed);
       const reordered = [
         ...incomplete.map((it, idx) => ({ ...it, order: idx })),
         ...completed.map((it, idx) => ({ ...it, order: incomplete.length + idx })),
       ];
-      
       setItems(reordered);
       onUpdateItems(removeIdsFromItems(reordered));
       setPendingToggle(null);
-    }, 400); // Delay để animation checkbox hoàn thành trước
+    }, 400);
+  };
+
+  const addSubTask = (itemId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const updated = items.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = item.subTasks ?? [];
+      return {
+        ...item,
+        subTasks: [...subTasks, { title: trimmed, completed: false }],
+      };
+    });
+    setItems(updated);
+    onUpdateItems(removeIdsFromItems(updated));
+    setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
+  };
+
+  const toggleSubTask = (itemId: string, subIndex: number) => {
+    const updated = items.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = (item.subTasks ?? []).map((st, i) =>
+        i === subIndex ? { ...st, completed: !st.completed } : st
+      );
+      const allCompleted = subTasks.length > 0 && subTasks.every((st) => st.completed);
+      return {
+        ...item,
+        subTasks,
+        completed: allCompleted ? true : item.completed,
+      };
+    });
+    setItems(updated);
+    onUpdateItems(removeIdsFromItems(updated));
+  };
+
+  const deleteSubTask = (itemId: string, subIndex: number) => {
+    const updated = items.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
+      return { ...item, subTasks };
+    });
+    setItems(updated);
+    onUpdateItems(removeIdsFromItems(updated));
   };
 
   const handleDelete = (id: string) => {
@@ -378,6 +429,25 @@ export function DayTodoList({
                         </motion.span>
                       )}
                       
+                      {/* Expand / Sub-tasks */}
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() =>
+                          setExpandedId((prev) => (prev === item.id ? null : item.id))
+                        }
+                        className="p-2 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-slate-600/50 transition-all duration-200 cursor-pointer"
+                        aria-label={
+                          expandedId === item.id ? "Collapse" : "Expand sub-tasks"
+                        }
+                      >
+                        {expandedId === item.id ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </motion.button>
                       {/* Delete Button - always visible */}
                       <motion.button
                         type="button"
@@ -390,6 +460,76 @@ export function DayTodoList({
                         <Trash2 className="w-4 h-4" />
                       </motion.button>
                     </motion.div>
+                    {expandedId === item.id && (
+                      <div className="pl-12 pr-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04] mt-1">
+                        {(item.subTasks ?? []).map((st, subIdx) => (
+                          <div
+                            key={subIdx}
+                            className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                          >
+                            <motion.button
+                              type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => toggleSubTask(item.id, subIdx)}
+                              className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10"
+                            >
+                              {st.completed && (
+                                <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                              )}
+                            </motion.button>
+                            <span
+                              className={`flex-1 text-sm ${
+                                st.completed
+                                  ? "line-through text-slate-500"
+                                  : "text-slate-300"
+                              }`}
+                            >
+                              {st.title}
+                            </span>
+                            <motion.button
+                              type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => deleteSubTask(item.id, subIdx)}
+                              className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                              aria-label="Delete sub-task"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </motion.button>
+                          </div>
+                        ))}
+                        <div className="flex gap-2 pt-1">
+                          <input
+                            type="text"
+                            value={newSubTaskTitle[item.id] ?? ""}
+                            onChange={(e) =>
+                              setNewSubTaskTitle((prev) => ({
+                                ...prev,
+                                [item.id]: e.target.value,
+                              }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter")
+                                addSubTask(item.id, newSubTaskTitle[item.id] ?? "");
+                            }}
+                            placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
+                            className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                          />
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() =>
+                              addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
+                            }
+                            className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/30 cursor-pointer"
+                          >
+                            {t("dayTodo.addSubTask", "Add")}
+                          </motion.button>
+                        </div>
+                      </div>
+                    )}
                   </Reorder.Item>
                 ))}
               </AnimatePresence>

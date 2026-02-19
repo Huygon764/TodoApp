@@ -1,9 +1,15 @@
 import type { Document, Types } from "mongoose";
 
+export interface IDayTodoSubTask {
+  title: string;
+  completed: boolean;
+}
+
 export interface IDayTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  subTasks?: IDayTodoSubTask[];
 }
 
 export interface IDayTodo {

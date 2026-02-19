@@ -1,9 +1,15 @@
 import type { Document, Types } from "mongoose";
 
+export interface IGoalSubTask {
+  title: string;
+  completed: boolean;
+}
+
 export interface IGoalItem {
   title: string;
   completed: boolean;
   order: number;
+  subTasks?: IGoalSubTask[];
 }
 
 export interface IGoal {

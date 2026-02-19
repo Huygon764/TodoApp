@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import {
@@ -34,6 +34,7 @@ function addIdsToItems(items: GoalItem[]): (GoalItem & { id: string })[] {
   return items.map((item, index) => ({
     ...item,
     id: `goal-item-${index}-${item.title.slice(0, 8)}`,
+    subTasks: item.subTasks ?? [],
   }));
 }
 
@@ -55,6 +56,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const editInputRef = useRef<HTMLInputElement>(null);
   const initialOrderRef = useRef<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
@@ -220,21 +223,75 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const handleToggle = (id: string) => {
     if (pendingToggle) return;
     setPendingToggle(id);
-    const toggled = sortedItems.map((item) =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    );
+    const toggled = sortedItems.map((item) => {
+      if (item.id !== id) return item;
+      const nextCompleted = !item.completed;
+      const subTasks = item.subTasks ?? [];
+      if (nextCompleted && subTasks.length > 0) {
+        return {
+          ...item,
+          completed: true,
+          subTasks: subTasks.map((st) => ({ ...st, completed: true })),
+        };
+      }
+      return { ...item, completed: nextCompleted };
+    });
     const incomplete = toggled.filter((it) => !it.completed);
-    const completed = toggled.filter((it) => it.completed);
+    const completedItems = toggled.filter((it) => it.completed);
     const reordered = [
       ...incomplete.map((it, idx) => ({ ...it, order: idx })),
-      ...completed.map((it, idx) => ({
+      ...completedItems.map((it, idx) => ({
         ...it,
         order: incomplete.length + idx,
       })),
     ];
+    setLocalItems(reordered);
     patchMutation.mutate(removeIdsFromItems(reordered));
-    // Clear pending after brief scale animation (like DayTodoList)
     setTimeout(() => setPendingToggle(null), 150);
+  };
+
+  const addSubTask = (itemId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const updated = localItems.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = item.subTasks ?? [];
+      return {
+        ...item,
+        subTasks: [...subTasks, { title: trimmed, completed: false }],
+      };
+    });
+    setLocalItems(updated);
+    patchMutation.mutate(removeIdsFromItems(updated));
+    setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
+  };
+
+  const toggleSubTask = (itemId: string, subIndex: number) => {
+    const updated = localItems.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = (item.subTasks ?? []).map((st, i) =>
+        i === subIndex ? { ...st, completed: !st.completed } : st
+      );
+      const allCompleted =
+        subTasks.length > 0 && subTasks.every((st) => st.completed);
+      return {
+        ...item,
+        subTasks,
+        completed: allCompleted ? true : item.completed,
+      };
+    });
+    setLocalItems(updated);
+    patchMutation.mutate(removeIdsFromItems(updated));
+  };
+
+  const deleteSubTask = (itemId: string, subIndex: number) => {
+    const updated = localItems.map((item) => {
+      if (item.id !== itemId) return item;
+      const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
+      return { ...item, subTasks };
+    });
+    setLocalItems(updated);
+    patchMutation.mutate(removeIdsFromItems(updated));
   };
 
   const handleDelete = (clientId: string) => {
@@ -571,6 +628,28 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                onClick={() =>
+                                  setExpandedId((prev) =>
+                                    prev === item.id ? null : item.id
+                                  )
+                                }
+                                className="p-2 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-600/50 transition-all cursor-pointer"
+                                aria-label={
+                                  expandedId === item.id
+                                    ? "Collapse"
+                                    : "Expand sub-tasks"
+                                }
+                              >
+                                {expandedId === item.id ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4" />
+                                )}
+                              </motion.button>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                                 onClick={() => handleDelete(item.id)}
                                 disabled={deleteItemMutation.isPending}
                                 className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
@@ -579,6 +658,92 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 <Trash2 className="w-4 h-4" />
                               </motion.button>
                             </motion.div>
+                            {expandedId === item.id && (
+                              <div className="pl-10 pr-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04] mt-1">
+                                {(item.subTasks ?? []).map((st, subIdx) => (
+                                  <div
+                                    key={subIdx}
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                                  >
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() =>
+                                        toggleSubTask(item.id, subIdx)
+                                      }
+                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                    >
+                                      {st.completed && (
+                                        <Check
+                                          className="w-3.5 h-3.5 text-white"
+                                          strokeWidth={3}
+                                        />
+                                      )}
+                                    </motion.button>
+                                    <span
+                                      className={`flex-1 text-sm ${
+                                        st.completed
+                                          ? "line-through text-slate-500"
+                                          : "text-slate-300"
+                                      }`}
+                                    >
+                                      {st.title}
+                                    </span>
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() =>
+                                        deleteSubTask(item.id, subIdx)
+                                      }
+                                      className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                      aria-label="Delete sub-task"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </motion.button>
+                                  </div>
+                                ))}
+                                <div className="flex gap-2 pt-1">
+                                  <input
+                                    type="text"
+                                    value={newSubTaskTitle[item.id] ?? ""}
+                                    onChange={(e) =>
+                                      setNewSubTaskTitle((prev) => ({
+                                        ...prev,
+                                        [item.id]: e.target.value,
+                                      }))
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        addSubTask(
+                                          item.id,
+                                          newSubTaskTitle[item.id] ?? ""
+                                        );
+                                    }}
+                                    placeholder={t(
+                                      "goalModal.addSubTaskPlaceholder",
+                                      "Add sub-task"
+                                    )}
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+                                  />
+                                  <motion.button
+                                    type="button"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() =>
+                                      addSubTask(
+                                        item.id,
+                                        newSubTaskTitle[item.id] ?? ""
+                                      )
+                                    }
+                                    className="px-3 py-2 rounded-lg bg-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/30 cursor-pointer"
+                                  >
+                                    {t("goalModal.addSubTask", "Add")}
+                                  </motion.button>
+                                </div>
+                              </div>
+                            )}
                           </Reorder.Item>
                         ))}
                       </Reorder.Group>
@@ -673,6 +838,28 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                onClick={() =>
+                                  setExpandedId((prev) =>
+                                    prev === item.id ? null : item.id
+                                  )
+                                }
+                                className="p-2 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-600/50 transition-all cursor-pointer"
+                                aria-label={
+                                  expandedId === item.id
+                                    ? "Collapse"
+                                    : "Expand sub-tasks"
+                                }
+                              >
+                                {expandedId === item.id ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4" />
+                                )}
+                              </motion.button>
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                                 onClick={() => handleDelete(item.id)}
                                 disabled={deleteItemMutation.isPending}
                                 className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
@@ -681,6 +868,92 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 <Trash2 className="w-4 h-4" />
                               </motion.button>
                             </motion.div>
+                            {expandedId === item.id && (
+                              <div className="pl-10 pr-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04] mt-1">
+                                {(item.subTasks ?? []).map((st, subIdx) => (
+                                  <div
+                                    key={subIdx}
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                                  >
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() =>
+                                        toggleSubTask(item.id, subIdx)
+                                      }
+                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                    >
+                                      {st.completed && (
+                                        <Check
+                                          className="w-3.5 h-3.5 text-white"
+                                          strokeWidth={3}
+                                        />
+                                      )}
+                                    </motion.button>
+                                    <span
+                                      className={`flex-1 text-sm ${
+                                        st.completed
+                                          ? "line-through text-slate-500"
+                                          : "text-slate-300"
+                                      }`}
+                                    >
+                                      {st.title}
+                                    </span>
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() =>
+                                        deleteSubTask(item.id, subIdx)
+                                      }
+                                      className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                      aria-label="Delete sub-task"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </motion.button>
+                                  </div>
+                                ))}
+                                <div className="flex gap-2 pt-1">
+                                  <input
+                                    type="text"
+                                    value={newSubTaskTitle[item.id] ?? ""}
+                                    onChange={(e) =>
+                                      setNewSubTaskTitle((prev) => ({
+                                        ...prev,
+                                        [item.id]: e.target.value,
+                                      }))
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        addSubTask(
+                                          item.id,
+                                          newSubTaskTitle[item.id] ?? ""
+                                        );
+                                    }}
+                                    placeholder={t(
+                                      "goalModal.addSubTaskPlaceholder",
+                                      "Add sub-task"
+                                    )}
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+                                  />
+                                  <motion.button
+                                    type="button"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() =>
+                                      addSubTask(
+                                        item.id,
+                                        newSubTaskTitle[item.id] ?? ""
+                                      )
+                                    }
+                                    className="px-3 py-2 rounded-lg bg-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/30 cursor-pointer"
+                                  >
+                                    {t("goalModal.addSubTask", "Add")}
+                                  </motion.button>
+                                </div>
+                              </div>
+                            )}
                           </Reorder.Item>
                         ))}
                       </Reorder.Group>

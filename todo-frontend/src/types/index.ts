@@ -9,10 +9,16 @@ export interface User {
   updatedAt: string;
 }
 
+export interface DayTodoSubTask {
+  title: string;
+  completed: boolean;
+}
+
 export interface DayTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  subTasks?: DayTodoSubTask[];
 }
 
 export interface DayTodo {
@@ -33,10 +39,16 @@ export interface DefaultItem {
   updatedAt: string;
 }
 
+export interface GoalSubTask {
+  title: string;
+  completed: boolean;
+}
+
 export interface GoalItem {
   title: string;
   completed: boolean;
   order: number;
+  subTasks?: GoalSubTask[];
 }
 
 export interface Goal {

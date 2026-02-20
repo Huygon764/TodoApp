@@ -173,7 +173,15 @@ export const analyzeReviews = catchAsync(async (req: Request, res: Response) => 
     )
     .join("\n\n");
 
-  const fullPrompt = `You are a supportive coach. Analyze these weekly self-reviews and give concise, constructive feedback (2-4 short paragraphs). Focus on patterns, encouragement, and 1-2 concrete suggestions. Write in the same language as the reviews.\n\n${prompt}`;
+  const fullPrompt =
+    `You are a supportive coach. Analyze these self-reviews and respond in **markdown** with exactly these sections (use ## or ### headings):
+1. What You Did Well
+2. Areas to Improve
+3. Recommendations
+4. Summary
+Use bullet points and optional emoji for clarity. Keep each section concise. Write in the same language as the reviews.
+
+` + prompt;
 
   try {
     const analysis = await generateAnalysis(fullPrompt);

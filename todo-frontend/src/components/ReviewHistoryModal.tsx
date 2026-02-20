@@ -1,13 +1,57 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import { X, FileText, Sparkles } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
 import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsInRange, getMonthsInRange, formatWeekPeriodLabel } from "@/lib/datePeriod";
 import type { Review } from "@/types";
 import { ReviewModal } from "./ReviewModal";
+
+const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components"] = {
+  h2: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
+    <h2 className="text-base font-semibold text-emerald-400 mt-4 mb-2 first:mt-0 border-l-2 border-emerald-500/50 pl-3" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }: React.ComponentPropsWithoutRef<"h3">) => (
+    <h3 className="text-sm font-semibold text-slate-100 mt-3 mb-1.5" {...props}>
+      {children}
+    </h3>
+  ),
+  p: ({ children, ...props }: React.ComponentPropsWithoutRef<"p">) => (
+    <p className="text-sm text-slate-300 mb-2 last:mb-0" {...props}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...props }: React.ComponentPropsWithoutRef<"ul">) => (
+    <ul className="text-sm text-slate-300 list-disc list-inside mb-2 space-y-1 marker:text-emerald-400/80" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }: React.ComponentPropsWithoutRef<"ol">) => (
+    <ol className="text-sm text-slate-300 list-decimal list-inside mb-2 space-y-1 marker:text-emerald-400/80" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }: React.ComponentPropsWithoutRef<"li">) => (
+    <li className="pl-1" {...props}>
+      {children}
+    </li>
+  ),
+  strong: ({ children, ...props }: React.ComponentPropsWithoutRef<"strong">) => (
+    <strong className="font-semibold text-slate-200" {...props}>
+      {children}
+    </strong>
+  ),
+  a: ({ children, href, ...props }: React.ComponentPropsWithoutRef<"a">) => (
+    <a href={href} className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+      {children}
+    </a>
+  ),
+};
 
 interface ReviewHistoryModalProps {
   isOpen: boolean;
@@ -295,13 +339,15 @@ export function ReviewHistoryModal({
                       </AnimatePresence>
                     )}
                     {analysisResult !== null && (
-                      <div className="mt-4 p-4 rounded-xl bg-slate-800/50 border border-white/[0.04]">
-                        <div className="text-sm font-medium text-violet-400 mb-2">
+                      <div className="mt-4 p-4 rounded-xl bg-slate-800/50 border border-white/[0.04] overflow-y-auto max-h-[320px]">
+                        <div className="text-sm font-medium text-emerald-400 mb-2">
                           {t("reviewHistory.aiResponse")}
                         </div>
-                        <p className="text-sm text-slate-300 whitespace-pre-wrap">
-                          {analysisResult}
-                        </p>
+                        <div className="prose-invert">
+                          <ReactMarkdown components={markdownComponents}>
+                            {analysisResult}
+                          </ReactMarkdown>
+                        </div>
                       </div>
                     )}
                   </>

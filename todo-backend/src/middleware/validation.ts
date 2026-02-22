@@ -208,6 +208,21 @@ export const validateAnalyzeReviewsBody = [
   body("to").optional().trim().isString(),
 ];
 
+export const validatePatchDateTemplateBody = [
+  body("items")
+    .isArray()
+    .withMessage("items must be an array"),
+  body("items.*.title")
+    .trim()
+    .notEmpty()
+    .withMessage("Item title is required")
+    .isLength({ max: 500 })
+    .withMessage("Title cannot exceed 500 characters"),
+  body("items.*.order")
+    .isInt({ min: 0 })
+    .withMessage("Item order must be a non-negative integer"),
+];
+
 export const validatePatchReviewBody = [
   body("goodThings")
     .optional()

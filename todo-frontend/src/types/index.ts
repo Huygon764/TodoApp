@@ -75,6 +75,20 @@ export interface RecurringTemplate {
   updatedAt: string;
 }
 
+export interface DateTemplateItem {
+  title: string;
+  order: number;
+}
+
+export interface DateTemplate {
+  _id: string;
+  userId: string;
+  date: string;
+  items: DateTemplateItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Review {
   _id: string;
   userId: string;

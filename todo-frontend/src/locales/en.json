@@ -65,6 +65,17 @@
     "footerTip": "Items are automatically added to the day's todo list on Mondays and on the first day of each month when you open that day. Not related to goals.",
     "deleteAria": "Delete"
   },
+  "dateTemplateModal": {
+    "title": "Template by date",
+    "subtitle": "Items are added to the day todo on the selected date",
+    "addPlaceholder": "Add item...",
+    "add": "Add",
+    "empty": "No items for this date",
+    "save": "Save",
+    "saving": "Saving...",
+    "deleteAria": "Delete",
+    "footerTip": "When you open that day, these items will appear in your day todo."
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Week {{period}}",
@@ -104,6 +115,8 @@
     "templateDefault": "Default template",
     "recurringTemplateTitle": "Recurring template",
     "recurringTemplateDesc": "Added to day todo on Monday and 1st of month",
+    "dateTemplateTitle": "Template by date",
+    "dateTemplateDesc": "Add items for a specific date; they appear in day todo on that date",
     "logout": "Log out"
   },
   "common": {

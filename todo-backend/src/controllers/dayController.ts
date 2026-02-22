@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { DayTodo, DefaultItem, RecurringTemplate } from "../models/index.js";
+import { DayTodo, DefaultItem, RecurringTemplate, DateTemplate } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IDayTodoItem } from "../types/index.js";
@@ -76,6 +76,10 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
         items = mergeItemsByTitle(items, monthTemplate.items, items.length);
       }
     }
+    const dateTemplate = await DateTemplate.findOne({ userId, date });
+    if (dateTemplate?.items?.length) {
+      items = mergeItemsByTitle(items, dateTemplate.items, items.length);
+    }
     dayTodo = await DayTodo.create({
       userId,
       date,
@@ -126,6 +130,17 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
         );
         if (dayTodo.items.length !== before) modified = true;
       }
+    }
+
+    const dateTemplate = await DateTemplate.findOne({ userId, date });
+    if (dateTemplate?.items?.length) {
+      const before = dayTodo.items.length;
+      dayTodo.items = mergeItemsByTitle(
+        dayTodo.items,
+        dateTemplate.items,
+        dayTodo.items.length
+      );
+      if (dayTodo.items.length !== before) modified = true;
     }
 
     if (modified) await dayTodo.save();

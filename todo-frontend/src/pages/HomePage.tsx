@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
@@ -15,6 +15,7 @@ import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
+import { DateTemplateModal } from "@/components/DateTemplateModal";
 
 // Subtle Animated Background
 const AnimatedBackground = () => {
@@ -113,6 +114,7 @@ export function HomePage() {
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isReviewHistoryModalOpen, setIsReviewHistoryModalOpen] = useState(false);
+  const [isDateTemplateModalOpen, setIsDateTemplateModalOpen] = useState(false);
   const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const queryClient = useQueryClient();
 
@@ -294,6 +296,38 @@ export function HomePage() {
           </motion.button>
         </motion.section>
 
+        {/* Date template (specific date → day todo) */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.12 }}
+        >
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={() => setIsDateTemplateModalOpen(true)}
+            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-slate-200">{t("home.dateTemplateTitle")}</p>
+                  <p className="text-sm text-slate-500">{t("home.dateTemplateDesc")}</p>
+                </div>
+              </div>
+              <div className="text-slate-500 group-hover:text-emerald-400 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </motion.button>
+        </motion.section>
+
         {/* Recurring template (week start / month start → day todo) */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
@@ -335,6 +369,17 @@ export function HomePage() {
         onAddItem={(title) => addDefaultMutation.mutate(title)}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
         onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
+      />
+
+      {/* Date template modal (items for a specific date → day todo on that date) */}
+      <DateTemplateModal
+        isOpen={isDateTemplateModalOpen}
+        onClose={() => setIsDateTemplateModalOpen(false)}
+        onSaved={(date) => {
+          if (date === selectedDate) {
+            queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
+          }
+        }}
       />
 
       {/* Recurring template modal (adds to day todo on Monday / 1st of month) */}

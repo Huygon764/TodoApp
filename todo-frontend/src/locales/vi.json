@@ -65,6 +65,17 @@
     "footerTip": "Các item được tự động thêm vào todo của ngày vào Thứ Hai và ngày 1 mỗi tháng khi bạn mở ngày đó. Không liên quan mục tiêu.",
     "deleteAria": "Xóa"
   },
+  "dateTemplateModal": {
+    "title": "Template theo ngày",
+    "subtitle": "Các item sẽ được thêm vào todo của ngày đã chọn",
+    "addPlaceholder": "Thêm item...",
+    "add": "Thêm",
+    "empty": "Chưa có item cho ngày này",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "deleteAria": "Xóa",
+    "footerTip": "Khi bạn mở ngày đó, các item này sẽ xuất hiện trong todo của ngày."
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Tuần {{period}}",
@@ -104,6 +115,8 @@
     "templateDefault": "Template mặc định",
     "recurringTemplateTitle": "Template định kỳ",
     "recurringTemplateDesc": "Tự thêm vào todo ngày Thứ 2 và ngày 1 mỗi tháng",
+    "dateTemplateTitle": "Template theo ngày",
+    "dateTemplateDesc": "Thêm item cho ngày cụ thể; sẽ xuất hiện trong todo của ngày đó",
     "logout": "Đăng xuất"
   },
   "common": {

@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { DayTodo, DefaultItem, RecurringTemplate, DateTemplate } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
-import type { IDayTodoItem } from "../types/index.js";
+import type { IDayTodoItem, IRecurringTemplateItem } from "../types/index.js";
 import { isFirstDayOfWeek, isFirstDayOfMonth } from "../utils/datePeriod.js";
 
 /** Parse YYYY-MM-DD to Date at noon UTC for weekday/monthday checks */
@@ -36,6 +36,50 @@ function mergeItemsByTitle(
     : [...existing, ...toAppend];
 }
 
+/** Map JS weekday (0=Sun..6=Sat) to 1-7 with 1=Monday, 7=Sunday */
+function toWeekdayIndexMondayFirst(d: Date): number {
+  const js = d.getUTCDay(); // 0-6
+  return ((js + 6) % 7) + 1; // 1-7
+}
+
+function shouldIncludeWeeklyItem(
+  item: IRecurringTemplateItem,
+  weekdayIndex: number,
+  isMonday: boolean
+): boolean {
+  if (Array.isArray(item.daysOfWeek) && item.daysOfWeek.length > 0) {
+    return item.daysOfWeek.includes(weekdayIndex);
+  }
+  // Backward compatibility: items without schedule behave like Monday-only
+  return isMonday;
+}
+
+function shouldIncludeMonthlyItem(
+  item: IRecurringTemplateItem,
+  dayOfMonth: number,
+  isFirstOfMonth: boolean
+): boolean {
+  if (Array.isArray(item.daysOfMonth) && item.daysOfMonth.length > 0) {
+    return item.daysOfMonth.includes(dayOfMonth);
+  }
+  // Backward compatibility: items without schedule behave like day-1-only
+  return isFirstOfMonth;
+}
+
+function shouldIncludeYearlyItem(
+  item: IRecurringTemplateItem,
+  month: number,
+  dayOfMonth: number
+): boolean {
+  if (Array.isArray(item.datesOfYear) && item.datesOfYear.length > 0) {
+    return item.datesOfYear.some(
+      (d) => d.month === month && d.day === dayOfMonth
+    );
+  }
+  // For legacy items without schedule, default to 1/1 only
+  return month === 1 && dayOfMonth === 1;
+}
+
 /**
  * GET /api/days/:date
  * Returns day todo list. Creates from List 1 (daily default) if not exists.
@@ -48,6 +92,9 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
   const dateObj = parseDateString(date);
   const isMonday = isFirstDayOfWeek(dateObj);
   const isFirstOfMonth = isFirstDayOfMonth(dateObj);
+  const weekdayIndex = toWeekdayIndexMondayFirst(dateObj);
+  const dayOfMonth = dateObj.getUTCDate();
+  const month = dateObj.getUTCMonth() + 1;
 
   let dayTodo = await DayTodo.findOne({ userId, date });
 
@@ -58,22 +105,44 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       completed: false,
       order: i,
     }));
-    if (isMonday) {
-      const weekTemplate = await RecurringTemplate.findOne({
-        userId,
-        type: "week",
-      });
-      if (weekTemplate?.items?.length) {
-        items = mergeItemsByTitle(items, weekTemplate.items, items.length);
+
+    // Recurring templates: week / month / year, filtered by schedule
+    const weekTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "week",
+    });
+    if (weekTemplate?.items?.length) {
+      const weeklyItems = weekTemplate.items.filter((it) =>
+        shouldIncludeWeeklyItem(it, weekdayIndex, isMonday)
+      );
+      if (weeklyItems.length) {
+        items = mergeItemsByTitle(items, weeklyItems, items.length);
       }
     }
-    if (isFirstOfMonth) {
-      const monthTemplate = await RecurringTemplate.findOne({
-        userId,
-        type: "month",
-      });
-      if (monthTemplate?.items?.length) {
-        items = mergeItemsByTitle(items, monthTemplate.items, items.length);
+
+    const monthTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "month",
+    });
+    if (monthTemplate?.items?.length) {
+      const monthlyItems = monthTemplate.items.filter((it) =>
+        shouldIncludeMonthlyItem(it, dayOfMonth, isFirstOfMonth)
+      );
+      if (monthlyItems.length) {
+        items = mergeItemsByTitle(items, monthlyItems, items.length);
+      }
+    }
+
+    const yearTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "year",
+    });
+    if (yearTemplate?.items?.length) {
+      const yearlyItems = yearTemplate.items.filter((it) =>
+        shouldIncludeYearlyItem(it, month, dayOfMonth)
+      );
+      if (yearlyItems.length) {
+        items = mergeItemsByTitle(items, yearlyItems, items.length);
       }
     }
     const dateTemplate = await DateTemplate.findOne({ userId, date });
@@ -100,32 +169,58 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       modified = true;
     }
 
-    // List 2: merge recurring template on Monday (week) or 1st of month (month)
-    if (isMonday) {
-      const weekTemplate = await RecurringTemplate.findOne({
-        userId,
-        type: "week",
-      });
-      if (weekTemplate?.items?.length) {
+    // List 2: merge recurring templates (week / month / year) based on schedule
+    const weekTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "week",
+    });
+    if (weekTemplate?.items?.length) {
+      const weeklyItems = weekTemplate.items.filter((it) =>
+        shouldIncludeWeeklyItem(it, weekdayIndex, isMonday)
+      );
+      if (weeklyItems.length) {
         const before = dayTodo.items.length;
         dayTodo.items = mergeItemsByTitle(
           dayTodo.items,
-          weekTemplate.items,
+          weeklyItems,
           dayTodo.items.length
         );
         if (dayTodo.items.length !== before) modified = true;
       }
     }
-    if (isFirstOfMonth) {
-      const monthTemplate = await RecurringTemplate.findOne({
-        userId,
-        type: "month",
-      });
-      if (monthTemplate?.items?.length) {
+
+    const monthTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "month",
+    });
+    if (monthTemplate?.items?.length) {
+      const monthlyItems = monthTemplate.items.filter((it) =>
+        shouldIncludeMonthlyItem(it, dayOfMonth, isFirstOfMonth)
+      );
+      if (monthlyItems.length) {
         const before = dayTodo.items.length;
         dayTodo.items = mergeItemsByTitle(
           dayTodo.items,
-          monthTemplate.items,
+          monthlyItems,
+          dayTodo.items.length
+        );
+        if (dayTodo.items.length !== before) modified = true;
+      }
+    }
+
+    const yearTemplate = await RecurringTemplate.findOne({
+      userId,
+      type: "year",
+    });
+    if (yearTemplate?.items?.length) {
+      const yearlyItems = yearTemplate.items.filter((it) =>
+        shouldIncludeYearlyItem(it, month, dayOfMonth)
+      );
+      if (yearlyItems.length) {
+        const before = dayTodo.items.length;
+        dayTodo.items = mergeItemsByTitle(
+          dayTodo.items,
+          yearlyItems,
           dayTodo.items.length
         );
         if (dayTodo.items.length !== before) modified = true;

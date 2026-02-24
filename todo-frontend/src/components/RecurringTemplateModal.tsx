@@ -7,8 +7,8 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
 
-/** Recurring template: week/month only; items are added to day todo on Monday / 1st of month */
-type RecurringTab = "week" | "month";
+/** Recurring template: week/month/year; items are added to day todo based on schedule */
+type RecurringTab = "week" | "month" | "year";
 
 interface RecurringTemplateModalProps {
   isOpen: boolean;
@@ -30,6 +30,14 @@ export function RecurringTemplateModal({
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
+  // Context-level schedule selectors (single-day context per tab)
+  const [weeklyContextDay, setWeeklyContextDay] = useState<number>(1); // 1 = Monday
+  const [monthlyContextDay, setMonthlyContextDay] = useState<number>(1); // 1-31
+  const [yearlyContext, setYearlyContext] = useState<{ month: number; day: number }>(() => {
+    const today = new Date();
+    return { month: today.getMonth() + 1, day: today.getDate() };
+  });
+
   useEffect(() => {
     if (editingIndex !== null) editInputRef.current?.focus();
   }, [editingIndex]);
@@ -50,12 +58,38 @@ export function RecurringTemplateModal({
   const template = data ?? null;
   const items = template?.items ?? [];
 
+  // Derive visible items for current context, but keep original index for API ops
+  const visibleItems = items
+    .map((item, idx) => ({ item, idx }))
+    .filter(({ item }) => {
+      if (activeTab === "week") {
+        return Array.isArray(item.daysOfWeek) && item.daysOfWeek.includes(weeklyContextDay);
+      }
+      if (activeTab === "month") {
+        return Array.isArray(item.daysOfMonth) && item.daysOfMonth.includes(monthlyContextDay);
+      }
+      if (activeTab === "year") {
+        return (
+          Array.isArray(item.datesOfYear) &&
+          item.datesOfYear.some(
+            (d) => d.month === yearlyContext.month && d.day === yearlyContext.day
+          )
+        );
+      }
+      return false;
+    });
+
   const addMutation = useMutation({
     mutationFn: (title: string) =>
       apiPost<{ template: RecurringTemplate }>(API_PATHS.RECURRING_TEMPLATES, {
         type: activeTab as "week" | "month" | "year",
         title,
         order: items.length,
+        ...(activeTab === "week" ? { daysOfWeek: [weeklyContextDay] } : {}),
+        ...(activeTab === "month" ? { daysOfMonth: [monthlyContextDay] } : {}),
+        ...(activeTab === "year"
+          ? { datesOfYear: [{ month: yearlyContext.month, day: yearlyContext.day }] }
+          : {}),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -70,9 +104,22 @@ export function RecurringTemplateModal({
     },
   });
 
-  const patchTitleMutation = useMutation({
-    mutationFn: ({ idx, title }: { idx: number; title: string }) =>
-      apiPatch(API_PATHS.RECURRING_TEMPLATE_ITEM(activeTab, idx), { title }),
+  type PatchPayload = {
+    idx: number;
+    title?: string;
+    daysOfWeek?: number[];
+    daysOfMonth?: number[];
+    datesOfYear?: { month: number; day: number }[];
+  };
+
+  const patchItemMutation = useMutation({
+    mutationFn: ({ idx, title, daysOfWeek, daysOfMonth, datesOfYear }: PatchPayload) =>
+      apiPatch(API_PATHS.RECURRING_TEMPLATE_ITEM(activeTab, idx), {
+        ...(title !== undefined ? { title } : {}),
+        ...(daysOfWeek !== undefined ? { daysOfWeek } : {}),
+        ...(daysOfMonth !== undefined ? { daysOfMonth } : {}),
+        ...(datesOfYear !== undefined ? { datesOfYear } : {}),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
     },
@@ -91,7 +138,7 @@ export function RecurringTemplateModal({
     setEditingIndex(null);
     setEditValue("");
     if (trimmed === "") return;
-    patchTitleMutation.mutate({ idx: index, title: trimmed });
+    patchItemMutation.mutate({ idx: index, title: trimmed });
   };
 
   const cancelRecurringEdit = () => {
@@ -167,7 +214,7 @@ export function RecurringTemplateModal({
                 </div>
 
                 <div className="flex border-b border-white/[0.04]">
-                  {(["week", "month"] as const).map((tab) => (
+                  {(["week", "month", "year"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -180,9 +227,115 @@ export function RecurringTemplateModal({
                     >
                       {tab === "week"
                         ? t("recurringModal.tabWeek")
-                        : t("recurringModal.tabMonth")}
+                        : tab === "month"
+                        ? t("recurringModal.tabMonth")
+                        : t("recurringModal.tabYear")}
                     </button>
                   ))}
+                </div>
+
+                {/* Context selector per tab (single-day context, like DateTemplateModal) */}
+                <div className="p-4 border-b border-white/[0.04]">
+                  {activeTab === "week" && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-slate-400">
+                        {t("recurringModal.tabWeek")}:
+                      </span>
+                      <div className="flex gap-1 flex-wrap">
+                        {[
+                          { label: "Mon", value: 1 },
+                          { label: "Tue", value: 2 },
+                          { label: "Wed", value: 3 },
+                          { label: "Thu", value: 4 },
+                          { label: "Fri", value: 5 },
+                          { label: "Sat", value: 6 },
+                          { label: "Sun", value: 7 },
+                        ].map((day) => {
+                          const active = weeklyContextDay === day.value;
+                          return (
+                            <button
+                              key={day.value}
+                              type="button"
+                              onClick={() => setWeeklyContextDay(day.value)}
+                              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                                active
+                                  ? "bg-amber-500/20 border-amber-500/60 text-amber-300"
+                                  : "bg-slate-800/60 border-white/5 text-slate-400 hover:bg-slate-700/60 hover:text-slate-200"
+                              }`}
+                            >
+                              {day.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "month" && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-slate-400">
+                        {t("recurringModal.tabMonth")}:
+                      </span>
+                      <select
+                        value={monthlyContextDay}
+                        onChange={(e) => setMonthlyContextDay(Number(e.target.value) || 1)}
+                        className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                      >
+                        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {activeTab === "year" && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-slate-400">
+                        {t("recurringModal.tabYear")}:
+                      </span>
+                      <div className="flex items-center gap-2 text-xs text-slate-300">
+                        <span>
+                          {String(yearlyContext.day).padStart(2, "0")}/
+                          {String(yearlyContext.month).padStart(2, "0")}
+                        </span>
+                        {/* Simple month/day selectors to avoid heavy calendar UI */}
+                        <select
+                          value={yearlyContext.month}
+                          onChange={(e) =>
+                            setYearlyContext((prev) => ({
+                              ...prev,
+                              month: Number(e.target.value) || 1,
+                            }))
+                          }
+                          className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                        >
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                            <option key={m} value={m}>
+                              {m}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={yearlyContext.day}
+                          onChange={(e) =>
+                            setYearlyContext((prev) => ({
+                              ...prev,
+                              day: Number(e.target.value) || 1,
+                            }))
+                          }
+                          className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                        >
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-4 border-b border-white/[0.04]">
@@ -214,7 +367,7 @@ export function RecurringTemplateModal({
                 </div>
 
                 <div className="p-4 max-h-[300px] overflow-y-auto">
-                  {items.length === 0 ? (
+                  {visibleItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-slate-500">
                       <ListTodo className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("recurringModal.empty")}</p>
@@ -222,54 +375,58 @@ export function RecurringTemplateModal({
                   ) : (
                     <ul className="space-y-2">
                       <AnimatePresence mode="popLayout">
-                        {items.map((item, index) => (
-                          <motion.li
-                            key={`${item.title}-${index}`}
-                            layout
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 10 }}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
-                          >
-                            {editingIndex === index ? (
-                              <input
-                                ref={editInputRef}
-                                type="text"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") saveRecurringTitle(index);
-                                  if (e.key === "Escape") cancelRecurringEdit();
-                                }}
-                                onBlur={() => saveRecurringTitle(index)}
-                                className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
-                              />
-                            ) : (
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => handleTitleClick(index)}
-                                onKeyDown={(e) =>
-                                  e.key === "Enter" && handleTitleClick(index)
-                                }
-                                className="flex-1 text-slate-200 cursor-text"
-                              >
-                                {item.title}
-                              </span>
-                            )}
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => deleteMutation.mutate(index)}
-                              disabled={deleteMutation.isPending}
-                              className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-                              aria-label={t("recurringModal.deleteAria")}
+                        {visibleItems.map(({ item, idx }) => {
+                          return (
+                            <motion.li
+                              key={`${item.title}-${idx}`}
+                              layout
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: 10 }}
+                              className="flex flex-col gap-2 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
                             >
-                              <Trash2 className="w-4 h-4" />
-                            </motion.button>
-                          </motion.li>
-                        ))}
+                              <div className="flex items-center gap-3">
+                                {editingIndex === idx ? (
+                                  <input
+                                    ref={editInputRef}
+                                    type="text"
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") saveRecurringTitle(idx);
+                                      if (e.key === "Escape") cancelRecurringEdit();
+                                    }}
+                                    onBlur={() => saveRecurringTitle(idx)}
+                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                  />
+                                ) : (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => handleTitleClick(idx)}
+                                    onKeyDown={(e) =>
+                                      e.key === "Enter" && handleTitleClick(idx)
+                                    }
+                                    className="flex-1 text-slate-200 cursor-text"
+                                  >
+                                    {item.title}
+                                  </span>
+                                )}
+                                <motion.button
+                                  type="button"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => deleteMutation.mutate(idx)}
+                                  disabled={deleteMutation.isPending}
+                                  className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                  aria-label={t("recurringModal.deleteAria")}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </motion.li>
+                          );
+                        })}
                       </AnimatePresence>
                     </ul>
                   )}

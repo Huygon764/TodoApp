@@ -56,13 +56,14 @@
   },
   "recurringModal": {
     "title": "Template định kỳ",
-    "subtitle": "Tự thêm vào todo của ngày khi đầu tuần hoặc đầu tháng",
-    "tabWeek": "Đầu tuần (Thứ 2)",
-    "tabMonth": "Đầu tháng (ngày 1)",
+    "subtitle": "Lặp lại theo tuần / tháng / năm, tự thêm vào todo của ngày theo lịch đã chọn",
+    "tabWeek": "Hàng tuần",
+    "tabMonth": "Hàng tháng",
+    "tabYear": "Hàng năm",
     "addPlaceholder": "Thêm item...",
     "add": "Thêm",
     "empty": "Chưa có item nào",
-    "footerTip": "Các item được tự động thêm vào todo của ngày vào Thứ Hai và ngày 1 mỗi tháng khi bạn mở ngày đó. Không liên quan mục tiêu.",
+    "footerTip": "Các item được tự động thêm vào todo của ngày theo lịch lặp bạn đã chọn khi mở ngày đó. Không liên quan mục tiêu.",
     "deleteAria": "Xóa"
   },
   "dateTemplateModal": {
@@ -114,7 +115,7 @@
     "defaultTemplateDesc": "{{count}} items • Tự động copy mỗi ngày mới",
     "templateDefault": "Template mặc định",
     "recurringTemplateTitle": "Template định kỳ",
-    "recurringTemplateDesc": "Tự thêm vào todo ngày Thứ 2 và ngày 1 mỗi tháng",
+    "recurringTemplateDesc": "Tự thêm vào todo của ngày theo lịch lặp bạn đã chọn khi mở ngày đó",
     "dateTemplateTitle": "Template theo ngày",
     "dateTemplateDesc": "Thêm item cho ngày cụ thể; sẽ xuất hiện trong todo của ngày đó",
     "logout": "Đăng xuất"

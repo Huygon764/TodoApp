@@ -56,13 +56,14 @@
   },
   "recurringModal": {
     "title": "Recurring template",
-    "subtitle": "Added to the day's todo list on week start or month start",
-    "tabWeek": "Week start (Monday)",
-    "tabMonth": "Month start (1st)",
+    "subtitle": "Repeated items that are added to the day's todo list on specific weekdays/month days/year days",
+    "tabWeek": "Weekly",
+    "tabMonth": "Monthly",
+    "tabYear": "Yearly",
     "addPlaceholder": "Add item...",
     "add": "Add",
     "empty": "No items yet",
-    "footerTip": "Items are automatically added to the day's todo list on Mondays and on the first day of each month when you open that day. Not related to goals.",
+    "footerTip": "Items are automatically added to the day's todo list on the selected recurring days when you open that day. Not related to goals.",
     "deleteAria": "Delete"
   },
   "dateTemplateModal": {
@@ -114,7 +115,7 @@
     "defaultTemplateDesc": "{{count}} items • Auto-copy each new day",
     "templateDefault": "Default template",
     "recurringTemplateTitle": "Recurring template",
-    "recurringTemplateDesc": "Added to day todo on Monday and 1st of month",
+    "recurringTemplateDesc": "Added to day todo on the selected recurring days",
     "dateTemplateTitle": "Template by date",
     "dateTemplateDesc": "Add items for a specific date; they appear in day todo on that date",
     "logout": "Log out"

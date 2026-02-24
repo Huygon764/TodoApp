@@ -64,6 +64,12 @@ export interface Goal {
 export interface RecurringTemplateItem {
   title: string;
   order: number;
+  /** 1-7, 1 = Monday, 7 = Sunday (for weekly templates) */
+  daysOfWeek?: number[];
+  /** 1-31 (for monthly templates) */
+  daysOfMonth?: number[];
+  /** Specific days in year (for yearly templates) */
+  datesOfYear?: { month: number; day: number }[];
 }
 
 export interface RecurringTemplate {

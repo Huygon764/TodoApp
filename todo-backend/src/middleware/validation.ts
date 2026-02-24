@@ -138,6 +138,34 @@ export const validatePostRecurringTemplateBody = [
     .isLength({ max: 500 })
     .withMessage("Title cannot exceed 500 characters"),
   body("order").optional().isInt({ min: 0 }),
+  body("daysOfWeek")
+    .optional()
+    .isArray()
+    .withMessage("daysOfWeek must be an array"),
+  body("daysOfWeek.*")
+    .optional()
+    .isInt({ min: 1, max: 7 })
+    .withMessage("daysOfWeek values must be between 1 and 7"),
+  body("daysOfMonth")
+    .optional()
+    .isArray()
+    .withMessage("daysOfMonth must be an array"),
+  body("daysOfMonth.*")
+    .optional()
+    .isInt({ min: 1, max: 31 })
+    .withMessage("daysOfMonth values must be between 1 and 31"),
+  body("datesOfYear")
+    .optional()
+    .isArray()
+    .withMessage("datesOfYear must be an array"),
+  body("datesOfYear.*.month")
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage("datesOfYear.month must be between 1 and 12"),
+  body("datesOfYear.*.day")
+    .optional()
+    .isInt({ min: 1, max: 31 })
+    .withMessage("datesOfYear.day must be between 1 and 31"),
 ];
 
 export const validateRecurringTemplateTypeParam = [
@@ -148,11 +176,40 @@ export const validateRecurringTemplateTypeParam = [
 
 export const validatePatchRecurringTemplateItemBody = [
   body("title")
+    .optional()
     .trim()
     .notEmpty()
-    .withMessage("Title is required")
+    .withMessage("Title cannot be empty")
     .isLength({ max: 500 })
     .withMessage("Title cannot exceed 500 characters"),
+  body("daysOfWeek")
+    .optional()
+    .isArray()
+    .withMessage("daysOfWeek must be an array"),
+  body("daysOfWeek.*")
+    .optional()
+    .isInt({ min: 1, max: 7 })
+    .withMessage("daysOfWeek values must be between 1 and 7"),
+  body("daysOfMonth")
+    .optional()
+    .isArray()
+    .withMessage("daysOfMonth must be an array"),
+  body("daysOfMonth.*")
+    .optional()
+    .isInt({ min: 1, max: 31 })
+    .withMessage("daysOfMonth values must be between 1 and 31"),
+  body("datesOfYear")
+    .optional()
+    .isArray()
+    .withMessage("datesOfYear must be an array"),
+  body("datesOfYear.*.month")
+    .optional()
+    .isInt({ min: 1, max: 12 })
+    .withMessage("datesOfYear.month must be between 1 and 12"),
+  body("datesOfYear.*.day")
+    .optional()
+    .isInt({ min: 1, max: 31 })
+    .withMessage("datesOfYear.day must be between 1 and 31"),
 ];
 
 export const validateGetReviewsQuery = [

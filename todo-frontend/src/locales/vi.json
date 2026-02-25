@@ -77,6 +77,18 @@
     "deleteAria": "Xóa",
     "footerTip": "Khi bạn mở ngày đó, các item này sẽ xuất hiện trong todo của ngày."
   },
+  "freetimeModal": {
+    "title": "Danh sách khi rảnh",
+    "subtitle": "Những việc bạn muốn làm khi có thời gian rảnh",
+    "addPlaceholder": "Thêm việc muốn làm khi rảnh...",
+    "add": "Thêm",
+    "emptyTitle": "Chưa có việc nào khi rảnh",
+    "emptySub": "Thêm ý tưởng cho những việc bạn muốn làm khi có thời gian",
+    "deleteAria": "Xóa",
+    "addSubTaskPlaceholder": "Thêm sub-task",
+    "addSubTask": "Thêm",
+    "deleteSubTaskAria": "Xóa sub-task"
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Tuần {{period}}",

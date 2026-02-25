@@ -34,6 +34,22 @@ export const validatePatchDayBody = [
   body("items.*.order").optional().isInt({ min: 0 }),
 ];
 
+export const validatePatchFreetimeTodoBody = [
+  body("items")
+    .optional()
+    .isArray()
+    .withMessage("items must be an array"),
+  body("items.*.title").optional().trim().isString(),
+  body("items.*.completed").optional().isBoolean(),
+  body("items.*.order").optional().isInt({ min: 0 }),
+  body("items.*.subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("items.*.subTasks.*.title").optional().trim().isString(),
+  body("items.*.subTasks.*.completed").optional().isBoolean(),
+];
+
 export const validatePatchDefaultBody = [
   body("title")
     .optional()

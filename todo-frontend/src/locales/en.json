@@ -77,6 +77,18 @@
     "deleteAria": "Delete",
     "footerTip": "When you open that day, these items will appear in your day todo."
   },
+  "freetimeModal": {
+    "title": "Freetime list",
+    "subtitle": "Things you want to do when you have free time",
+    "addPlaceholder": "Add something to do in your freetime...",
+    "add": "Add",
+    "emptyTitle": "No freetime tasks yet",
+    "emptySub": "Add ideas for things you want to do when you have time",
+    "deleteAria": "Delete",
+    "addSubTaskPlaceholder": "Add sub-task",
+    "addSubTask": "Add",
+    "deleteSubTaskAria": "Delete sub-task"
+  },
   "reviewModal": {
     "title": "Review myself",
     "weekLabel": "Week {{period}}",

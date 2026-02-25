@@ -3,5 +3,6 @@ export * from "./defaultItem.js";
 export * from "./dayTodo.js";
 export * from "./goal.js";
 export * from "./recurringTemplate.js";
+export * from "./freetimeTodo.js";
 export * from "./dateTemplate.js";
 export * from "./review.js";

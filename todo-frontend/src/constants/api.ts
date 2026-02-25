@@ -16,6 +16,7 @@ export const API_PATHS = {
   RECURRING_TEMPLATE_ITEM: (type: "week" | "month" | "year", idx: number) =>
     `/api/recurring-templates/${type}/items/${idx}`,
   DATE_TEMPLATE: (date: string) => `/api/date-templates/${date}`,
+  FREETIME_TODO: "/api/freetime-todo",
   REVIEWS: "/api/reviews",
   REVIEWS_QUERY: (params: {
     type?: "week" | "month";

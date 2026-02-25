@@ -4,6 +4,7 @@ import daysRouter from "./days.js";
 import defaultRouter from "./default.js";
 import goalsRouter from "./goals.js";
 import recurringTemplatesRouter from "./recurringTemplates.js";
+import freetimeTodoRouter from "./freetimeTodo.js";
 import dateTemplatesRouter from "./dateTemplates.js";
 import reviewsRouter from "./reviews.js";
 
@@ -30,6 +31,7 @@ router.use("/days", daysRouter);
 router.use("/default", defaultRouter);
 router.use("/goals", goalsRouter);
 router.use("/recurring-templates", recurringTemplatesRouter);
+router.use("/freetime-todo", freetimeTodoRouter);
 router.use("/date-templates", dateTemplatesRouter);
 router.use("/reviews", reviewsRouter);
 

@@ -106,3 +106,23 @@ export interface Review {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface FreetimeSubTask {
+  title: string;
+  completed: boolean;
+}
+
+export interface FreetimeTodoItem {
+  title: string;
+  completed: boolean;
+  order: number;
+  subTasks?: FreetimeSubTask[];
+}
+
+export interface FreetimeTodo {
+  _id: string;
+  userId: string;
+  items: FreetimeTodoItem[];
+  createdAt: string;
+  updatedAt: string;
+}

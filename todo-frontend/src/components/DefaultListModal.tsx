@@ -137,15 +137,12 @@ export function DefaultListModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-lg" ref={contentRef}>
-              {/* Modal glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-3xl blur-xl opacity-50" />
-              
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-amber-500/10">
-                      <ListTodo className="w-5 h-5 text-amber-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <ListTodo className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">{t("defaultModal.title")}</h2>
@@ -156,7 +153,7 @@ export function DefaultListModal({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                   >
                     <X className="w-5 h-5" />
                   </motion.button>
@@ -167,7 +164,7 @@ export function DefaultListModal({
                   <div className="flex gap-3">
                     <div className="relative flex-1 group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-amber-400 transition-colors" />
+                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                       </div>
                       <input
                         type="text"
@@ -175,9 +172,9 @@ export function DefaultListModal({
                         onChange={(e) => setNewTitle(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addItem()}
                         placeholder={t("defaultModal.addPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 
-                          focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/50 
-                          hover:border-slate-600 transition-all duration-200"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 
+                          focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
+                          hover:border-white/[0.1] transition-all duration-200"
                       />
                     </div>
                     <motion.button
@@ -186,8 +183,8 @@ export function DefaultListModal({
                       whileTap={{ scale: 0.98 }}
                       onClick={addItem}
                       disabled={!newTitle.trim()}
-                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 
-                        text-white font-semibold transition-all duration-200 shadow-lg shadow-amber-500/20
+                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover 
+                        text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20
                         disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t("defaultModal.add")}
@@ -217,12 +214,12 @@ export function DefaultListModal({
                             drag
                             className="cursor-grab active:cursor-grabbing"
                           >
-                            <motion.li
+                            <motion.div
                               layout
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 10 }}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200 list-none"
+                              className="flex items-center gap-3 p-3 rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
                             >
                               {editingId === item._id ? (
                                 <input
@@ -261,7 +258,7 @@ export function DefaultListModal({
                               >
                                 <Trash2 className="w-4 h-4" />
                               </motion.button>
-                            </motion.li>
+                            </motion.div>
                           </Reorder.Item>
                         ))}
                       </AnimatePresence>

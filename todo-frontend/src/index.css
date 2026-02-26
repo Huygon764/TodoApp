@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-linear-bg: #0D0E12;
+  --color-linear-surface: #17181C;
+  --color-linear-card: #1C1D22;
+  --color-linear-accent: #5E6AD2;
+  --color-linear-accent-hover: #7C85E0;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

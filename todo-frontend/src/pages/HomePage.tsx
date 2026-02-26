@@ -17,61 +17,21 @@ import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
 import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
+import { ParticleBackground } from "@/components/ParticleBackground";
 
-// Subtle Animated Background
+// Subtle Animated Background (solid Linear style; particles added in Phase 5)
 const AnimatedBackground = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0f1a] via-[#0f172a] to-[#1a1f2e]" />
-      
-      {/* Grid pattern */}
-      <div 
+      <div className="absolute inset-0 bg-linear-bg" />
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
+          backgroundSize: "40px 40px",
         }}
       />
-
-      {/* Subtle Orbs - reduced opacity and size */}
-      <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-          top: '-5%',
-          right: '-5%',
-        }}
-        animate={{
-          y: [0, 30, 0],
-          scale: [1, 1.05, 1],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      <motion.div
-        className="absolute w-[300px] h-[300px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(20, 184, 166, 0.06) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          bottom: '10%',
-          left: '-5%',
-        }}
-        animate={{
-          y: [0, -20, 0],
-          scale: [1, 1.08, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+      <ParticleBackground />
     </div>
   );
 };
@@ -82,8 +42,7 @@ const AppLogo = () => {
   return (
     <div className="flex items-center gap-3">
       <div className="relative w-9 h-9">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl rotate-3 opacity-50 blur-[2px]" />
-        <div className="relative w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <div className="relative w-full h-full bg-linear-accent rounded-xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/20">
           <CheckCircle2 className="w-5 h-5 text-white" />
         </div>
       </div>
@@ -188,7 +147,7 @@ export function HomePage() {
       <AnimatedBackground />
       
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#0f172a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-linear-surface">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <AppLogo />
           <div className="flex items-center gap-2">
@@ -197,7 +156,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleLang}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-slate-200 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
               title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
             >
               <Languages className="w-5 h-5" />
@@ -206,7 +165,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsGoalModalOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-violet-400 hover:border-violet-500/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("home.goalsTitle")}
             >
               <Target className="w-5 h-5" />
@@ -219,7 +178,7 @@ export function HomePage() {
                 setReviewModalSlot(null);
                 setIsReviewModalOpen(true);
               }}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("dayTodo.reviewMyself")}
             >
               <FileText className="w-5 h-5" />
@@ -228,7 +187,7 @@ export function HomePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsDefaultModalOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-800/50 border border-white/[0.06] text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("home.defaultTemplateTitle")}
             >
               <Settings className="w-5 h-5" />
@@ -277,11 +236,11 @@ export function HomePage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => setIsDefaultModalOpen(true)}
-            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
                   <ListTodo className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -289,7 +248,7 @@ export function HomePage() {
                   <p className="text-sm text-slate-500">{t("home.defaultTemplateDesc", { count: defaultItems.length })}</p>
                 </div>
               </div>
-              <div className="text-slate-500 group-hover:text-emerald-400 transition-colors">
+              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -309,11 +268,11 @@ export function HomePage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => setIsDateTemplateModalOpen(true)}
-            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -321,7 +280,7 @@ export function HomePage() {
                   <p className="text-sm text-slate-500">{t("home.dateTemplateDesc")}</p>
                 </div>
               </div>
-              <div className="text-slate-500 group-hover:text-emerald-400 transition-colors">
+              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -341,11 +300,11 @@ export function HomePage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => setIsFreetimeModalOpen(true)}
-            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-emerald-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
                   <Circle className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -360,7 +319,7 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
-              <div className="text-slate-500 group-hover:text-emerald-400 transition-colors">
+              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -390,11 +349,11 @@ export function HomePage() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={() => setIsRecurringModalOpen(true)}
-            className="w-full p-4 rounded-2xl bg-slate-800/30 border border-white/[0.06] hover:border-amber-500/30 hover:bg-slate-800/50 transition-all duration-200 group cursor-pointer"
+            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
                   <CalendarRange className="w-5 h-5" />
                 </div>
                 <div className="text-left">
@@ -402,7 +361,7 @@ export function HomePage() {
                   <p className="text-sm text-slate-500">{t("home.recurringTemplateDesc")}</p>
                 </div>
               </div>
-              <div className="text-slate-500 group-hover:text-amber-400 transition-colors">
+              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

@@ -22,19 +22,19 @@ const dayPickerClassNames = {
   caption_label: "text-slate-200 font-medium text-sm",
   nav: "flex items-center gap-1",
   button_previous:
-    "p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all cursor-pointer",
+    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
   button_next:
-    "p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all cursor-pointer",
+    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
   month_grid: "w-full border-collapse",
   weekdays: "border-b border-white/[0.06]",
   weekday: "text-slate-500 text-xs font-medium py-2 w-[2.25rem]",
   week: "",
   day: "p-0.5",
   day_button:
-    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-600/50 hover:border-emerald-500/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
+    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-linear-card hover:border-[#5E6AD2]/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
   selected:
-    "bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30",
-  today: "border-emerald-500/40 text-emerald-300",
+    "bg-[#5E6AD2]/20 text-[#7C85E0] border-[#5E6AD2]/50 hover:bg-[#5E6AD2]/30",
+  today: "border-[#5E6AD2]/40 text-[#7C85E0]",
   outside: "text-slate-600 opacity-60",
   disabled: "opacity-40 cursor-not-allowed",
 };
@@ -113,13 +113,12 @@ export function CalendarPopover({
         className="fixed z-[9999] -translate-x-1/2"
         style={{ top: position.top, left: position.left }}
       >
-        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 blur-xl opacity-50" />
-        <div className="relative rounded-2xl border border-white/[0.06] bg-slate-800/95 backdrop-blur-xl shadow-xl">
+        <div className="relative rounded-2xl border border-white/[0.06] bg-linear-surface shadow-xl">
           <div className="border-b border-white/[0.06] px-3 py-2">
             <button
               type="button"
               onClick={handleTodayClick}
-              className="w-full rounded-xl bg-slate-700/50 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-600/50 hover:text-emerald-300 transition-colors cursor-pointer"
+              className="w-full rounded-xl bg-linear-card px-3 py-2 text-sm font-medium text-slate-300 hover:bg-linear-card/80 hover:text-linear-accent-hover transition-colors cursor-pointer"
             >
               {t("dateNav.today")}
             </button>

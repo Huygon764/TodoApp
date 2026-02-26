@@ -12,7 +12,7 @@ import { ReviewModal } from "./ReviewModal";
 
 const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components"] = {
   h2: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
-    <h2 className="text-base font-semibold text-emerald-400 mt-4 mb-2 first:mt-0 border-l-2 border-emerald-500/50 pl-3" {...props}>
+    <h2 className="text-base font-semibold text-[#7C85E0] mt-4 mb-2 first:mt-0 border-l-2 border-[#5E6AD2]/50 pl-3" {...props}>
       {children}
     </h2>
   ),
@@ -27,12 +27,12 @@ const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components
     </p>
   ),
   ul: ({ children, ...props }: React.ComponentPropsWithoutRef<"ul">) => (
-    <ul className="text-sm text-slate-300 list-disc list-inside mb-2 space-y-1 marker:text-emerald-400/80" {...props}>
+    <ul className="text-sm text-slate-300 list-disc list-inside mb-2 space-y-1 marker:text-[#7C85E0]/80" {...props}>
       {children}
     </ul>
   ),
   ol: ({ children, ...props }: React.ComponentPropsWithoutRef<"ol">) => (
-    <ol className="text-sm text-slate-300 list-decimal list-inside mb-2 space-y-1 marker:text-emerald-400/80" {...props}>
+    <ol className="text-sm text-slate-300 list-decimal list-inside mb-2 space-y-1 marker:text-[#7C85E0]/80" {...props}>
       {children}
     </ol>
   ),
@@ -47,7 +47,7 @@ const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components
     </strong>
   ),
   a: ({ children, href, ...props }: React.ComponentPropsWithoutRef<"a">) => (
-    <a href={href} className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+    <a href={href} className="text-[#7C85E0] hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
       {children}
     </a>
   ),
@@ -171,12 +171,11 @@ export function ReviewHistoryModal({
             className="fixed inset-0 z-[70] flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                      <FileText className="w-5 h-5 text-emerald-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <FileText className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">
@@ -192,7 +191,7 @@ export function ReviewHistoryModal({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                   >
                     <X className="w-5 h-5" />
                   </motion.button>
@@ -210,7 +209,7 @@ export function ReviewHistoryModal({
                         setSelectedFromMonth(v);
                         if (v > selectedToMonth) setSelectedToMonth(v);
                       }}
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 appearance-none cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 appearance-none cursor-pointer"
                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
                     >
                       {monthOptions.map((ym) => (
@@ -231,7 +230,7 @@ export function ReviewHistoryModal({
                         setSelectedToMonth(v);
                         if (v < selectedFromMonth) setSelectedFromMonth(v);
                       }}
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 appearance-none cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 appearance-none cursor-pointer"
                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
                     >
                       {monthOptions.map((ym) => (
@@ -279,7 +278,7 @@ export function ReviewHistoryModal({
                               className={`p-4 rounded-xl border border-white/[0.04] transition-colors ${
                                 review && selectedIds.has(review._id)
                                   ? "bg-violet-500/10 border-violet-500/30 cursor-pointer"
-                                  : "bg-slate-700/30 hover:bg-slate-700/50 cursor-pointer"
+                                  : "bg-slate-700/30 hover:bg-linear-surface cursor-pointer"
                               }`}
                               onClick={() => {
                                 if (onOpenSlot) {
@@ -303,7 +302,7 @@ export function ReviewHistoryModal({
                                     className="w-4 h-4 rounded border-slate-500 text-violet-500 focus:ring-violet-500"
                                   />
                                 )}
-                                <span className="font-medium text-emerald-400">
+                                <span className="font-medium text-[#7C85E0]">
                                   {slot.label}
                                 </span>
                                 {!review && (
@@ -340,7 +339,7 @@ export function ReviewHistoryModal({
                     )}
                     {analysisResult !== null && (
                       <div className="mt-4 p-4 rounded-xl bg-slate-800/50 border border-white/[0.04] overflow-y-auto max-h-[320px]">
-                        <div className="text-sm font-medium text-emerald-400 mb-2">
+                        <div className="text-sm font-medium text-[#7C85E0] mb-2">
                           {t("reviewHistory.aiResponse")}
                         </div>
                         <div className="prose-invert">

@@ -246,12 +246,11 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
             className="fixed inset-0 z-[70] flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-xl" ref={contentRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative rounded-3xl bg-slate-900/95 border border-white/8 backdrop-blur-xl shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-white/6">
+              <div className="relative rounded-3xl bg-linear-card border border-white/[0.06] shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                      <Circle className="w-5 h-5 text-emerald-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <Circle className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-lg font-semibold text-white">
@@ -270,7 +269,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                   >
                     <X className="w-5 h-5" />
                   </motion.button>
@@ -280,7 +279,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                   <div className="flex gap-3">
                     <div className="relative flex-1 group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                       </div>
                       <input
                         type="text"
@@ -291,7 +290,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                           "freetimeModal.addPlaceholder",
                           "Add something to do in your freetime..."
                         )}
-                        className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-800/60 border border-white/4 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 hover:border-slate-600 transition-all duration-200"
+                        className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
                       />
                     </div>
                     <motion.button
@@ -300,7 +299,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAdd}
                       disabled={!newTitle.trim()}
-                      className="px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-3.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t("freetimeModal.add", "Add")}
                     </motion.button>
@@ -320,9 +319,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     </div>
                   )}
                   {totalCount > 0 && (
-                    <div className="relative h-1.5 bg-slate-800/80 rounded-full overflow-hidden mb-2">
+                    <div className="relative h-1.5 bg-linear-surface rounded-full overflow-hidden mb-2">
                       <motion.div
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                        className="absolute inset-y-0 left-0 bg-linear-accent rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercent}%` }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
@@ -371,8 +370,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             <motion.div
                               className={`flex items-center gap-4 p-3.5 rounded-xl border transition-colors duration-200 ${
                                 item.completed
-                                  ? "bg-emerald-500/5 border-emerald-500/20"
-                                  : "bg-slate-800/40 border-white/4 hover:bg-slate-800/70 hover:border-white/10"
+                                  ? "bg-[#5E6AD2]/5 border-[#5E6AD2]/20"
+                                  : "bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80 hover:border-white/[0.1]"
                               }`}
                             >
                               <motion.button
@@ -382,8 +381,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 onClick={() => handleToggle(item.id)}
                                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
-                                    ? "bg-emerald-500 border-emerald-500"
-                                    : "border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10"
+                                    ? "bg-linear-accent border-linear-accent"
+                                    : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                 }`}
                               >
                                 {item.completed && (
@@ -431,7 +430,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                     prev === item.id ? null : item.id
                                   )
                                 }
-                                className="p-2 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-slate-700/60 transition-all duration-200 cursor-pointer"
+                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
                                 aria-label={
                                   expandedId === item.id ? "Collapse" : "Expand sub-tasks"
                                 }
@@ -460,14 +459,14 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 {(item.subTasks ?? []).map((st, subIdx) => (
                                   <div
                                     key={subIdx}
-                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-800/50 border border-white/4"
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
                                   >
                                     <motion.button
                                       type="button"
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
                                       onClick={() => toggleSubTask(item.id, subIdx)}
-                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10"
+                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                     >
                                       {st.completed && (
                                         <Check
@@ -522,7 +521,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                       "freetimeModal.addSubTaskPlaceholder",
                                       "Add sub-task"
                                     )}
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-800/70 border border-white/4 text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
                                   />
                                   <motion.button
                                     type="button"
@@ -531,7 +530,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                     onClick={() =>
                                       addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
                                     }
-                                    className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/30 cursor-pointer"
+                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
                                   >
                                     {t("freetimeModal.addSubTask", "Add")}
                                   </motion.button>

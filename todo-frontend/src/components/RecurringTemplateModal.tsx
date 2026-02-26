@@ -186,12 +186,11 @@ export function RecurringTemplateModal({
             className="fixed inset-0 z-[70] flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-amber-500/10">
-                      <ListTodo className="w-5 h-5 text-amber-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <ListTodo className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">
@@ -221,7 +220,7 @@ export function RecurringTemplateModal({
                       onClick={() => setActiveTab(tab)}
                       className={`flex-1 py-3 text-sm font-medium transition-colors ${
                         activeTab === tab
-                          ? "text-amber-400 border-b-2 border-amber-400 bg-amber-500/5"
+                          ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
                           : "text-slate-500 hover:text-slate-300"
                       }`}
                     >
@@ -259,7 +258,7 @@ export function RecurringTemplateModal({
                               onClick={() => setWeeklyContextDay(day.value)}
                               className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                                 active
-                                  ? "bg-amber-500/20 border-amber-500/60 text-amber-300"
+                                  ? "bg-[#5E6AD2]/20 border-[#5E6AD2]/60 text-[#7C85E0]"
                                   : "bg-slate-800/60 border-white/5 text-slate-400 hover:bg-slate-700/60 hover:text-slate-200"
                               }`}
                             >
@@ -279,7 +278,7 @@ export function RecurringTemplateModal({
                       <select
                         value={monthlyContextDay}
                         onChange={(e) => setMonthlyContextDay(Number(e.target.value) || 1)}
-                        className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                        className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
                       >
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                           <option key={d} value={d}>
@@ -309,7 +308,7 @@ export function RecurringTemplateModal({
                               month: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                          className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
                         >
                           {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                             <option key={m} value={m}>
@@ -325,7 +324,7 @@ export function RecurringTemplateModal({
                               day: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-slate-800/70 border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500/60 focus:border-amber-500/60"
+                          className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
                         >
                           {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                             <option key={d} value={d}>
@@ -342,7 +341,7 @@ export function RecurringTemplateModal({
                   <div className="flex gap-3">
                     <div className="relative flex-1 group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-amber-400 transition-colors" />
+                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                       </div>
                       <input
                         type="text"
@@ -350,7 +349,7 @@ export function RecurringTemplateModal({
                         onChange={(e) => setNewTitle(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addItem()}
                         placeholder={t("recurringModal.addPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/50 hover:border-slate-600 transition-all duration-200"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
                       />
                     </div>
                     <motion.button
@@ -359,7 +358,7 @@ export function RecurringTemplateModal({
                       whileTap={{ scale: 0.98 }}
                       onClick={addItem}
                       disabled={!newTitle.trim() || addMutation.isPending}
-                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t("recurringModal.add")}
                     </motion.button>

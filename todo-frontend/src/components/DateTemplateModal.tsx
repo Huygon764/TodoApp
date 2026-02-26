@@ -16,19 +16,19 @@ const dayPickerClassNames = {
   caption_label: "text-slate-200 font-medium text-sm",
   nav: "flex items-center gap-1",
   button_previous:
-    "p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all cursor-pointer",
+    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
   button_next:
-    "p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-emerald-400 border border-white/[0.04] hover:border-emerald-500/30 transition-all cursor-pointer",
+    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
   month_grid: "w-full border-collapse",
   weekdays: "border-b border-white/[0.06]",
   weekday: "text-slate-500 text-xs font-medium py-2 w-[2.25rem]",
   week: "",
   day: "p-0.5",
   day_button:
-    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-600/50 hover:border-emerald-500/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
+    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-linear-card hover:border-[#5E6AD2]/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
   selected:
-    "bg-emerald-500/20 text-emerald-300 border-emerald-500/50 hover:bg-emerald-500/30",
-  today: "border-emerald-500/40 text-emerald-300",
+    "bg-[#5E6AD2]/20 text-[#7C85E0] border-[#5E6AD2]/50 hover:bg-[#5E6AD2]/30",
+  today: "border-[#5E6AD2]/40 text-[#7C85E0]",
   outside: "text-slate-600 opacity-60",
   disabled: "opacity-40 cursor-not-allowed",
 };
@@ -191,12 +191,11 @@ export function DateTemplateModal({
             className="fixed inset-0 z-[70] flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                      <Calendar className="w-5 h-5 text-emerald-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <Calendar className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">
@@ -212,7 +211,7 @@ export function DateTemplateModal({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                   >
                     <X className="w-5 h-5" />
                   </motion.button>
@@ -222,7 +221,7 @@ export function DateTemplateModal({
                   <p className="text-sm text-slate-400 mb-3">
                     {selectedDate}
                   </p>
-                  <div className="rounded-xl border border-white/[0.06] bg-slate-800/50 p-2">
+                  <div className="rounded-xl border border-white/[0.06] bg-linear-surface p-2">
                     <DayPicker
                       mode="single"
                       locale={locale}
@@ -257,7 +256,7 @@ export function DateTemplateModal({
                   <div className="flex gap-3">
                     <div className="relative flex-1 group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                       </div>
                       <input
                         type="text"
@@ -265,7 +264,7 @@ export function DateTemplateModal({
                         onChange={(e) => setNewTitle(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && addItem()}
                         placeholder={t("dateTemplateModal.addPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 hover:border-slate-600 transition-all duration-200"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
                       />
                     </div>
                     <motion.button
@@ -274,7 +273,7 @@ export function DateTemplateModal({
                       whileTap={{ scale: 0.98 }}
                       onClick={addItem}
                       disabled={!newTitle.trim()}
-                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t("dateTemplateModal.add")}
                     </motion.button>
@@ -301,7 +300,7 @@ export function DateTemplateModal({
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
+                            className="flex items-center gap-3 p-3 rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
                           >
                             {editingIndex === index ? (
                               <input

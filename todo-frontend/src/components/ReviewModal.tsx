@@ -57,7 +57,7 @@ function ListEditor({
             value={value}
             onChange={(e) => setAt(i, e.target.value)}
             placeholder={placeholder}
-            className="flex-1 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="flex-1 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40"
           />
           <motion.button
             type="button"
@@ -76,7 +76,7 @@ function ListEditor({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={add}
-        className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-400 transition-colors"
+        className="flex items-center gap-2 text-sm text-slate-500 hover:text-linear-accent-hover transition-colors"
       >
         <Plus className="w-4 h-4" />
         {addLabel}
@@ -193,13 +193,12 @@ export function ReviewModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 <form onSubmit={handleSubmit}>
                   <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                        <FileText className="w-5 h-5 text-emerald-400" />
+                      <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                        <FileText className="w-5 h-5 text-[#7C85E0]" />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold text-white">
@@ -219,7 +218,7 @@ export function ReviewModal({
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={onOpenHistory}
-                          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                           title={t("reviewModal.historyTitle")}
                         >
                           <History className="w-5 h-5" />
@@ -230,7 +229,7 @@ export function ReviewModal({
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={onClose}
-                        className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
+                        className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
                       >
                         <X className="w-5 h-5" />
                       </motion.button>
@@ -246,7 +245,7 @@ export function ReviewModal({
                           onClick={() => setActiveTab(tab)}
                           className={`flex-1 py-3 text-sm font-medium transition-colors ${
                             activeTab === tab
-                              ? "text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/5"
+                              ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
                               : "text-slate-500 hover:text-slate-300"
                           }`}
                         >
@@ -290,14 +289,14 @@ export function ReviewModal({
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder={t("reviewModal.notesPlaceholder")}
                         rows={4}
-                        className="w-full px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-y"
+                        className="w-full px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 resize-y"
                       />
                     </div>
                   </div>
 
                   <div className="p-4 border-t border-white/[0.06] bg-slate-900/30 flex items-center justify-between gap-3">
                     {savedMessage && (
-                      <span className="text-sm text-emerald-400 animate-pulse">
+                      <span className="text-sm text-[#7C85E0] animate-pulse">
                         {t("reviewModal.saved")}
                       </span>
                     )}
@@ -307,7 +306,7 @@ export function ReviewModal({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       disabled={saveMutation.isPending}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold transition-all disabled:opacity-50"
+                      className="px-5 py-2.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all disabled:opacity-50"
                     >
                       {saveMutation.isPending ? t("reviewModal.saving") : t("reviewModal.save")}
                     </motion.button>

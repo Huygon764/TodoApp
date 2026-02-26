@@ -218,12 +218,11 @@ export function DayTodoList({
   if (isLoading) {
     return (
       <div className="relative">
-        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 rounded-3xl blur-xl opacity-50" />
-        <div className="relative rounded-3xl bg-slate-800/50 border border-white/[0.06] backdrop-blur-sm p-6">
-          <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse mb-6" />
+        <div className="relative rounded-3xl bg-linear-card border border-white/[0.06] p-6">
+          <div className="h-8 w-48 bg-linear-surface rounded-lg animate-pulse mb-6" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 rounded-xl bg-slate-700/30 animate-pulse" />
+              <div key={i} className="h-14 rounded-xl bg-linear-surface animate-pulse" />
             ))}
           </div>
         </div>
@@ -233,16 +232,13 @@ export function DayTodoList({
 
   return (
     <div className="relative">
-      {/* Card glow */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 rounded-3xl blur-xl opacity-50" />
-      
-      <div className="relative rounded-3xl bg-slate-800/50 border border-white/[0.06] backdrop-blur-sm overflow-hidden">
+      <div className="relative rounded-3xl bg-linear-card border border-white/[0.06] overflow-hidden">
         {/* Header with Stats */}
         <div className="p-6 pb-4 border-b border-white/[0.04]">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500/10">
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                <TrendingUp className="w-5 h-5 text-[#7C85E0]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">
@@ -259,7 +255,7 @@ export function DayTodoList({
                   key={progressPercent}
                   initial={{ scale: 1.2, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="text-2xl font-bold text-emerald-400"
+                  className="text-2xl font-bold text-[#7C85E0]"
                 >
                   {progressPercent}%
                 </motion.span>
@@ -269,9 +265,9 @@ export function DayTodoList({
 
           {/* Progress Bar */}
           {totalCount > 0 && (
-            <div className="relative h-2 bg-slate-700/50 rounded-full overflow-hidden">
+            <div className="relative h-2 bg-linear-surface rounded-full overflow-hidden">
               <motion.div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                className="absolute inset-y-0 left-0 bg-linear-accent rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
@@ -286,7 +282,7 @@ export function DayTodoList({
           <div className="flex gap-3">
             <div className="relative flex-1 group">
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
               </div>
               <input
                 type="text"
@@ -294,9 +290,9 @@ export function DayTodoList({
                 onChange={(e) => setNewTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                 placeholder={t("dayTodo.addPlaceholder")}
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 
-                  hover:border-slate-600 transition-all duration-200"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 
+                  focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
+                  hover:border-white/[0.1] transition-all duration-200"
               />
             </div>
             <motion.button
@@ -305,9 +301,9 @@ export function DayTodoList({
               whileTap={{ scale: 0.98 }}
               onClick={handleAdd}
               disabled={!newTitle.trim()}
-              className="px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 
-                text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20
-                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-emerald-500 disabled:hover:to-teal-500 cursor-pointer"
+              className="px-5 py-3.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover 
+                text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-linear-accent cursor-pointer"
             >
               {t("dayTodo.add")}
             </motion.button>
@@ -357,8 +353,8 @@ export function DayTodoList({
                     <motion.div 
                       className={`flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 ${
                         item.completed 
-                          ? 'bg-emerald-500/5 border-emerald-500/20' 
-                          : 'bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50 hover:border-white/[0.08]'
+                          ? 'bg-[#5E6AD2]/5 border-[#5E6AD2]/20' 
+                          : 'bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80 hover:border-white/[0.08]'
                       }`}
                       animate={{
                         scale: pendingToggle === item.id ? 0.98 : 1,
@@ -374,8 +370,8 @@ export function DayTodoList({
                         disabled={pendingToggle !== null}
                         className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           item.completed
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10'
+                            ? 'bg-linear-accent border-linear-accent'
+                            : 'border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10'
                         } disabled:cursor-not-allowed`}
                       >
                         <AnimatePresence mode="wait">
@@ -437,7 +433,7 @@ export function DayTodoList({
                         onClick={() =>
                           setExpandedId((prev) => (prev === item.id ? null : item.id))
                         }
-                        className="p-2 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-slate-600/50 transition-all duration-200 cursor-pointer"
+                        className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
                         aria-label={
                           expandedId === item.id ? "Collapse" : "Expand sub-tasks"
                         }
@@ -465,14 +461,14 @@ export function DayTodoList({
                         {(item.subTasks ?? []).map((st, subIdx) => (
                           <div
                             key={subIdx}
-                            className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                            className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
                           >
                             <motion.button
                               type="button"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => toggleSubTask(item.id, subIdx)}
-                              className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-emerald-400 hover:bg-emerald-500/10"
+                              className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                             >
                               {st.completed && (
                                 <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
@@ -514,7 +510,7 @@ export function DayTodoList({
                                 addSubTask(item.id, newSubTaskTitle[item.id] ?? "");
                             }}
                             placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
-                            className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+                            className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
                           />
                           <motion.button
                             type="button"
@@ -523,7 +519,7 @@ export function DayTodoList({
                             onClick={() =>
                               addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
                             }
-                            className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/30 cursor-pointer"
+                            className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
                           >
                             {t("dayTodo.addSubTask", "Add")}
                           </motion.button>

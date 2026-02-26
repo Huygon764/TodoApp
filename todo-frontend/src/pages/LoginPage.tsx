@@ -6,103 +6,21 @@ import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiPost } from "@/lib/api";
+import { ParticleBackground } from "@/components/ParticleBackground";
 
-// Animated Background Component
+// Animated Background (solid Linear style; particles added in Phase 5)
 const AnimatedBackground = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0f1a] via-[#0f172a] to-[#1a1f2e]" />
-      
-      {/* Grid pattern */}
-      <div 
+      <div className="absolute inset-0 bg-linear-bg" />
+      <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-          backgroundSize: '40px 40px'
+          backgroundSize: "40px 40px",
         }}
       />
-
-      {/* Animated Orbs */}
-      <motion.div
-        className="absolute w-[500px] h-[500px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          top: '-10%',
-          right: '-10%',
-        }}
-        animate={{
-          y: [0, 50, 0],
-          x: [0, -30, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(20, 184, 166, 0.12) 0%, transparent 70%)',
-          filter: 'blur(50px)',
-          bottom: '-5%',
-          left: '-5%',
-        }}
-        animate={{
-          y: [0, -40, 0],
-          x: [0, 40, 0],
-          scale: [1, 1.15, 1],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      <motion.div
-        className="absolute w-[300px] h-[300px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(52, 211, 153, 0.1) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-          top: '50%',
-          left: '20%',
-        }}
-        animate={{
-          y: [0, 60, 0],
-          x: [0, -20, 0],
-          scale: [1, 0.9, 1],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      <motion.div
-        className="absolute w-[250px] h-[250px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
-          filter: 'blur(45px)',
-          top: '30%',
-          right: '15%',
-        }}
-        animate={{
-          y: [0, -50, 0],
-          x: [0, 30, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 22,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+      <ParticleBackground />
     </div>
   );
 };
@@ -115,8 +33,7 @@ const AppLogo = () => (
     transition={{ type: "spring", duration: 0.8 }}
     className="relative w-16 h-16 mx-auto mb-4"
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl rotate-6 opacity-50 blur-sm" />
-    <div className="relative w-full h-full bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
+    <div className="relative w-full h-full bg-linear-accent rounded-2xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/25">
       <span className="text-2xl font-bold text-white">✓</span>
     </div>
   </motion.div>
@@ -171,11 +88,7 @@ export function LoginPage() {
       >
         {/* Card */}
         <div className="relative">
-          {/* Card glow effect */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-3xl blur-xl opacity-50" />
-          
-          {/* Card content */}
-          <div className="relative bg-[#1a1f2e]/80 backdrop-blur-xl rounded-3xl border border-white/[0.08] p-8 sm:p-10 shadow-2xl">
+          <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] p-8 sm:p-10 shadow-2xl">
             {/* Logo */}
             <AppLogo />
 
@@ -207,15 +120,15 @@ export function LoginPage() {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                    <User className="h-5 w-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                   </div>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 
-                      focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 
-                      hover:border-slate-600 transition-all duration-200"
+                      focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
+                      hover:border-white/[0.1] transition-all duration-200"
                     placeholder="Nhập tên đăng nhập"
                     autoComplete="username"
                   />
@@ -233,15 +146,15 @@ export function LoginPage() {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                    <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 
-                      focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 
-                      hover:border-slate-600 transition-all duration-200"
+                      focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
+                      hover:border-white/[0.1] transition-all duration-200"
                     placeholder="Nhập mật khẩu"
                     autoComplete="current-password"
                   />
@@ -283,18 +196,10 @@ export function LoginPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-white overflow-hidden
+                    bg-linear-accent hover:bg-linear-accent-hover
                     disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
-                    transition-all duration-200 group"
+                    transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  {/* Button gradient background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-200 group-hover:from-emerald-400 group-hover:to-teal-400" />
-                  
-                  {/* Button glow */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 blur-xl" />
-                  </div>
-
-                  {/* Button content */}
                   <span className="relative flex items-center justify-center gap-2">
                     {loginMutation.isPending ? (
                       <>

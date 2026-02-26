@@ -393,12 +393,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               className="relative w-full max-w-lg"
               ref={contentRef}
             >
-              <div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-3xl blur-xl opacity-50" />
-              <div className="relative bg-[#1a1f2e]/95 backdrop-blur-xl rounded-3xl border border-white/[0.08] shadow-2xl overflow-hidden">
+              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-violet-500/10">
-                      <Target className="w-5 h-5 text-violet-400" />
+                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
+                      <Target className="w-5 h-5 text-[#7C85E0]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-semibold text-white">
@@ -411,7 +410,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handlePrevPeriod}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-700/50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-colors cursor-pointer"
                             aria-label={t("dateNav.prevAria")}
                           >
                             <ChevronLeft className="w-4 h-4" />
@@ -419,7 +418,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                           <button
                             type="button"
                             onClick={() => setPickerOpen((o) => !o)}
-                            className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors text-left truncate cursor-pointer"
+                            className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-linear-surface transition-colors text-left truncate cursor-pointer"
                           >
                             {periodLabel}
                           </button>
@@ -428,14 +427,14 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleNextPeriod}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-700/50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-colors cursor-pointer"
                             aria-label={t("dateNav.nextAria")}
                           >
                             <ChevronRight className="w-4 h-4" />
                           </motion.button>
                         </div>
                         {pickerOpen && (
-                          <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-slate-800 border border-white/[0.08] shadow-xl z-10 py-1">
+                          <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-linear-surface border border-white/[0.06] shadow-xl z-10 py-1">
                             {pickerOptions.map((opt) => (
                               <button
                                 key={opt.period}
@@ -443,8 +442,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 onClick={() => handleSelectPeriod(opt.period)}
                                 className={`w-full px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
                                   opt.period === period
-                                    ? "bg-violet-500/20 text-violet-300"
-                                    : "text-slate-300 hover:bg-slate-700/50"
+                                    ? "bg-[#5E6AD2]/20 text-[#7C85E0]"
+                                    : "text-slate-300 hover:bg-linear-surface"
                                 }`}
                               >
                                 {opt.label}
@@ -461,7 +460,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={handleClose}
-                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200 cursor-pointer"
+                      className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200 cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </motion.button>
@@ -477,7 +476,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       onClick={() => setActiveTab(tab)}
                       className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${
                         activeTab === tab
-                          ? "text-violet-400 border-b-2 border-violet-400 bg-violet-500/5"
+                          ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
                           : "text-slate-500 hover:text-slate-300"
                       }`}
                     >
@@ -495,7 +494,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                   <div className="flex gap-3">
                     <div className="relative flex-1 group">
                       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-violet-400 transition-colors" />
+                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
                       </div>
                       <input
                         type="text"
@@ -503,7 +502,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                         onChange={(e) => setNewTitle(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAdd()}
                         placeholder={t("goalModal.addPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-slate-700/50 border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/50 hover:border-slate-600 transition-all duration-200"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
                       />
                     </div>
                     <motion.button
@@ -512,7 +511,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAdd}
                       disabled={!newTitle.trim() || patchMutation.isPending}
-                      className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {t("goalModal.add")}
                     </motion.button>
@@ -526,7 +525,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                       {[1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className="h-14 rounded-xl bg-slate-700/30 animate-pulse"
+                          className="h-14 rounded-xl bg-linear-surface animate-pulse"
                         />
                       ))}
                     </div>
@@ -554,8 +553,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               layout
                               className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
                                 item.completed
-                                  ? "bg-violet-500/5 border-violet-500/20"
-                                  : "bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50"
+                                  ? "bg-[#5E6AD2]/5 border-[#5E6AD2]/20"
+                                  : "bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80"
                               }`}
                               animate={{
                                 scale: pendingToggle === item.id ? 0.98 : 1,
@@ -570,8 +569,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 disabled={pendingToggle !== null}
                                 className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
-                                    ? "bg-violet-500 border-violet-500"
-                                    : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                    ? "bg-linear-accent border-linear-accent"
+                                    : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                 } disabled:cursor-not-allowed`}
                               >
                                 <AnimatePresence mode="wait">
@@ -633,7 +632,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                     prev === item.id ? null : item.id
                                   )
                                 }
-                                className="p-2 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-600/50 transition-all cursor-pointer"
+                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all cursor-pointer"
                                 aria-label={
                                   expandedId === item.id
                                     ? "Collapse"
@@ -663,7 +662,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 {(item.subTasks ?? []).map((st, subIdx) => (
                                   <div
                                     key={subIdx}
-                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
                                   >
                                     <motion.button
                                       type="button"
@@ -672,7 +671,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                       onClick={() =>
                                         toggleSubTask(item.id, subIdx)
                                       }
-                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                     >
                                       {st.completed && (
                                         <Check
@@ -725,7 +724,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                       "goalModal.addSubTaskPlaceholder",
                                       "Add sub-task"
                                     )}
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
                                   />
                                   <motion.button
                                     type="button"
@@ -737,7 +736,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                         newSubTaskTitle[item.id] ?? ""
                                       )
                                     }
-                                    className="px-3 py-2 rounded-lg bg-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/30 cursor-pointer"
+                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
                                   >
                                     {t("goalModal.addSubTask", "Add")}
                                   </motion.button>
@@ -764,8 +763,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               layout
                               className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
                                 item.completed
-                                  ? "bg-violet-500/5 border-violet-500/20"
-                                  : "bg-slate-700/30 border-white/[0.04] hover:bg-slate-700/50"
+                                  ? "bg-[#5E6AD2]/5 border-[#5E6AD2]/20"
+                                  : "bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80"
                               }`}
                               animate={{
                                 scale: pendingToggle === item.id ? 0.98 : 1,
@@ -780,8 +779,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 disabled={pendingToggle !== null}
                                 className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
-                                    ? "bg-violet-500 border-violet-500"
-                                    : "border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                    ? "bg-linear-accent border-linear-accent"
+                                    : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                 } disabled:cursor-not-allowed`}
                               >
                                 <AnimatePresence mode="wait">
@@ -843,7 +842,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                     prev === item.id ? null : item.id
                                   )
                                 }
-                                className="p-2 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-slate-600/50 transition-all cursor-pointer"
+                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all cursor-pointer"
                                 aria-label={
                                   expandedId === item.id
                                     ? "Collapse"
@@ -873,7 +872,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 {(item.subTasks ?? []).map((st, subIdx) => (
                                   <div
                                     key={subIdx}
-                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-slate-700/30 border border-white/[0.04]"
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
                                   >
                                     <motion.button
                                       type="button"
@@ -882,7 +881,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                       onClick={() =>
                                         toggleSubTask(item.id, subIdx)
                                       }
-                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-violet-400 hover:bg-violet-500/10"
+                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                     >
                                       {st.completed && (
                                         <Check
@@ -935,7 +934,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                       "goalModal.addSubTaskPlaceholder",
                                       "Add sub-task"
                                     )}
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-slate-700/50 border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40"
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
                                   />
                                   <motion.button
                                     type="button"
@@ -947,7 +946,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                         newSubTaskTitle[item.id] ?? ""
                                       )
                                     }
-                                    className="px-3 py-2 rounded-lg bg-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/30 cursor-pointer"
+                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
                                   >
                                     {t("goalModal.addSubTask", "Add")}
                                   </motion.button>

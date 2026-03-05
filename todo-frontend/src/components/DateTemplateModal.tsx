@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { DayPicker } from "react-day-picker";
-import { X, Plus, Trash2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Plus, Trash2, Calendar, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
@@ -55,6 +55,8 @@ export function DateTemplateModal({
   const [newTitle, setNewTitle] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (editingIndex !== null) editInputRef.current?.focus();
@@ -146,13 +148,50 @@ export function DateTemplateModal({
     setEditValue("");
   };
 
+  const addSubTask = (index: number, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const next = items.map((it, i) =>
+      i === index
+        ? { ...it, subTasks: [...(it.subTasks ?? []), { title: trimmed }] }
+        : it
+    );
+    setItems(next);
+    setNewSubTaskTitle((prev) => ({ ...prev, [index]: "" }));
+  };
+
+  const deleteSubTask = (index: number, subIndex: number) => {
+    const next = items.map((it, i) => {
+      if (i !== index) return it;
+      const subTasks = (it.subTasks ?? []).filter((_, si) => si !== subIndex);
+      return { ...it, subTasks: subTasks.length > 0 ? subTasks : undefined };
+    });
+    setItems(next);
+  };
+
   const handleSave = () => {
-    const normalized = items.map((it, i) => ({ title: it.title.trim(), order: i })).filter((it) => it.title.length > 0);
+    const normalized = items
+      .map((it, i) => ({
+        title: it.title.trim(),
+        order: i,
+        ...(it.subTasks && it.subTasks.length > 0 ? { subTasks: it.subTasks } : {}),
+      }))
+      .filter((it) => it.title.length > 0);
     patchMutation.mutate({ items: normalized });
   };
 
-  const serverItems = (data?.items ?? []).sort((a, b) => a.order - b.order).map((it, i) => ({ title: it.title.trim(), order: i })).filter((it) => it.title);
-  const localNormalized = items.map((it, i) => ({ title: it.title.trim(), order: i })).filter((it) => it.title);
+  const normalizeForCompare = (arr: DateTemplateItem[]) =>
+    arr
+      .sort((a, b) => a.order - b.order)
+      .map((it, i) => ({
+        title: it.title.trim(),
+        order: i,
+        subTasks: it.subTasks ?? [],
+      }))
+      .filter((it) => it.title);
+
+  const serverItems = normalizeForCompare(data?.items ?? []);
+  const localNormalized = normalizeForCompare(items);
   const isDirty =
     !patchMutation.isPending &&
     JSON.stringify(localNormalized) !== JSON.stringify(serverItems);
@@ -300,44 +339,118 @@ export function DateTemplateModal({
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
+                            className="rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
                           >
-                            {editingIndex === index ? (
-                              <input
-                                ref={editInputRef}
-                                type="text"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") saveTitleEdit(index);
-                                  if (e.key === "Escape") cancelEdit();
-                                }}
-                                onBlur={() => saveTitleEdit(index)}
-                                className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
-                              />
-                            ) : (
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => handleTitleClick(index)}
-                                onKeyDown={(e) =>
-                                  e.key === "Enter" && handleTitleClick(index)
+                            <div className="flex items-center gap-3 p-3">
+                              {editingIndex === index ? (
+                                <input
+                                  ref={editInputRef}
+                                  type="text"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveTitleEdit(index);
+                                    if (e.key === "Escape") cancelEdit();
+                                  }}
+                                  onBlur={() => saveTitleEdit(index)}
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                />
+                              ) : (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => handleTitleClick(index)}
+                                  onKeyDown={(e) =>
+                                    e.key === "Enter" && handleTitleClick(index)
+                                  }
+                                  className="flex-1 text-slate-200 cursor-text"
+                                >
+                                  {item.title}
+                                </span>
+                              )}
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() =>
+                                  setExpandedIdx((prev) => (prev === index ? null : index))
                                 }
-                                className="flex-1 text-slate-200 cursor-text"
+                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
                               >
-                                {item.title}
-                              </span>
+                                {expandedIdx === index ? (
+                                  <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4" />
+                                )}
+                              </motion.button>
+                              {(item.subTasks ?? []).length > 0 && expandedIdx !== index && (
+                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                              )}
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => removeItem(index)}
+                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                                aria-label={t("dateTemplateModal.deleteAria")}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                            {expandedIdx === index && (
+                              <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04]">
+                                {(item.subTasks ?? []).map((st, subIdx) => (
+                                  <div
+                                    key={subIdx}
+                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
+                                  >
+                                    <span className="text-slate-500 shrink-0">•</span>
+                                    <span className="flex-1 text-sm text-slate-300">
+                                      {st.title}
+                                    </span>
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      onClick={() => deleteSubTask(index, subIdx)}
+                                      className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                      aria-label={t("dateTemplateModal.deleteAria")}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </motion.button>
+                                  </div>
+                                ))}
+                                <div className="flex gap-2 pt-1">
+                                  <input
+                                    type="text"
+                                    value={newSubTaskTitle[index] ?? ""}
+                                    onChange={(e) =>
+                                      setNewSubTaskTitle((prev) => ({
+                                        ...prev,
+                                        [index]: e.target.value,
+                                      }))
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        addSubTask(index, newSubTaskTitle[index] ?? "");
+                                    }}
+                                    placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
+                                  />
+                                  <motion.button
+                                    type="button"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() =>
+                                      addSubTask(index, newSubTaskTitle[index] ?? "")
+                                    }
+                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
+                                  >
+                                    {t("dayTodo.addSubTask", "Add")}
+                                  </motion.button>
+                                </div>
+                              </div>
                             )}
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => removeItem(index)}
-                              className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                              aria-label={t("dateTemplateModal.deleteAria")}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </motion.button>
                           </motion.li>
                         ))}
                       </AnimatePresence>

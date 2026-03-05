@@ -22,6 +22,11 @@ export const validateDefaultItemBody = [
     .optional()
     .isInt({ min: 0 })
     .withMessage("Order must be a non-negative integer"),
+  body("subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("subTasks.*.title").optional().trim().isString(),
 ];
 
 export const validatePatchDayBody = [
@@ -59,6 +64,11 @@ export const validatePatchDefaultBody = [
     .isLength({ max: 500 })
     .withMessage("Title cannot exceed 500 characters"),
   body("order").optional().isInt({ min: 0 }),
+  body("subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("subTasks.*.title").optional().trim().isString(),
 ];
 
 export const validateMongoIdParam = [
@@ -182,6 +192,11 @@ export const validatePostRecurringTemplateBody = [
     .optional()
     .isInt({ min: 1, max: 31 })
     .withMessage("datesOfYear.day must be between 1 and 31"),
+  body("subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("subTasks.*.title").optional().trim().isString(),
 ];
 
 export const validateRecurringTemplateTypeParam = [
@@ -226,6 +241,11 @@ export const validatePatchRecurringTemplateItemBody = [
     .optional()
     .isInt({ min: 1, max: 31 })
     .withMessage("datesOfYear.day must be between 1 and 31"),
+  body("subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("subTasks.*.title").optional().trim().isString(),
 ];
 
 export const validateGetReviewsQuery = [
@@ -294,6 +314,48 @@ export const validatePatchDateTemplateBody = [
   body("items.*.order")
     .isInt({ min: 0 })
     .withMessage("Item order must be a non-negative integer"),
+  body("items.*.subTasks")
+    .optional()
+    .isArray()
+    .withMessage("subTasks must be an array"),
+  body("items.*.subTasks.*.title").optional().trim().isString(),
+];
+
+export const validatePersonNoteBody = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ max: 200 })
+    .withMessage("Name cannot exceed 200 characters"),
+  body("notes")
+    .optional()
+    .isArray()
+    .withMessage("notes must be an array"),
+  body("notes.*").optional().trim().isString(),
+  body("order")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("Order must be a non-negative integer"),
+];
+
+export const validatePatchPersonNoteBody = [
+  body("name")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Name cannot be empty")
+    .isLength({ max: 200 })
+    .withMessage("Name cannot exceed 200 characters"),
+  body("notes")
+    .optional()
+    .isArray()
+    .withMessage("notes must be an array"),
+  body("notes.*").optional().trim().isString(),
+  body("order")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("Order must be a non-negative integer"),
 ];
 
 export const validatePatchReviewBody = [

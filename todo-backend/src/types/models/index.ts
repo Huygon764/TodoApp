@@ -6,3 +6,4 @@ export * from "./recurringTemplate.model.js";
 export * from "./freetimeTodo.model.js";
 export * from "./dateTemplate.model.js";
 export * from "./review.model.js";
+export * from "./personNote.model.js";

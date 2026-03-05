@@ -1,8 +1,13 @@
 import type { Document, Types } from "mongoose";
 
+export interface IDateTemplateSubTask {
+  title: string;
+}
+
 export interface IDateTemplateItem {
   title: string;
   order: number;
+  subTasks?: IDateTemplateSubTask[];
 }
 
 export interface IDateTemplate {

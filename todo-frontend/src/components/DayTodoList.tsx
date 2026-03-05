@@ -444,6 +444,9 @@ export function DayTodoList({
                           <ChevronRight className="w-4 h-4" />
                         )}
                       </motion.button>
+                      {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
+                        <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                      )}
                       {/* Delete Button - always visible */}
                       <motion.button
                         type="button"

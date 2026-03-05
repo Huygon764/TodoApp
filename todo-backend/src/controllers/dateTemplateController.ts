@@ -47,10 +47,19 @@ export const patchDateTemplate = catchAsync(
       });
     }
 
-    const items = rawItems.map((item, i) => ({
-      title: (item.title ?? "").trim(),
-      order: i,
-    })).filter((item) => item.title.length > 0);
+    const items = rawItems.map((item, i) => {
+      const base: { title: string; order: number; subTasks?: { title: string }[] } = {
+        title: (item.title ?? "").trim(),
+        order: i,
+      };
+      if (Array.isArray(item.subTasks)) {
+        const cleaned = item.subTasks
+          .map((st) => ({ title: (st.title ?? "").trim() }))
+          .filter((st) => st.title);
+        if (cleaned.length > 0) base.subTasks = cleaned;
+      }
+      return base;
+    }).filter((item) => item.title.length > 0);
 
     dateTemplate.items = items;
     await dateTemplate.save();

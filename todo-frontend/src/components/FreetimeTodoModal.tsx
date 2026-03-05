@@ -441,6 +441,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   <ChevronRight className="w-4 h-4" />
                                 )}
                               </motion.button>
+                              {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
+                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                              )}
 
                               <motion.button
                                 type="button"

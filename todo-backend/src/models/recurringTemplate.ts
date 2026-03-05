@@ -13,6 +13,13 @@ const recurringTemplateDayOfYearSchema = new Schema<IRecurringTemplateDayOfYear>
   { _id: false }
 );
 
+const recurringTemplateSubTaskSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
   {
     title: { type: String, required: true, trim: true },
@@ -40,6 +47,10 @@ const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
     // For yearly templates: array of { month, day }
     datesOfYear: {
       type: [recurringTemplateDayOfYearSchema],
+      default: undefined,
+    },
+    subTasks: {
+      type: [recurringTemplateSubTaskSchema],
       default: undefined,
     },
   },

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar, Circle } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar, Circle, Users } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
@@ -17,6 +17,7 @@ import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
 import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
+import { PeopleNotesModal } from "@/components/PeopleNotesModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
 
 // Subtle Animated Background (solid Linear style; particles added in Phase 5)
@@ -76,6 +77,7 @@ export function HomePage() {
   const [isReviewHistoryModalOpen, setIsReviewHistoryModalOpen] = useState(false);
   const [isDateTemplateModalOpen, setIsDateTemplateModalOpen] = useState(false);
   const [isFreetimeModalOpen, setIsFreetimeModalOpen] = useState(false);
+  const [isPeopleNotesModalOpen, setIsPeopleNotesModalOpen] = useState(false);
   const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const queryClient = useQueryClient();
 
@@ -169,6 +171,16 @@ export function HomePage() {
               title={t("home.goalsTitle")}
             >
               <Target className="w-5 h-5" />
+            </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsPeopleNotesModalOpen(true)}
+              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+              title={t("peopleNotesModal.title")}
+            >
+              <Users className="w-5 h-5" />
             </motion.button>
             <motion.button
               type="button"
@@ -425,6 +437,12 @@ export function HomePage() {
           setReviewModalSlot(null);
           setIsReviewHistoryModalOpen(true);
         }}
+      />
+
+      {/* People Notes Modal */}
+      <PeopleNotesModal
+        isOpen={isPeopleNotesModalOpen}
+        onClose={() => setIsPeopleNotesModalOpen(false)}
       />
 
       {/* Review History Modal */}

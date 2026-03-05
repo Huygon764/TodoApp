@@ -12,13 +12,20 @@ export const getDefaultList = catchAsync(async (req: Request, res: Response) => 
 export const createDefaultItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { title, order } = req.body as { title: string; order?: number };
+    const { title, order, subTasks } = req.body as {
+      title: string;
+      order?: number;
+      subTasks?: { title: string }[];
+    };
 
     const count = await DefaultItem.countDocuments({ userId });
     const item = await DefaultItem.create({
       userId,
       title: title.trim(),
       order: typeof order === "number" ? order : count,
+      subTasks: Array.isArray(subTasks)
+        ? subTasks.map((st) => ({ title: (st.title ?? "").trim() })).filter((st) => st.title)
+        : undefined,
     });
     sendSuccess(res, 201, { item });
   }
@@ -28,7 +35,11 @@ export const patchDefaultItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { id } = req.params;
-    const { title, order } = req.body as { title?: string; order?: number };
+    const { title, order, subTasks } = req.body as {
+      title?: string;
+      order?: number;
+      subTasks?: { title: string }[];
+    };
 
     const item = await DefaultItem.findOne({ _id: id, userId });
     if (!item) {
@@ -37,6 +48,12 @@ export const patchDefaultItem = catchAsync(
 
     if (title !== undefined) item.title = title.trim();
     if (typeof order === "number") item.order = order;
+    if (Array.isArray(subTasks)) {
+      const cleaned = subTasks
+        .map((st) => ({ title: (st.title ?? "").trim() }))
+        .filter((st) => st.title);
+      item.subTasks = cleaned.length > 0 ? cleaned : undefined;
+    }
     await item.save();
 
     sendSuccess(res, 200, { item });

@@ -1,6 +1,13 @@
 import { Schema, model } from "mongoose";
 import type { IDefaultItemDocument } from "../types/index.js";
 
+const defaultSubTaskSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const defaultItemSchema = new Schema<IDefaultItemDocument>(
   {
     userId: {
@@ -19,6 +26,10 @@ const defaultItemSchema = new Schema<IDefaultItemDocument>(
       type: Number,
       required: true,
       default: 0,
+    },
+    subTasks: {
+      type: [defaultSubTaskSchema],
+      default: undefined,
     },
   },
   { timestamps: true }

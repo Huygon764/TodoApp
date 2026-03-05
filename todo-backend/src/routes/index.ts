@@ -7,6 +7,7 @@ import recurringTemplatesRouter from "./recurringTemplates.js";
 import freetimeTodoRouter from "./freetimeTodo.js";
 import dateTemplatesRouter from "./dateTemplates.js";
 import reviewsRouter from "./reviews.js";
+import personNotesRouter from "./personNotes.js";
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use("/recurring-templates", recurringTemplatesRouter);
 router.use("/freetime-todo", freetimeTodoRouter);
 router.use("/date-templates", dateTemplatesRouter);
 router.use("/reviews", reviewsRouter);
+router.use("/people-notes", personNotesRouter);
 
 export default router;

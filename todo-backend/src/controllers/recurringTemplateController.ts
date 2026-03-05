@@ -79,13 +79,14 @@ export const getRecurringTemplate = catchAsync(
 export const addRecurringTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { type, title, order, daysOfWeek, daysOfMonth, datesOfYear } = req.body as {
+    const { type, title, order, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
       type: "week" | "month" | "year";
       title: string;
       order?: number;
       daysOfWeek?: number[];
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
+      subTasks?: { title: string }[];
     };
 
     let template = await RecurringTemplate.findOne({ userId, type });
@@ -122,6 +123,12 @@ export const addRecurringTemplateItem = catchAsync(
     if (normalizedDatesOfYear) {
       itemBase.datesOfYear = normalizedDatesOfYear;
     }
+    if (Array.isArray(subTasks)) {
+      const cleaned = subTasks
+        .map((st) => ({ title: (st.title ?? "").trim() }))
+        .filter((st) => st.title);
+      if (cleaned.length > 0) itemBase.subTasks = cleaned;
+    }
 
     template.items.push(itemBase);
     template.items.sort((a, b) => a.order - b.order);
@@ -143,11 +150,12 @@ export const patchRecurringTemplateItem = catchAsync(
     const userId = req.user!.userId;
     const { type, idx } = req.params;
     const index = parseInt(idx!, 10);
-    const { title, daysOfWeek, daysOfMonth, datesOfYear } = req.body as {
+    const { title, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
       title?: string;
       daysOfWeek?: number[];
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
+      subTasks?: { title: string }[];
     };
 
     const template = await RecurringTemplate.findOne({
@@ -189,6 +197,12 @@ export const patchRecurringTemplateItem = catchAsync(
     }
     if ("datesOfYear" in req.body) {
       item.datesOfYear = normalizedDatesOfYear;
+    }
+    if (Array.isArray(subTasks)) {
+      const cleaned = subTasks
+        .map((st) => ({ title: (st.title ?? "").trim() }))
+        .filter((st) => st.title);
+      item.subTasks = cleaned.length > 0 ? cleaned : undefined;
     }
     await template.save();
 

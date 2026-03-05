@@ -40,4 +40,8 @@ export const MESSAGES = {
   REVIEW: {
     NOT_FOUND: "Không tìm thấy review",
   },
+
+  PERSON_NOTE: {
+    NOT_FOUND: "Không tìm thấy person note",
+  },
 } as const;

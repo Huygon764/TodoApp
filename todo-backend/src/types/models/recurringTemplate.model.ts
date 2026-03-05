@@ -5,6 +5,10 @@ export interface IRecurringTemplateDayOfYear {
   day: number; // 1-31
 }
 
+export interface IRecurringTemplateSubTask {
+  title: string;
+}
+
 export interface IRecurringTemplateItem {
   title: string;
   order: number;
@@ -14,6 +18,7 @@ export interface IRecurringTemplateItem {
   daysOfMonth?: number[];
   /** Specific days in year (for type = "year") */
   datesOfYear?: IRecurringTemplateDayOfYear[];
+  subTasks?: IRecurringTemplateSubTask[];
 }
 
 export interface IRecurringTemplate {

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Plus, Trash2, ListTodo } from "lucide-react";
+import { X, Plus, Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
@@ -31,6 +31,8 @@ export function DefaultListModal({
   const [localItems, setLocalItems] = useState<DefaultItem[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -85,9 +87,9 @@ export function DefaultListModal({
     onSuccess: () => onInvalidate(),
   });
 
-  const patchTitleMutation = useMutation({
-    mutationFn: ({ id, title }: { id: string; title: string }) =>
-      apiPatch(API_PATHS.DEFAULT_BY_ID(id), { title }),
+  const patchMutation = useMutation({
+    mutationFn: ({ id, ...body }: { id: string; title?: string; subTasks?: { title: string }[] }) =>
+      apiPatch(API_PATHS.DEFAULT_BY_ID(id), body),
     onSuccess: () => onInvalidate(),
   });
 
@@ -107,12 +109,35 @@ export function DefaultListModal({
     setLocalItems((prev) =>
       prev.map((it) => (it._id === id ? { ...it, title: trimmed } : it))
     );
-    patchTitleMutation.mutate({ id, title: trimmed });
+    patchMutation.mutate({ id, title: trimmed });
   };
 
   const cancelDefaultEdit = () => {
     setEditingId(null);
     setEditValue("");
+  };
+
+  const addSubTask = (itemId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const item = localItems.find((i) => i._id === itemId);
+    if (!item) return;
+    const subTasks = [...(item.subTasks ?? []), { title: trimmed }];
+    setLocalItems((prev) =>
+      prev.map((it) => (it._id === itemId ? { ...it, subTasks } : it))
+    );
+    patchMutation.mutate({ id: itemId, subTasks });
+    setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
+  };
+
+  const deleteSubTask = (itemId: string, subIndex: number) => {
+    const item = localItems.find((i) => i._id === itemId);
+    if (!item) return;
+    const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
+    setLocalItems((prev) =>
+      prev.map((it) => (it._id === itemId ? { ...it, subTasks: subTasks.length > 0 ? subTasks : undefined } : it))
+    );
+    patchMutation.mutate({ id: itemId, subTasks });
   };
 
   return (
@@ -219,45 +244,119 @@ export function DefaultListModal({
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 10 }}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
+                              className="rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
                             >
-                              {editingId === item._id ? (
-                                <input
-                                  ref={editInputRef}
-                                  type="text"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") saveDefaultTitle(item._id);
-                                    if (e.key === "Escape") cancelDefaultEdit();
-                                  }}
-                                  onBlur={() => saveDefaultTitle(item._id)}
-                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
-                                />
-                              ) : (
-                                <span
-                                  role="button"
-                                  tabIndex={0}
-                                  onClick={() => handleTitleClick(item._id)}
-                                  onKeyDown={(e) =>
-                                    e.key === "Enter" && handleTitleClick(item._id)
+                              <div className="flex items-center gap-3 p-3">
+                                {editingId === item._id ? (
+                                  <input
+                                    ref={editInputRef}
+                                    type="text"
+                                    value={editValue}
+                                    onChange={(e) => setEditValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") saveDefaultTitle(item._id);
+                                      if (e.key === "Escape") cancelDefaultEdit();
+                                    }}
+                                    onBlur={() => saveDefaultTitle(item._id)}
+                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                  />
+                                ) : (
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => handleTitleClick(item._id)}
+                                    onKeyDown={(e) =>
+                                      e.key === "Enter" && handleTitleClick(item._id)
+                                    }
+                                    className="flex-1 text-slate-200 cursor-text"
+                                  >
+                                    {item.title}
+                                  </span>
+                                )}
+                                <motion.button
+                                  type="button"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() =>
+                                    setExpandedId((prev) => (prev === item._id ? null : item._id))
                                   }
-                                  className="flex-1 text-slate-200 cursor-text"
+                                  className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
                                 >
-                                  {item.title}
-                                </span>
+                                  {expandedId === item._id ? (
+                                    <ChevronDown className="w-4 h-4" />
+                                  ) : (
+                                    <ChevronRight className="w-4 h-4" />
+                                  )}
+                                </motion.button>
+                                {(item.subTasks ?? []).length > 0 && expandedId !== item._id && (
+                                  <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                )}
+                                <motion.button
+                                  type="button"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => deleteMutation.mutate(item._id)}
+                                  disabled={deleteMutation.isPending}
+                                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                  aria-label={t("defaultModal.deleteAria")}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                              {expandedId === item._id && (
+                                <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04]">
+                                  {(item.subTasks ?? []).map((st, subIdx) => (
+                                    <div
+                                      key={subIdx}
+                                      className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
+                                    >
+                                      <span className="text-slate-500 shrink-0">•</span>
+                                      <span className="flex-1 text-sm text-slate-300">
+                                        {st.title}
+                                      </span>
+                                      <motion.button
+                                        type="button"
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => deleteSubTask(item._id, subIdx)}
+                                        className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                        aria-label={t("defaultModal.deleteAria")}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </motion.button>
+                                    </div>
+                                  ))}
+                                  <div className="flex gap-2 pt-1">
+                                    <input
+                                      type="text"
+                                      value={newSubTaskTitle[item._id] ?? ""}
+                                      onChange={(e) =>
+                                        setNewSubTaskTitle((prev) => ({
+                                          ...prev,
+                                          [item._id]: e.target.value,
+                                        }))
+                                      }
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter")
+                                          addSubTask(item._id, newSubTaskTitle[item._id] ?? "");
+                                      }}
+                                      placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
+                                      className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
+                                    />
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
+                                      onClick={() =>
+                                        addSubTask(item._id, newSubTaskTitle[item._id] ?? "")
+                                      }
+                                      className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
+                                    >
+                                      {t("dayTodo.addSubTask", "Add")}
+                                    </motion.button>
+                                  </div>
+                                </div>
                               )}
-                              <motion.button
-                                type="button"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => deleteMutation.mutate(item._id)}
-                                disabled={deleteMutation.isPending}
-                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
-                                aria-label={t("defaultModal.deleteAria")}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </motion.button>
                             </motion.div>
                           </Reorder.Item>
                         ))}

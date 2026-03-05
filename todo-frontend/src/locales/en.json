@@ -121,6 +121,17 @@
     "goodLabel": "Good",
     "badLabel": "To improve"
   },
+  "peopleNotesModal": {
+    "title": "People notes",
+    "subtitle": "Save important info about people",
+    "addPersonPlaceholder": "Person name...",
+    "addPerson": "Add",
+    "empty": "No people yet",
+    "addNotePlaceholder": "Add a note...",
+    "addNote": "Add",
+    "deletePersonAria": "Delete person",
+    "deleteNoteAria": "Delete note"
+  },
   "home": {
     "goalsTitle": "Week / month / year goals",
     "defaultTemplateTitle": "Default template",

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, ListTodo } from "lucide-react";
+import { X, Plus, Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
@@ -26,6 +26,8 @@ export function RecurringTemplateModal({
   const [newTitle, setNewTitle] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<number, string>>({});
   const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -110,15 +112,17 @@ export function RecurringTemplateModal({
     daysOfWeek?: number[];
     daysOfMonth?: number[];
     datesOfYear?: { month: number; day: number }[];
+    subTasks?: { title: string }[];
   };
 
   const patchItemMutation = useMutation({
-    mutationFn: ({ idx, title, daysOfWeek, daysOfMonth, datesOfYear }: PatchPayload) =>
+    mutationFn: ({ idx, title, daysOfWeek, daysOfMonth, datesOfYear, subTasks }: PatchPayload) =>
       apiPatch(API_PATHS.RECURRING_TEMPLATE_ITEM(activeTab, idx), {
         ...(title !== undefined ? { title } : {}),
         ...(daysOfWeek !== undefined ? { daysOfWeek } : {}),
         ...(daysOfMonth !== undefined ? { daysOfMonth } : {}),
         ...(datesOfYear !== undefined ? { datesOfYear } : {}),
+        ...(subTasks !== undefined ? { subTasks } : {}),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -144,6 +148,23 @@ export function RecurringTemplateModal({
   const cancelRecurringEdit = () => {
     setEditingIndex(null);
     setEditValue("");
+  };
+
+  const addSubTask = (idx: number, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const item = items[idx];
+    if (!item) return;
+    const subTasks = [...(item.subTasks ?? []), { title: trimmed }];
+    patchItemMutation.mutate({ idx, subTasks });
+    setNewSubTaskTitle((prev) => ({ ...prev, [idx]: "" }));
+  };
+
+  const deleteSubTask = (idx: number, subIndex: number) => {
+    const item = items[idx];
+    if (!item) return;
+    const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
+    patchItemMutation.mutate({ idx, subTasks });
   };
 
   useEffect(() => {
@@ -382,9 +403,9 @@ export function RecurringTemplateModal({
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 10 }}
-                              className="flex flex-col gap-2 p-3 rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
+                              className="rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 p-3">
                                 {editingIndex === idx ? (
                                   <input
                                     ref={editInputRef}
@@ -415,6 +436,24 @@ export function RecurringTemplateModal({
                                   type="button"
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
+                                  onClick={() =>
+                                    setExpandedIdx((prev) => (prev === idx ? null : idx))
+                                  }
+                                  className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+                                >
+                                  {expandedIdx === idx ? (
+                                    <ChevronDown className="w-4 h-4" />
+                                  ) : (
+                                    <ChevronRight className="w-4 h-4" />
+                                  )}
+                                </motion.button>
+                                {(item.subTasks ?? []).length > 0 && expandedIdx !== idx && (
+                                  <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                )}
+                                <motion.button
+                                  type="button"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
                                   onClick={() => deleteMutation.mutate(idx)}
                                   disabled={deleteMutation.isPending}
                                   className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
@@ -423,6 +462,60 @@ export function RecurringTemplateModal({
                                   <Trash2 className="w-4 h-4" />
                                 </motion.button>
                               </div>
+                              {expandedIdx === idx && (
+                                <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04]">
+                                  {(item.subTasks ?? []).map((st, subIdx) => (
+                                    <div
+                                      key={subIdx}
+                                      className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
+                                    >
+                                      <span className="text-slate-500 shrink-0">•</span>
+                                      <span className="flex-1 text-sm text-slate-300">
+                                        {st.title}
+                                      </span>
+                                      <motion.button
+                                        type="button"
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => deleteSubTask(idx, subIdx)}
+                                        className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
+                                        aria-label={t("recurringModal.deleteAria")}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </motion.button>
+                                    </div>
+                                  ))}
+                                  <div className="flex gap-2 pt-1">
+                                    <input
+                                      type="text"
+                                      value={newSubTaskTitle[idx] ?? ""}
+                                      onChange={(e) =>
+                                        setNewSubTaskTitle((prev) => ({
+                                          ...prev,
+                                          [idx]: e.target.value,
+                                        }))
+                                      }
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter")
+                                          addSubTask(idx, newSubTaskTitle[idx] ?? "");
+                                      }}
+                                      placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
+                                      className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
+                                    />
+                                    <motion.button
+                                      type="button"
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
+                                      onClick={() =>
+                                        addSubTask(idx, newSubTaskTitle[idx] ?? "")
+                                      }
+                                      className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
+                                    >
+                                      {t("dayTodo.addSubTask", "Add")}
+                                    </motion.button>
+                                  </div>
+                                </div>
+                              )}
                             </motion.li>
                           );
                         })}

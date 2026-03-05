@@ -30,11 +30,16 @@ export interface DayTodo {
   updatedAt: string;
 }
 
+export interface DefaultItemSubTask {
+  title: string;
+}
+
 export interface DefaultItem {
   _id: string;
   userId: string;
   title: string;
   order: number;
+  subTasks?: DefaultItemSubTask[];
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +66,10 @@ export interface Goal {
   updatedAt: string;
 }
 
+export interface RecurringTemplateSubTask {
+  title: string;
+}
+
 export interface RecurringTemplateItem {
   title: string;
   order: number;
@@ -70,6 +79,7 @@ export interface RecurringTemplateItem {
   daysOfMonth?: number[];
   /** Specific days in year (for yearly templates) */
   datesOfYear?: { month: number; day: number }[];
+  subTasks?: RecurringTemplateSubTask[];
 }
 
 export interface RecurringTemplate {
@@ -81,9 +91,14 @@ export interface RecurringTemplate {
   updatedAt: string;
 }
 
+export interface DateTemplateSubTask {
+  title: string;
+}
+
 export interface DateTemplateItem {
   title: string;
   order: number;
+  subTasks?: DateTemplateSubTask[];
 }
 
 export interface DateTemplate {
@@ -103,6 +118,16 @@ export interface Review {
   goodThings: string[];
   badThings: string[];
   notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonNote {
+  _id: string;
+  userId: string;
+  name: string;
+  notes: string[];
+  order: number;
   createdAt: string;
   updatedAt: string;
 }

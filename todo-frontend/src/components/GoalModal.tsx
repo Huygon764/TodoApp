@@ -645,6 +645,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                   <ChevronRight className="w-4 h-4" />
                                 )}
                               </motion.button>
+                              {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
+                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
@@ -855,6 +858,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                   <ChevronRight className="w-4 h-4" />
                                 )}
                               </motion.button>
+                              {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
+                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}

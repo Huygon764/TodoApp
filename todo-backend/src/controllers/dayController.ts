@@ -10,10 +10,18 @@ function parseDateString(dateStr: string): Date {
   return new Date(dateStr + "T12:00:00Z");
 }
 
+/** Convert template subTasks ({ title }) to DayTodo subTasks ({ title, completed }) */
+function convertSubTasks(
+  subTasks?: { title: string }[]
+): IDayTodoItem["subTasks"] {
+  if (!Array.isArray(subTasks) || subTasks.length === 0) return undefined;
+  return subTasks.map((st) => ({ title: st.title, completed: false }));
+}
+
 /** Append items from source to dayTodo.items if title not already present (by trimmed title, case-sensitive) */
 function mergeItemsByTitle(
   existing: IDayTodoItem[],
-  source: { title: string }[],
+  source: { title: string; subTasks?: { title: string }[] }[],
   startOrder: number
 ): IDayTodoItem[] {
   const existingTitles = new Set(
@@ -28,6 +36,7 @@ function mergeItemsByTitle(
         title: s.title,
         completed: false,
         order: startOrder + toAppend.length,
+        subTasks: convertSubTasks(s.subTasks),
       });
     }
   }
@@ -104,6 +113,7 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
       title: d.title,
       completed: false,
       order: i,
+      subTasks: convertSubTasks(d.subTasks),
     }));
 
     // Recurring templates: week / month / year, filtered by schedule

@@ -1,10 +1,21 @@
 import { Schema, model } from "mongoose";
 import type { IDateTemplateDocument, IDateTemplateItem } from "../types/index.js";
 
+const dateTemplateSubTaskSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const dateTemplateItemSchema = new Schema<IDateTemplateItem>(
   {
     title: { type: String, required: true, trim: true },
     order: { type: Number, required: true, default: 0 },
+    subTasks: {
+      type: [dateTemplateSubTaskSchema],
+      default: undefined,
+    },
   },
   { _id: false }
 );

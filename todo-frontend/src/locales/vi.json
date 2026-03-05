@@ -121,6 +121,17 @@
     "goodLabel": "Tốt",
     "badLabel": "Cần cải thiện"
   },
+  "peopleNotesModal": {
+    "title": "Ghi chú về người thân",
+    "subtitle": "Lưu thông tin quan trọng về mọi người",
+    "addPersonPlaceholder": "Tên người...",
+    "addPerson": "Thêm",
+    "empty": "Chưa có ai",
+    "addNotePlaceholder": "Thêm ghi chú...",
+    "addNote": "Thêm",
+    "deletePersonAria": "Xóa người",
+    "deleteNoteAria": "Xóa ghi chú"
+  },
   "home": {
     "goalsTitle": "Mục tiêu tuần / tháng / năm",
     "defaultTemplateTitle": "Template mặc định",

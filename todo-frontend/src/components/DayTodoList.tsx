@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { forwardRef, useState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
@@ -40,50 +40,55 @@ interface DayTodoReorderItemProps {
   children: (dragHandle: ReactNode) => ReactNode;
 }
 
-function DayTodoReorderItem({ item, isMobile, children }: DayTodoReorderItemProps) {
-  const dragControls = useDragControls();
+const DayTodoReorderItem = forwardRef<HTMLLIElement, DayTodoReorderItemProps>(
+  ({ item, isMobile, children }, ref) => {
+    const dragControls = useDragControls();
 
-  const dragHandle = (
-    <button
-      type="button"
-      onPointerDown={(e) => dragControls.start(e)}
-      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
-      aria-label="Reorder item"
-    >
-      <GripVertical className="w-4 h-4" />
-    </button>
-  );
+    const dragHandle = (
+      <button
+        type="button"
+        onPointerDown={(e) => dragControls.start(e)}
+        className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+        aria-label="Reorder item"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+    );
 
-  return (
-    <Reorder.Item
-      value={item}
-      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: isMobile
-          ? { duration: 0.16, ease: "easeOut" }
-          : {
-              type: "spring",
-              stiffness: 100,
-              damping: 25,
-            },
-      }}
-      exit={{
-        opacity: 0,
-        x: isMobile ? -40 : -100,
-        transition: { duration: isMobile ? 0.12 : 0.2 },
-      }}
-      layout
-      layoutId={item.id}
-      dragListener={false}
-      dragControls={dragControls}
-      className="group"
-    >
-      {children(dragHandle)}
-    </Reorder.Item>
-  );
-}
+    return (
+      <Reorder.Item
+        ref={ref}
+        value={item}
+        initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          transition: isMobile
+            ? { duration: 0.16, ease: "easeOut" }
+            : {
+                type: "spring",
+                stiffness: 100,
+                damping: 25,
+              },
+        }}
+        exit={{
+          opacity: 0,
+          x: isMobile ? -40 : -100,
+          transition: { duration: isMobile ? 0.12 : 0.2 },
+        }}
+        layout
+        layoutId={item.id}
+        dragListener={false}
+        dragControls={dragControls}
+        className="group"
+      >
+        {children(dragHandle)}
+      </Reorder.Item>
+    );
+  }
+);
+
+DayTodoReorderItem.displayName = "DayTodoReorderItem";
 
 export function DayTodoList({
   dayTodo,

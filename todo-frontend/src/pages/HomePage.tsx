@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar, Circle, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar, Circle, Users, Menu, X } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
@@ -53,6 +54,25 @@ const AppLogo = () => {
   );
 };
 
+interface HeaderMenuItemProps {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}
+
+function HeaderMenuItem({ icon: Icon, label, onClick }: HeaderMenuItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+    >
+      <Icon className="w-5 h-5 shrink-0" />
+      <span className="text-sm font-medium">{label}</span>
+    </button>
+  );
+}
+
 export function HomePage() {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
@@ -80,14 +100,32 @@ export function HomePage() {
   const [isDateTemplateModalOpen, setIsDateTemplateModalOpen] = useState(false);
   const [isFreetimeModalOpen, setIsFreetimeModalOpen] = useState(false);
   const [isPeopleNotesModalOpen, setIsPeopleNotesModalOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const queryClient = useQueryClient();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleLang = () => {
     const next = i18n.language === "vi" ? "en" : "vi";
     i18n.changeLanguage(next);
     if (typeof localStorage !== "undefined") localStorage.setItem("lang", next);
   };
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current?.contains(event.target as Node)) return;
+      setMenuOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!isMobile) setMenuOpen(false);
+  }, [isMobile]);
 
   const { data: dayData, isLoading: dayLoading } = useQuery({
     queryKey: ["day", selectedDate],
@@ -156,6 +194,7 @@ export function HomePage() {
       ? { duration: 0.18, ease: "easeOut" }
       : { duration: 0.3, delay: desktopDelay },
   });
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <div className="min-h-screen text-slate-100 relative">
@@ -163,62 +202,132 @@ export function HomePage() {
       
       {/* Header */}
       <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-linear-surface">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between relative">
           <AppLogo />
-          <div className="flex items-center gap-2">
-            <motion.button
-              type="button"
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={toggleLang}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
-              title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
-            >
-              <Languages className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={() => setIsGoalModalOpen(true)}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-              title={t("home.goalsTitle")}
-            >
-              <Target className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              type="button"
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={() => setIsPeopleNotesModalOpen(true)}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-              title={t("peopleNotesModal.title")}
-            >
-              <Users className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              type="button"
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={() => {
-                setReviewModalSlot(null);
-                setIsReviewModalOpen(true);
-              }}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-              title={t("dayTodo.reviewMyself")}
-            >
-              <FileText className="w-5 h-5" />
-            </motion.button>
-            <motion.button
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={() => setIsDefaultModalOpen(true)}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-              title={t("home.defaultTemplateTitle")}
-            >
-              <Settings className="w-5 h-5" />
-            </motion.button>
-            <LogoutButton />
-          </div>
+          {!isMobile ? (
+            <div className="flex items-center gap-2">
+              <motion.button
+                type="button"
+                whileHover={iconHover}
+                whileTap={iconTap}
+                onClick={toggleLang}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
+                title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
+              >
+                <Languages className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                whileHover={iconHover}
+                whileTap={iconTap}
+                onClick={() => setIsGoalModalOpen(true)}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+                title={t("home.goalsTitle")}
+              >
+                <Target className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={iconHover}
+                whileTap={iconTap}
+                onClick={() => setIsPeopleNotesModalOpen(true)}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+                title={t("peopleNotesModal.title")}
+              >
+                <Users className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={iconHover}
+                whileTap={iconTap}
+                onClick={() => {
+                  setReviewModalSlot(null);
+                  setIsReviewModalOpen(true);
+                }}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+                title={t("dayTodo.reviewMyself")}
+              >
+                <FileText className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                whileHover={iconHover}
+                whileTap={iconTap}
+                onClick={() => setIsDefaultModalOpen(true)}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+                title={t("home.defaultTemplateTitle")}
+              >
+                <Settings className="w-5 h-5" />
+              </motion.button>
+              <LogoutButton />
+            </div>
+          ) : (
+            <div ref={menuRef} className="relative">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-300 hover:text-white transition-colors duration-200 cursor-pointer"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+              >
+                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </motion.button>
+
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.16, ease: "easeOut" }}
+                    className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-linear-card border border-white/[0.06] shadow-2xl shadow-black/30 p-2 z-30"
+                  >
+                    <HeaderMenuItem
+                      icon={Languages}
+                      label={i18n.language === "vi" ? "English" : "Tiếng Việt"}
+                      onClick={() => {
+                        toggleLang();
+                        closeMenu();
+                      }}
+                    />
+                    <HeaderMenuItem
+                      icon={Target}
+                      label={t("home.goalsTitle")}
+                      onClick={() => {
+                        setIsGoalModalOpen(true);
+                        closeMenu();
+                      }}
+                    />
+                    <HeaderMenuItem
+                      icon={Users}
+                      label={t("peopleNotesModal.title")}
+                      onClick={() => {
+                        setIsPeopleNotesModalOpen(true);
+                        closeMenu();
+                      }}
+                    />
+                    <HeaderMenuItem
+                      icon={FileText}
+                      label={t("dayTodo.reviewMyself")}
+                      onClick={() => {
+                        setReviewModalSlot(null);
+                        setIsReviewModalOpen(true);
+                        closeMenu();
+                      }}
+                    />
+                    <HeaderMenuItem
+                      icon={Settings}
+                      label={t("home.defaultTemplateTitle")}
+                      onClick={() => {
+                        setIsDefaultModalOpen(true);
+                        closeMenu();
+                      }}
+                    />
+                    <div className="my-1 h-px bg-white/[0.06]" />
+                    <LogoutButton variant="menu" onAfterClick={closeMenu} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </header>
 

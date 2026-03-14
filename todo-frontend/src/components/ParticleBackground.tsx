@@ -1,29 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import type { ISourceOptions } from "@tsparticles/engine";
-
-const options: ISourceOptions = {
-  fullScreen: false,
-  background: { color: "transparent" },
-  particles: {
-    number: { value: 200, density: { enable: true, width: 800, height: 800 } },
-    color: { value: ["#5E6AD2", "rgba(255,255,255,0.4)"] },
-    opacity: { value: { min: 0.15, max: 0.4 } },
-    size: { value: { min: 1, max: 2.5 } },
-    move: {
-      enable: true,
-      speed: 0.9,
-      direction: "none",
-      random: true,
-      straight: false,
-      outModes: "out",
-    },
-  },
-};
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export function ParticleBackground() {
   const [init, setInit] = useState(false);
+  const isMobile = useIsMobile();
+
+  const options = useMemo<ISourceOptions>(
+    () => ({
+      fullScreen: false,
+      background: { color: "transparent" },
+      particles: {
+        number: {
+          value: isMobile ? 30 : 200,
+          density: { enable: true, width: 800, height: 800 },
+        },
+        color: { value: ["#5E6AD2", "rgba(255,255,255,0.4)"] },
+        opacity: { value: { min: 0.15, max: 0.4 } },
+        size: { value: { min: 1, max: 2.5 } },
+        move: {
+          enable: true,
+          speed: 0.9,
+          direction: "none",
+          random: true,
+          straight: false,
+          outModes: "out",
+        },
+      },
+    }),
+    [isMobile]
+  );
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {

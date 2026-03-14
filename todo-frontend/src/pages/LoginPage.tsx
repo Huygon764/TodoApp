@@ -7,6 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiPost } from "@/lib/api";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Animated Background (solid Linear style; particles added in Phase 5)
 const AnimatedBackground = () => {
@@ -26,11 +27,15 @@ const AnimatedBackground = () => {
 };
 
 // Logo Component
-const AppLogo = () => (
+const AppLogo = ({ isMobile }: { isMobile: boolean }) => (
   <motion.div
-    initial={{ scale: 0, rotate: -180 }}
-    animate={{ scale: 1, rotate: 0 }}
-    transition={{ type: "spring", duration: 0.8 }}
+    initial={isMobile ? { opacity: 0, scale: 0.92 } : { scale: 0, rotate: -180 }}
+    animate={isMobile ? { opacity: 1, scale: 1 } : { scale: 1, rotate: 0 }}
+    transition={
+      isMobile
+        ? { duration: 0.2, ease: "easeOut" }
+        : { type: "spring", duration: 0.8 }
+    }
     className="relative w-16 h-16 mx-auto mb-4"
   >
     <div className="relative w-full h-full bg-linear-accent rounded-2xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/25">
@@ -40,6 +45,7 @@ const AppLogo = () => (
 );
 
 export function LoginPage() {
+  const isMobile = useIsMobile();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +55,22 @@ export function LoginPage() {
   const queryClient = useQueryClient();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? ROUTES.HOME;
+  const buttonHover = isMobile ? undefined : { scale: 1.02 };
+  const buttonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
+  const getFadeUpMotion = (desktopDelay = 0, mobileOffset = 8) => ({
+    initial: { opacity: 0, y: isMobile ? mobileOffset / 2 : mobileOffset },
+    animate: { opacity: 1, y: 0 },
+    transition: isMobile
+      ? { duration: 0.18, ease: "easeOut" }
+      : { duration: 0.6, ease: "easeOut", delay: desktopDelay },
+  });
+  const getSlideInMotion = (desktopDelay = 0) => ({
+    initial: isMobile ? { opacity: 0, y: 6 } : { opacity: 0, x: -20 },
+    animate: { opacity: 1, x: 0, y: 0 },
+    transition: isMobile
+      ? { duration: 0.18, ease: "easeOut" }
+      : { delay: desktopDelay },
+  });
 
   const loginMutation = useMutation({
     mutationFn: () =>
@@ -81,22 +103,18 @@ export function LoginPage() {
       <AnimatedBackground />
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        {...getFadeUpMotion()}
         className="w-full max-w-md relative z-10"
       >
         {/* Card */}
         <div className="relative">
           <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] p-8 sm:p-10 shadow-2xl">
             {/* Logo */}
-            <AppLogo />
+            <AppLogo isMobile={isMobile} />
 
             {/* Header */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              {...getFadeUpMotion(0.2, 10)}
               className="text-center mb-8"
             >
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
@@ -111,9 +129,7 @@ export function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Username Input */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
+                {...getSlideInMotion(0.3)}
               >
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Tên đăng nhập
@@ -137,9 +153,7 @@ export function LoginPage() {
 
               {/* Password Input */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
+                {...getSlideInMotion(0.4)}
               >
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Mật khẩu
@@ -177,6 +191,11 @@ export function LoginPage() {
                 <motion.div
                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={
+                    isMobile
+                      ? { duration: 0.16, ease: "easeOut" }
+                      : undefined
+                  }
                   className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
                 >
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -186,15 +205,13 @@ export function LoginPage() {
 
               {/* Submit Button */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                {...getFadeUpMotion(0.5, 10)}
               >
                 <motion.button
                   type="submit"
                   disabled={loginMutation.isPending}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={buttonHover}
+                  whileTap={buttonTap}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-white overflow-hidden
                     bg-linear-accent hover:bg-linear-accent-hover
                     disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none

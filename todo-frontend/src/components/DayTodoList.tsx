@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
 import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Extend DayTodoItem với unique ID
 interface DayTodoItemWithId extends DayTodoItem {
@@ -35,10 +36,11 @@ interface DayTodoListProps {
 
 interface DayTodoReorderItemProps {
   item: DayTodoItemWithId;
+  isMobile: boolean;
   children: (dragHandle: ReactNode) => ReactNode;
 }
 
-function DayTodoReorderItem({ item, children }: DayTodoReorderItemProps) {
+function DayTodoReorderItem({ item, isMobile, children }: DayTodoReorderItemProps) {
   const dragControls = useDragControls();
 
   const dragHandle = (
@@ -55,20 +57,22 @@ function DayTodoReorderItem({ item, children }: DayTodoReorderItemProps) {
   return (
     <Reorder.Item
       value={item}
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
       animate={{
         opacity: 1,
         y: 0,
-        transition: {
-          type: "spring",
-          stiffness: 100,
-          damping: 25,
-        },
+        transition: isMobile
+          ? { duration: 0.16, ease: "easeOut" }
+          : {
+              type: "spring",
+              stiffness: 100,
+              damping: 25,
+            },
       }}
       exit={{
         opacity: 0,
-        x: -100,
-        transition: { duration: 0.2 },
+        x: isMobile ? -40 : -100,
+        transition: { duration: isMobile ? 0.12 : 0.2 },
       }}
       layout
       layoutId={item.id}
@@ -87,6 +91,7 @@ export function DayTodoList({
   onUpdateItems,
 }: DayTodoListProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
@@ -121,6 +126,12 @@ export function DayTodoList({
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const controlHover = isMobile ? undefined : { scale: 1.1 };
+  const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
+  const addButtonHover = isMobile ? undefined : { scale: 1.02 };
+  const addButtonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
+  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
+  const subTaskButtonHover = isMobile ? undefined : { scale: 1.1 };
 
   const handleAdd = () => {
     const t = newTitle.trim();
@@ -302,8 +313,11 @@ export function DayTodoList({
               <div className="text-right">
                 <motion.span 
                   key={progressPercent}
-                  initial={{ scale: 1.2, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  initial={isMobile ? { opacity: 0 } : { scale: 1.2, opacity: 0 }}
+                  animate={isMobile ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+                  transition={
+                    isMobile ? { duration: 0.16, ease: "easeOut" } : undefined
+                  }
                   className="text-2xl font-bold text-[#7C85E0]"
                 >
                   {progressPercent}%
@@ -319,7 +333,10 @@ export function DayTodoList({
                 className="absolute inset-y-0 left-0 bg-linear-accent rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{
+                  duration: isMobile ? 0.25 : 0.5,
+                  ease: "easeOut",
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             </div>
@@ -346,8 +363,8 @@ export function DayTodoList({
             </div>
             <motion.button
               type="button"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={addButtonHover}
+              whileTap={addButtonTap}
               onClick={handleAdd}
               disabled={!newTitle.trim()}
               className="px-5 py-3.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover 
@@ -376,7 +393,7 @@ export function DayTodoList({
             >
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
-                  <DayTodoReorderItem key={item.id} item={item}>
+                  <DayTodoReorderItem key={item.id} item={item} isMobile={isMobile}>
                     {(dragHandle) => (
                       <>
                     <motion.div 
@@ -388,13 +405,16 @@ export function DayTodoList({
                       animate={{
                         scale: pendingToggle === item.id ? 0.98 : 1,
                       }}
-                      transition={{ duration: 0.15 }}
+                      transition={{
+                        duration: isMobile ? 0.1 : 0.15,
+                        ease: "easeOut",
+                      }}
                     >
                       {/* Checkbox */}
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={checkboxHover}
+                        whileTap={controlTap}
                         onClick={() => handleToggle(item.id)}
                         disabled={pendingToggle !== null}
                         className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
@@ -409,11 +429,15 @@ export function DayTodoList({
                               initial={{ scale: 0, rotate: -45 }}
                               animate={{ scale: 1, rotate: 0 }}
                               exit={{ scale: 0, rotate: 45 }}
-                              transition={{ 
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 15,
-                              }}
+                              transition={
+                                isMobile
+                                  ? { duration: 0.12, ease: "easeOut" }
+                                  : {
+                                      type: "spring",
+                                      stiffness: 500,
+                                      damping: 15,
+                                    }
+                              }
                             >
                               <Check className="w-4 h-4 text-white" strokeWidth={3} />
                             </motion.div>
@@ -448,7 +472,7 @@ export function DayTodoList({
                               ? "line-through text-slate-500"
                               : "text-slate-200"
                           }`}
-                          animate={{ x: item.completed ? 4 : 0 }}
+                          animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}
                         >
                           {item.title}
                         </motion.span>
@@ -457,8 +481,8 @@ export function DayTodoList({
                       {/* Expand / Sub-tasks */}
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={controlHover}
+                        whileTap={controlTap}
                         onClick={() =>
                           setExpandedId((prev) => (prev === item.id ? null : item.id))
                         }
@@ -480,8 +504,8 @@ export function DayTodoList({
                       {/* Delete Button - always visible */}
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={controlHover}
+                        whileTap={controlTap}
                         onClick={() => handleDelete(item.id)}
                         className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
                         aria-label={t("dayTodo.deleteAria")}
@@ -498,8 +522,8 @@ export function DayTodoList({
                           >
                             <motion.button
                               type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
+                              whileHover={subTaskButtonHover}
+                              whileTap={controlTap}
                               onClick={() => toggleSubTask(item.id, subIdx)}
                               className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                             >
@@ -518,8 +542,8 @@ export function DayTodoList({
                             </span>
                             <motion.button
                               type="button"
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
+                              whileHover={subTaskButtonHover}
+                              whileTap={controlTap}
                               onClick={() => deleteSubTask(item.id, subIdx)}
                               className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
                               aria-label="Delete sub-task"
@@ -547,8 +571,8 @@ export function DayTodoList({
                           />
                           <motion.button
                             type="button"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={addButtonHover}
+                            whileTap={addButtonTap}
                             onClick={() =>
                               addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
                             }

@@ -19,6 +19,7 @@ import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { PeopleNotesModal } from "@/components/PeopleNotesModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Subtle Animated Background (solid Linear style; particles added in Phase 5)
 const AnimatedBackground = () => {
@@ -54,6 +55,7 @@ const AppLogo = () => {
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
+  const isMobile = useIsMobile();
   const { data: user } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
@@ -143,6 +145,17 @@ export function HomePage() {
 
   const dayTodo = dayData ?? null;
   const defaultItems = defaultData ?? [];
+  const iconHover = isMobile ? undefined : { scale: 1.05 };
+  const iconTap = isMobile ? { scale: 0.98 } : { scale: 0.95 };
+  const cardHover = isMobile ? undefined : { scale: 1.01 };
+  const cardTap = isMobile ? { scale: 0.995 } : { scale: 0.99 };
+  const getSectionMotion = (desktopDelay = 0) => ({
+    initial: isMobile ? { opacity: 0, y: 4 } : { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: isMobile
+      ? { duration: 0.18, ease: "easeOut" }
+      : { duration: 0.3, delay: desktopDelay },
+  });
 
   return (
     <div className="min-h-screen text-slate-100 relative">
@@ -155,8 +168,8 @@ export function HomePage() {
           <div className="flex items-center gap-2">
             <motion.button
               type="button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={iconHover}
+              whileTap={iconTap}
               onClick={toggleLang}
               className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
               title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
@@ -164,8 +177,8 @@ export function HomePage() {
               <Languages className="w-5 h-5" />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={iconHover}
+              whileTap={iconTap}
               onClick={() => setIsGoalModalOpen(true)}
               className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("home.goalsTitle")}
@@ -174,8 +187,8 @@ export function HomePage() {
             </motion.button>
             <motion.button
               type="button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={iconHover}
+              whileTap={iconTap}
               onClick={() => setIsPeopleNotesModalOpen(true)}
               className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("peopleNotesModal.title")}
@@ -184,8 +197,8 @@ export function HomePage() {
             </motion.button>
             <motion.button
               type="button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={iconHover}
+              whileTap={iconTap}
               onClick={() => {
                 setReviewModalSlot(null);
                 setIsReviewModalOpen(true);
@@ -196,8 +209,8 @@ export function HomePage() {
               <FileText className="w-5 h-5" />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={iconHover}
+              whileTap={iconTap}
               onClick={() => setIsDefaultModalOpen(true)}
               className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
               title={t("home.defaultTemplateTitle")}
@@ -213,9 +226,7 @@ export function HomePage() {
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Date Navigation */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          {...getSectionMotion()}
         >
           <DateNav
             date={selectedDate}
@@ -226,9 +237,7 @@ export function HomePage() {
 
         {/* Day Todo List - Expanded */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
+          {...getSectionMotion(0.05)}
           className="flex-1"
         >
           <DayTodoList
@@ -240,13 +249,11 @@ export function HomePage() {
 
         {/* Default List Button */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
+          {...getSectionMotion(0.1)}
         >
           <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={cardHover}
+            whileTap={cardTap}
             onClick={() => setIsDefaultModalOpen(true)}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
@@ -271,14 +278,12 @@ export function HomePage() {
 
         {/* Date template (specific date → day todo) */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.12 }}
+          {...getSectionMotion(0.12)}
         >
           <motion.button
             type="button"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={cardHover}
+            whileTap={cardTap}
             onClick={() => setIsDateTemplateModalOpen(true)}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
@@ -303,14 +308,12 @@ export function HomePage() {
 
         {/* Freetime list (things to do when you have time) */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.14 }}
+          {...getSectionMotion(0.14)}
         >
           <motion.button
             type="button"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={cardHover}
+            whileTap={cardTap}
             onClick={() => setIsFreetimeModalOpen(true)}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
@@ -352,14 +355,12 @@ export function HomePage() {
 
         {/* Recurring template (week/month/year → day todo) */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
+          {...getSectionMotion(0.15)}
         >
           <motion.button
             type="button"
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={cardHover}
+            whileTap={cardTap}
             onClick={() => setIsRecurringModalOpen(true)}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, ChevronDown, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+import { X, Plus, Trash2, Check, Circle, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
@@ -28,6 +29,41 @@ const addIdsToItems = (items: FreetimeTodoItem[]): FreetimeTodoItemWithId[] =>
 
 const removeIdsFromItems = (items: FreetimeTodoItemWithId[]): FreetimeTodoItem[] =>
   items.map(({ id, ...rest }) => rest);
+
+interface FreetimeReorderItemProps {
+  item: FreetimeTodoItemWithId;
+  children: (dragHandle: ReactNode) => ReactNode;
+}
+
+function FreetimeReorderItem({ item, children }: FreetimeReorderItemProps) {
+  const dragControls = useDragControls();
+
+  const dragHandle = (
+    <button
+      type="button"
+      onPointerDown={(e) => dragControls.start(e)}
+      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+      aria-label="Reorder item"
+    >
+      <GripVertical className="w-4 h-4" />
+    </button>
+  );
+
+  return (
+    <Reorder.Item
+      value={item}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -40 }}
+      layout
+      dragListener={false}
+      dragControls={dragControls}
+      className="group"
+    >
+      {children(dragHandle)}
+    </Reorder.Item>
+  );
+}
 
 export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const { t } = useTranslation();
@@ -358,15 +394,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     >
                       <AnimatePresence mode="popLayout">
                         {items.map((item) => (
-                          <Reorder.Item
-                            key={item.id}
-                            value={item}
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -40 }}
-                            layout
-                            className="group"
-                          >
+                          <FreetimeReorderItem key={item.id} item={item}>
+                            {(dragHandle) => (
+                              <>
                             <motion.div
                               className={`flex items-center gap-4 p-3.5 rounded-xl border transition-colors duration-200 ${
                                 item.completed
@@ -444,6 +474,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                               {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
                                 <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
                               )}
+                              {dragHandle}
 
                               <motion.button
                                 type="button"
@@ -540,7 +571,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 </div>
                               </div>
                             )}
-                          </Reorder.Item>
+                              </>
+                            )}
+                          </FreetimeReorderItem>
                         ))}
                       </AnimatePresence>
                     </Reorder.Group>

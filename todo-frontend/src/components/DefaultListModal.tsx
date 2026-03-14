@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Plus, Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+import { X, Plus, Trash2, ListTodo, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
@@ -16,6 +17,36 @@ interface DefaultListModalProps {
   onAddItem: (title: string) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
+}
+
+interface DefaultReorderItemProps {
+  item: DefaultItem;
+  children: (dragHandle: ReactNode) => ReactNode;
+}
+
+function DefaultReorderItem({ item, children }: DefaultReorderItemProps) {
+  const dragControls = useDragControls();
+
+  const dragHandle = (
+    <button
+      type="button"
+      onPointerDown={(e) => dragControls.start(e)}
+      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+      aria-label="Reorder item"
+    >
+      <GripVertical className="w-4 h-4" />
+    </button>
+  );
+
+  return (
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={dragControls}
+    >
+      {children(dragHandle)}
+    </Reorder.Item>
+  );
 }
 
 export function DefaultListModal({
@@ -233,12 +264,9 @@ export function DefaultListModal({
                     >
                       <AnimatePresence mode="popLayout">
                         {localItems.map((item) => (
-                          <Reorder.Item
-                            key={item._id}
-                            value={item}
-                            drag
-                            className="cursor-grab active:cursor-grabbing"
-                          >
+                          <DefaultReorderItem key={item._id} item={item}>
+                            {(dragHandle) => (
+                              <>
                             <motion.div
                               layout
                               initial={{ opacity: 0, x: -10 }}
@@ -291,13 +319,14 @@ export function DefaultListModal({
                                 {(item.subTasks ?? []).length > 0 && expandedId !== item._id && (
                                   <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
                                 )}
+                                {dragHandle}
                                 <motion.button
                                   type="button"
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => deleteMutation.mutate(item._id)}
                                   disabled={deleteMutation.isPending}
-                                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                  className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
                                   aria-label={t("defaultModal.deleteAria")}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -358,7 +387,9 @@ export function DefaultListModal({
                                 </div>
                               )}
                             </motion.div>
-                          </Reorder.Item>
+                              </>
+                            )}
+                          </DefaultReorderItem>
                         ))}
                       </AnimatePresence>
                     </Reorder.Group>

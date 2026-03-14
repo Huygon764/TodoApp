@@ -260,7 +260,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => deleteMutation.mutate(person._id)}
                                 disabled={deleteMutation.isPending}
-                                className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
                                 aria-label={t("peopleNotesModal.deletePersonAria")}
                               >
                                 <Trash2 className="w-4 h-4" />

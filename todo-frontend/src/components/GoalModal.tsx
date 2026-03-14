@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+import { X, Plus, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown, GripVertical } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import {
@@ -42,6 +43,37 @@ function removeIdsFromItems(
   items: (GoalItem & { id: string })[]
 ): GoalItem[] {
   return items.map(({ id, ...rest }) => rest);
+}
+
+interface GoalReorderItemProps {
+  item: GoalItem & { id: string };
+  children: (dragHandle: ReactNode) => ReactNode;
+}
+
+function GoalReorderItem({ item, children }: GoalReorderItemProps) {
+  const dragControls = useDragControls();
+
+  const dragHandle = (
+    <button
+      type="button"
+      onPointerDown={(e) => dragControls.start(e)}
+      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+      aria-label="Reorder item"
+    >
+      <GripVertical className="w-4 h-4" />
+    </button>
+  );
+
+  return (
+    <Reorder.Item
+      value={item}
+      dragListener={false}
+      dragControls={dragControls}
+      className="group"
+    >
+      {children(dragHandle)}
+    </Reorder.Item>
+  );
 }
 
 export function GoalModal({ isOpen, onClose }: GoalModalProps) {
@@ -543,12 +575,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                         className="space-y-2"
                       >
                         {incomplete.map((item) => (
-                          <Reorder.Item
-                            key={item.id}
-                            value={item}
-                            drag
-                            className="cursor-grab active:cursor-grabbing"
-                          >
+                          <GoalReorderItem key={item.id} item={item}>
+                            {(dragHandle) => (
+                              <>
                             <motion.div
                               layout
                               className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
@@ -648,6 +677,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
                                 <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
                               )}
+                              {dragHandle}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
@@ -746,7 +776,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 </div>
                               </div>
                             )}
-                          </Reorder.Item>
+                              </>
+                            )}
+                          </GoalReorderItem>
                         ))}
                       </Reorder.Group>
                       <Reorder.Group
@@ -756,12 +788,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                         className="space-y-2"
                       >
                         {completed.map((item) => (
-                          <Reorder.Item
-                            key={item.id}
-                            value={item}
-                            drag
-                            className="cursor-grab active:cursor-grabbing"
-                          >
+                          <GoalReorderItem key={item.id} item={item}>
+                            {(dragHandle) => (
+                              <>
                             <motion.div
                               layout
                               className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
@@ -861,6 +890,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                               {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
                                 <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
                               )}
+                              {dragHandle}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
@@ -959,7 +989,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
                                 </div>
                               </div>
                             )}
-                          </Reorder.Item>
+                              </>
+                            )}
+                          </GoalReorderItem>
                         ))}
                       </Reorder.Group>
                     </div>

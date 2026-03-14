@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 
 // Extend DayTodoItem với unique ID
@@ -30,6 +31,54 @@ interface DayTodoListProps {
   dayTodo: DayTodo | null;
   isLoading: boolean;
   onUpdateItems: (items: DayTodoItem[]) => void;
+}
+
+interface DayTodoReorderItemProps {
+  item: DayTodoItemWithId;
+  children: (dragHandle: ReactNode) => ReactNode;
+}
+
+function DayTodoReorderItem({ item, children }: DayTodoReorderItemProps) {
+  const dragControls = useDragControls();
+
+  const dragHandle = (
+    <button
+      type="button"
+      onPointerDown={(e) => dragControls.start(e)}
+      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+      aria-label="Reorder item"
+    >
+      <GripVertical className="w-4 h-4" />
+    </button>
+  );
+
+  return (
+    <Reorder.Item
+      value={item}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: {
+          type: "spring",
+          stiffness: 100,
+          damping: 25,
+        },
+      }}
+      exit={{
+        opacity: 0,
+        x: -100,
+        transition: { duration: 0.2 },
+      }}
+      layout
+      layoutId={item.id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="group"
+    >
+      {children(dragHandle)}
+    </Reorder.Item>
+  );
 }
 
 export function DayTodoList({
@@ -327,29 +376,9 @@ export function DayTodoList({
             >
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
-                  <Reorder.Item
-                    key={item.id}
-                    value={item}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 100,
-                        damping: 25,
-                      }
-                    }}
-                    exit={{ 
-                      opacity: 0, 
-                      x: -100,
-                      transition: { duration: 0.2 }
-                    }}
-                    layout
-                    layoutId={item.id}
-                    drag
-                    className="group"
-                  >
+                  <DayTodoReorderItem key={item.id} item={item}>
+                    {(dragHandle) => (
+                      <>
                     <motion.div 
                       className={`flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 ${
                         item.completed 
@@ -447,6 +476,7 @@ export function DayTodoList({
                       {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
                         <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
                       )}
+                      {dragHandle}
                       {/* Delete Button - always visible */}
                       <motion.button
                         type="button"
@@ -529,7 +559,9 @@ export function DayTodoList({
                         </div>
                       </div>
                     )}
-                  </Reorder.Item>
+                      </>
+                    )}
+                  </DayTodoReorderItem>
                 ))}
               </AnimatePresence>
             </Reorder.Group>

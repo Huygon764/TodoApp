@@ -2,10 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
+import { useModalClose } from "@/hooks/useModalClose";
+import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalHeader } from "@/components/shared/ModalHeader";
+import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 /** Recurring template: week/month/year; items are added to day todo based on schedule */
 type RecurringTab = "week" | "month" | "year";
@@ -167,15 +172,7 @@ export function RecurringTemplateModal({
     patchItemMutation.mutate({ idx, subTasks });
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  useModalClose(isOpen, onClose, contentRef);
 
   useEffect(() => {
     if (isOpen && initialTab) setActiveTab(initialTab as RecurringTab);
@@ -189,49 +186,13 @@ export function RecurringTemplateModal({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-          >
-            <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-                      <ListTodo className="w-5 h-5 text-[#7C85E0]" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-white">
-                        {t("recurringModal.title")}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {t("recurringModal.subtitle")}
-                      </p>
-                    </div>
-                  </div>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700/50 transition-all duration-200"
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
-                </div>
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+                <ModalHeader
+                  icon={<ListTodo className="w-5 h-5 text-[#7C85E0]" />}
+                  title={t("recurringModal.title")}
+                  subtitle={t("recurringModal.subtitle")}
+                  onClose={onClose}
+                />
 
                 <div className="flex border-b border-white/[0.04]">
                   {(["week", "month", "year"] as const).map((tab) => (
@@ -358,33 +319,14 @@ export function RecurringTemplateModal({
                   )}
                 </div>
 
-                <div className="p-4 border-b border-white/[0.04]">
-                  <div className="flex gap-3">
-                    <div className="relative flex-1 group">
-                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
-                      </div>
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addItem()}
-                        placeholder={t("recurringModal.addPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
-                      />
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={addItem}
-                      disabled={!newTitle.trim() || addMutation.isPending}
-                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t("recurringModal.add")}
-                    </motion.button>
-                  </div>
-                </div>
+                <ItemAddInput
+                  value={newTitle}
+                  onChange={setNewTitle}
+                  onAdd={addItem}
+                  placeholder={t("recurringModal.addPlaceholder")}
+                  addLabel={t("recurringModal.add")}
+                  disabled={!newTitle.trim() || addMutation.isPending}
+                />
 
                 <div className="p-4 max-h-[300px] overflow-y-auto">
                   {visibleItems.length === 0 ? (
@@ -463,58 +405,15 @@ export function RecurringTemplateModal({
                                 </motion.button>
                               </div>
                               {expandedIdx === idx && (
-                                <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04]">
-                                  {(item.subTasks ?? []).map((st, subIdx) => (
-                                    <div
-                                      key={subIdx}
-                                      className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
-                                    >
-                                      <span className="text-slate-500 shrink-0">•</span>
-                                      <span className="flex-1 text-sm text-slate-300">
-                                        {st.title}
-                                      </span>
-                                      <motion.button
-                                        type="button"
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => deleteSubTask(idx, subIdx)}
-                                        className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
-                                        aria-label={t("recurringModal.deleteAria")}
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </motion.button>
-                                    </div>
-                                  ))}
-                                  <div className="flex gap-2 pt-1">
-                                    <input
-                                      type="text"
-                                      value={newSubTaskTitle[idx] ?? ""}
-                                      onChange={(e) =>
-                                        setNewSubTaskTitle((prev) => ({
-                                          ...prev,
-                                          [idx]: e.target.value,
-                                        }))
-                                      }
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter")
-                                          addSubTask(idx, newSubTaskTitle[idx] ?? "");
-                                      }}
-                                      placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
-                                      className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
-                                    />
-                                    <motion.button
-                                      type="button"
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                      onClick={() =>
-                                        addSubTask(idx, newSubTaskTitle[idx] ?? "")
-                                      }
-                                      className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
-                                    >
-                                      {t("dayTodo.addSubTask", "Add")}
-                                    </motion.button>
-                                  </div>
-                                </div>
+                                <SubTaskSection
+                                  subTasks={item.subTasks ?? []}
+                                  onDelete={(subIdx) => deleteSubTask(idx, subIdx)}
+                                  newSubTaskTitle={newSubTaskTitle[idx] ?? ""}
+                                  onNewSubTaskTitleChange={(val) =>
+                                    setNewSubTaskTitle((prev) => ({ ...prev, [idx]: val }))
+                                  }
+                                  onAddSubTask={() => addSubTask(idx, newSubTaskTitle[idx] ?? "")}
+                                />
                               )}
                             </motion.li>
                           );
@@ -529,11 +428,6 @@ export function RecurringTemplateModal({
                     {t("recurringModal.footerTip")}
                   </p>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </ModalContainer>
   );
 }

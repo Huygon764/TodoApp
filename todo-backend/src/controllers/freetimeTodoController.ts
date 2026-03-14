@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { FreetimeTodo } from "../models/index.js";
 import { catchAsync, sendSuccess } from "../utils/index.js";
 import type { IFreetimeTodoItem } from "../types/index.js";
+import { normalizeItems } from "../utils/normalizeItem.js";
 
 /**
  * GET /api/freetime-todo
@@ -43,17 +44,7 @@ export const patchFreetimeTodo = catchAsync(
       });
     }
 
-    freetimeTodo.items = items.map((item, idx) => ({
-      title: (item.title ?? "").trim(),
-      completed: Boolean(item.completed),
-      order: typeof item.order === "number" ? item.order : idx,
-      subTasks: Array.isArray(item.subTasks)
-        ? item.subTasks.map((st) => ({
-            title: (st.title ?? "").trim(),
-            completed: Boolean(st.completed),
-          }))
-        : undefined,
-    }));
+    freetimeTodo.items = normalizeItems(items);
 
     await freetimeTodo.save();
 

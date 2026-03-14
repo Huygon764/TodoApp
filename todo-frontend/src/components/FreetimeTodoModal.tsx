@@ -3,10 +3,17 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
-import { X, Plus, Trash2, Check, Circle, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
+import { Trash2, Check, Circle, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
+import { generateId } from "@/lib/generateId";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useModalClose } from "@/hooks/useModalClose";
+import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalHeader } from "@/components/shared/ModalHeader";
+import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 interface FreetimeTodoModalProps {
   isOpen: boolean;
@@ -18,7 +25,6 @@ interface FreetimeTodoItemWithId extends FreetimeTodoItem {
   subTasks: FreetimeSubTask[];
 }
 
-const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 const addIdsToItems = (items: FreetimeTodoItem[]): FreetimeTodoItemWithId[] =>
   items.map((item, index) => ({
@@ -32,10 +38,11 @@ const removeIdsFromItems = (items: FreetimeTodoItemWithId[]): FreetimeTodoItem[]
 
 interface FreetimeReorderItemProps {
   item: FreetimeTodoItemWithId;
+  isMobile: boolean;
   children: (dragHandle: ReactNode) => ReactNode;
 }
 
-function FreetimeReorderItem({ item, children }: FreetimeReorderItemProps) {
+function FreetimeReorderItem({ item, isMobile, children }: FreetimeReorderItemProps) {
   const dragControls = useDragControls();
 
   const dragHandle = (
@@ -52,9 +59,19 @@ function FreetimeReorderItem({ item, children }: FreetimeReorderItemProps) {
   return (
     <Reorder.Item
       value={item}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -40 }}
+      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        transition: isMobile
+          ? { duration: 0.16, ease: "easeOut" }
+          : { type: "spring", stiffness: 100, damping: 25 },
+      }}
+      exit={{
+        opacity: 0,
+        x: isMobile ? -40 : -100,
+        transition: { duration: isMobile ? 0.12 : 0.2 },
+      }}
       layout
       dragListener={false}
       dragControls={dragControls}
@@ -67,6 +84,7 @@ function FreetimeReorderItem({ item, children }: FreetimeReorderItemProps) {
 
 export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const contentRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +95,10 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const [editValue, setEditValue] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
+
+  const controlHover = isMobile ? undefined : { scale: 1.1 };
+  const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
+  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
 
   const REORDER_DEBOUNCE_MS = 600;
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -130,15 +152,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     }
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  useModalClose(isOpen, onClose, contentRef);
 
   useEffect(() => {
     return () => {
@@ -265,82 +279,21 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-          >
-            <div className="relative w-full max-w-xl" ref={contentRef}>
-              <div className="relative rounded-3xl bg-linear-card border border-white/[0.06] shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-                      <Circle className="w-5 h-5 text-[#7C85E0]" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-white">
-                        {t("freetimeModal.title", "Freetime list")}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {t(
-                          "freetimeModal.subtitle",
-                          "Things you want to do when you have time"
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
-                </div>
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} maxWidth="max-w-xl">
+                <ModalHeader
+                  icon={<Circle className="w-5 h-5 text-[#7C85E0]" />}
+                  title={t("freetimeModal.title", "Freetime list")}
+                  subtitle={t("freetimeModal.subtitle", "Things you want to do when you have time")}
+                  onClose={onClose}
+                />
 
-                <div className="p-4 border-b border-white/4">
-                  <div className="flex gap-3">
-                    <div className="relative flex-1 group">
-                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
-                      </div>
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                        placeholder={t(
-                          "freetimeModal.addPlaceholder",
-                          "Add something to do in your freetime..."
-                        )}
-                        className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
-                      />
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleAdd}
-                      disabled={!newTitle.trim()}
-                      className="px-5 py-3.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t("freetimeModal.add", "Add")}
-                    </motion.button>
-                  </div>
-                </div>
+                <ItemAddInput
+                  value={newTitle}
+                  onChange={setNewTitle}
+                  onAdd={handleAdd}
+                  placeholder={t("freetimeModal.addPlaceholder", "Add something to do in your freetime...")}
+                  addLabel={t("freetimeModal.add", "Add")}
+                />
 
                 <div className="px-6 pt-4">
                   {totalCount > 0 && (
@@ -394,7 +347,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     >
                       <AnimatePresence mode="popLayout">
                         {items.map((item) => (
-                          <FreetimeReorderItem key={item.id} item={item}>
+                          <FreetimeReorderItem key={item.id} item={item} isMobile={isMobile}>
                             {(dragHandle) => (
                               <>
                             <motion.div
@@ -406,8 +359,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             >
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                                whileHover={checkboxHover}
+                                whileTap={controlTap}
                                 onClick={() => handleToggle(item.id)}
                                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
@@ -415,9 +368,22 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                     : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
                                 }`}
                               >
-                                {item.completed && (
-                                  <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                                )}
+                                <AnimatePresence mode="wait">
+                                  {item.completed && (
+                                    <motion.div
+                                      initial={{ scale: 0, rotate: -45 }}
+                                      animate={{ scale: 1, rotate: 0 }}
+                                      exit={{ scale: 0, rotate: 45 }}
+                                      transition={
+                                        isMobile
+                                          ? { duration: 0.12, ease: "easeOut" }
+                                          : { type: "spring", stiffness: 500, damping: 15 }
+                                      }
+                                    >
+                                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </motion.button>
 
                               {editingId === item.id ? (
@@ -453,8 +419,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                                whileHover={controlHover}
+                                whileTap={controlTap}
                                 onClick={() =>
                                   setExpandedId((prev) =>
                                     prev === item.id ? null : item.id
@@ -478,8 +444,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                                whileHover={controlHover}
+                                whileTap={controlTap}
                                 onClick={() => handleDelete(item.id)}
                                 className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
                                 aria-label={t("freetimeModal.deleteAria", "Delete")}
@@ -489,86 +455,18 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             </motion.div>
 
                             {expandedId === item.id && (
-                              <div className="pl-11 pr-4 pb-3 pt-1 space-y-1.5 mt-1">
-                                {(item.subTasks ?? []).map((st, subIdx) => (
-                                  <div
-                                    key={subIdx}
-                                    className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
-                                  >
-                                    <motion.button
-                                      type="button"
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => toggleSubTask(item.id, subIdx)}
-                                      className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
-                                    >
-                                      {st.completed && (
-                                        <Check
-                                          className="w-3.5 h-3.5 text-white"
-                                          strokeWidth={3}
-                                        />
-                                      )}
-                                    </motion.button>
-                                    <span
-                                      className={`flex-1 text-sm ${
-                                        st.completed
-                                          ? "line-through text-slate-500"
-                                          : "text-slate-300"
-                                      }`}
-                                    >
-                                      {st.title}
-                                    </span>
-                                    <motion.button
-                                      type="button"
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      onClick={() => deleteSubTask(item.id, subIdx)}
-                                      className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
-                                      aria-label={t(
-                                        "freetimeModal.deleteSubTaskAria",
-                                        "Delete sub-task"
-                                      )}
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </motion.button>
-                                  </div>
-                                ))}
-                                <div className="flex gap-2 pt-1">
-                                  <input
-                                    type="text"
-                                    value={newSubTaskTitle[item.id] ?? ""}
-                                    onChange={(e) =>
-                                      setNewSubTaskTitle((prev) => ({
-                                        ...prev,
-                                        [item.id]: e.target.value,
-                                      }))
-                                    }
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        addSubTask(
-                                          item.id,
-                                          newSubTaskTitle[item.id] ?? ""
-                                        );
-                                      }
-                                    }}
-                                    placeholder={t(
-                                      "freetimeModal.addSubTaskPlaceholder",
-                                      "Add sub-task"
-                                    )}
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
-                                  />
-                                  <motion.button
-                                    type="button"
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() =>
-                                      addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
-                                    }
-                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
-                                  >
-                                    {t("freetimeModal.addSubTask", "Add")}
-                                  </motion.button>
-                                </div>
+                              <div className="pl-11 mt-1">
+                                <SubTaskSection
+                                  subTasks={item.subTasks ?? []}
+                                  showCheckbox={true}
+                                  onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
+                                  onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
+                                  newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
+                                  onNewSubTaskTitleChange={(val) =>
+                                    setNewSubTaskTitle((prev) => ({ ...prev, [item.id]: val }))
+                                  }
+                                  onAddSubTask={() => addSubTask(item.id, newSubTaskTitle[item.id] ?? "")}
+                                />
                               </div>
                             )}
                               </>
@@ -579,12 +477,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     </Reorder.Group>
                   )}
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </ModalContainer>
   );
 }
 

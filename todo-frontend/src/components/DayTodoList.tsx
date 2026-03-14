@@ -5,14 +5,14 @@ import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion
 import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { generateId } from "@/lib/generateId";
+import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 // Extend DayTodoItem với unique ID
 interface DayTodoItemWithId extends DayTodoItem {
   id: string;
 }
 
-// Generate unique ID
-const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 // Add ID to items if not exists; normalize subTasks array
 const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] => {
@@ -136,7 +136,6 @@ export function DayTodoList({
   const addButtonHover = isMobile ? undefined : { scale: 1.02 };
   const addButtonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
   const checkboxHover = isMobile ? undefined : { scale: 1.15 };
-  const subTaskButtonHover = isMobile ? undefined : { scale: 1.1 };
 
   const handleAdd = () => {
     const t = newTitle.trim();
@@ -519,73 +518,18 @@ export function DayTodoList({
                       </motion.button>
                     </motion.div>
                     {expandedId === item.id && (
-                      <div className="pl-12 pr-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04] mt-1">
-                        {(item.subTasks ?? []).map((st, subIdx) => (
-                          <div
-                            key={subIdx}
-                            className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-linear-surface border border-white/[0.04]"
-                          >
-                            <motion.button
-                              type="button"
-                              whileHover={subTaskButtonHover}
-                              whileTap={controlTap}
-                              onClick={() => toggleSubTask(item.id, subIdx)}
-                              className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
-                            >
-                              {st.completed && (
-                                <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-                              )}
-                            </motion.button>
-                            <span
-                              className={`flex-1 text-sm ${
-                                st.completed
-                                  ? "line-through text-slate-500"
-                                  : "text-slate-300"
-                              }`}
-                            >
-                              {st.title}
-                            </span>
-                            <motion.button
-                              type="button"
-                              whileHover={subTaskButtonHover}
-                              whileTap={controlTap}
-                              onClick={() => deleteSubTask(item.id, subIdx)}
-                              className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer"
-                              aria-label="Delete sub-task"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </motion.button>
-                          </div>
-                        ))}
-                        <div className="flex gap-2 pt-1">
-                          <input
-                            type="text"
-                            value={newSubTaskTitle[item.id] ?? ""}
-                            onChange={(e) =>
-                              setNewSubTaskTitle((prev) => ({
-                                ...prev,
-                                [item.id]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter")
-                                addSubTask(item.id, newSubTaskTitle[item.id] ?? "");
-                            }}
-                            placeholder={t("dayTodo.addSubTaskPlaceholder", "Add sub-task")}
-                            className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
-                          />
-                          <motion.button
-                            type="button"
-                            whileHover={addButtonHover}
-                            whileTap={addButtonTap}
-                            onClick={() =>
-                              addSubTask(item.id, newSubTaskTitle[item.id] ?? "")
-                            }
-                            className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
-                          >
-                            {t("dayTodo.addSubTask", "Add")}
-                          </motion.button>
-                        </div>
+                      <div className="pl-12 mt-1">
+                        <SubTaskSection
+                          subTasks={item.subTasks ?? []}
+                          showCheckbox={true}
+                          onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
+                          onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
+                          newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
+                          onNewSubTaskTitleChange={(val) =>
+                            setNewSubTaskTitle((prev) => ({ ...prev, [item.id]: val }))
+                          }
+                          onAddSubTask={() => addSubTask(item.id, newSubTaskTitle[item.id] ?? "")}
+                        />
                       </div>
                     )}
                       </>

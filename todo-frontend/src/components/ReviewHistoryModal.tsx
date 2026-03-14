@@ -1,14 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { X, FileText, Sparkles } from "lucide-react";
+import { FileText, Sparkles } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
 import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsInRange, getMonthsInRange, formatWeekPeriodLabel } from "@/lib/datePeriod";
 import type { Review } from "@/types";
 import { ReviewModal } from "./ReviewModal";
+import { useModalClose } from "@/hooks/useModalClose";
+import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalHeader } from "@/components/shared/ModalHeader";
 
 const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components"] = {
   h2: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
@@ -142,60 +145,17 @@ export function ReviewHistoryModal({
 
   const monthOptions = getMonthOptions();
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  useModalClose(isOpen, onClose, contentRef);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, pointerEvents: "none" }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-          >
-            <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-                      <FileText className="w-5 h-5 text-[#7C85E0]" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-white">
-                        {t("reviewHistory.title")}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {t("reviewHistory.subtitle")}
-                      </p>
-                    </div>
-                  </div>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
-                </div>
+    <>
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+                <ModalHeader
+                  icon={<FileText className="w-5 h-5 text-[#7C85E0]" />}
+                  title={t("reviewHistory.title")}
+                  subtitle={t("reviewHistory.subtitle")}
+                  onClose={onClose}
+                />
 
                 <div className="p-4 border-b border-white/[0.04] space-y-3">
                   <div>
@@ -351,21 +311,17 @@ export function ReviewHistoryModal({
                     )}
                   </>
                 </div>
-              </div>
-            </div>
-          </motion.div>
+    </ModalContainer>
 
-          {editingSlot && (
-            <ReviewModal
-              isOpen={true}
-              onClose={() => setEditingSlot(null)}
-              type={editingSlot.type}
-              period={editingSlot.period}
-              onOpenHistory={undefined}
-            />
-          )}
-        </>
+      {editingSlot && (
+        <ReviewModal
+          isOpen={true}
+          onClose={() => setEditingSlot(null)}
+          type={editingSlot.type}
+          period={editingSlot.period}
+          onOpenHistory={undefined}
+        />
       )}
-    </AnimatePresence>
+    </>
   );
 }

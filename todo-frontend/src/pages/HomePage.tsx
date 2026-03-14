@@ -92,14 +92,10 @@ export function HomePage() {
       setSelectedDate(getTodayInTimezone(user.timezone));
     }
   }, [user]);
-  const [isDefaultModalOpen, setIsDefaultModalOpen] = useState(false);
-  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
-  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [isReviewHistoryModalOpen, setIsReviewHistoryModalOpen] = useState(false);
-  const [isDateTemplateModalOpen, setIsDateTemplateModalOpen] = useState(false);
-  const [isFreetimeModalOpen, setIsFreetimeModalOpen] = useState(false);
-  const [isPeopleNotesModalOpen, setIsPeopleNotesModalOpen] = useState(false);
+  type ModalKey = "default" | "recurring" | "goal" | "review" | "reviewHistory" | "dateTemplate" | "freetime" | "peopleNotes";
+  const [openModal, setOpenModal] = useState<ModalKey | null>(null);
+  const openM = (key: ModalKey) => setOpenModal(key);
+  const closeM = () => setOpenModal(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
   const queryClient = useQueryClient();
@@ -219,7 +215,7 @@ export function HomePage() {
               <motion.button
                 whileHover={iconHover}
                 whileTap={iconTap}
-                onClick={() => setIsGoalModalOpen(true)}
+                onClick={() => openM("goal")}
                 className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
                 title={t("home.goalsTitle")}
               >
@@ -229,7 +225,7 @@ export function HomePage() {
                 type="button"
                 whileHover={iconHover}
                 whileTap={iconTap}
-                onClick={() => setIsPeopleNotesModalOpen(true)}
+                onClick={() => openM("peopleNotes")}
                 className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
                 title={t("peopleNotesModal.title")}
               >
@@ -241,7 +237,7 @@ export function HomePage() {
                 whileTap={iconTap}
                 onClick={() => {
                   setReviewModalSlot(null);
-                  setIsReviewModalOpen(true);
+                  openM("review");
                 }}
                 className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
                 title={t("dayTodo.reviewMyself")}
@@ -251,7 +247,7 @@ export function HomePage() {
               <motion.button
                 whileHover={iconHover}
                 whileTap={iconTap}
-                onClick={() => setIsDefaultModalOpen(true)}
+                onClick={() => openM("default")}
                 className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
                 title={t("home.defaultTemplateTitle")}
               >
@@ -292,7 +288,7 @@ export function HomePage() {
                       icon={Target}
                       label={t("home.goalsTitle")}
                       onClick={() => {
-                        setIsGoalModalOpen(true);
+                        openM("goal");
                         closeMenu();
                       }}
                     />
@@ -300,7 +296,7 @@ export function HomePage() {
                       icon={Users}
                       label={t("peopleNotesModal.title")}
                       onClick={() => {
-                        setIsPeopleNotesModalOpen(true);
+                        openM("peopleNotes");
                         closeMenu();
                       }}
                     />
@@ -309,7 +305,7 @@ export function HomePage() {
                       label={t("dayTodo.reviewMyself")}
                       onClick={() => {
                         setReviewModalSlot(null);
-                        setIsReviewModalOpen(true);
+                        openM("review");
                         closeMenu();
                       }}
                     />
@@ -317,7 +313,7 @@ export function HomePage() {
                       icon={Settings}
                       label={t("home.defaultTemplateTitle")}
                       onClick={() => {
-                        setIsDefaultModalOpen(true);
+                        openM("default");
                         closeMenu();
                       }}
                     />
@@ -363,7 +359,7 @@ export function HomePage() {
           <motion.button
             whileHover={cardHover}
             whileTap={cardTap}
-            onClick={() => setIsDefaultModalOpen(true)}
+            onClick={() => openM("default")}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -393,7 +389,7 @@ export function HomePage() {
             type="button"
             whileHover={cardHover}
             whileTap={cardTap}
-            onClick={() => setIsDateTemplateModalOpen(true)}
+            onClick={() => openM("dateTemplate")}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -423,7 +419,7 @@ export function HomePage() {
             type="button"
             whileHover={cardHover}
             whileTap={cardTap}
-            onClick={() => setIsFreetimeModalOpen(true)}
+            onClick={() => openM("freetime")}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -470,7 +466,7 @@ export function HomePage() {
             type="button"
             whileHover={cardHover}
             whileTap={cardTap}
-            onClick={() => setIsRecurringModalOpen(true)}
+            onClick={() => openM("recurring")}
             className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
           >
             <div className="flex items-center justify-between">
@@ -493,76 +489,59 @@ export function HomePage() {
         </motion.section>
       </main>
 
-      {/* Default List Modal */}
       <DefaultListModal
-        isOpen={isDefaultModalOpen}
-        onClose={() => setIsDefaultModalOpen(false)}
+        isOpen={openModal === "default"}
+        onClose={closeM}
         items={defaultItems}
         onAddItem={(title) => addDefaultMutation.mutate(title)}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
         onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
       />
-
-      {/* Date template modal (items for a specific date → day todo on that date) */}
       <DateTemplateModal
-        isOpen={isDateTemplateModalOpen}
-        onClose={() => setIsDateTemplateModalOpen(false)}
+        isOpen={openModal === "dateTemplate"}
+        onClose={closeM}
         onSaved={(date) => {
           if (date === selectedDate) {
             queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
           }
         }}
       />
-
-      {/* Freetime todo modal */}
       <FreetimeTodoModal
-        isOpen={isFreetimeModalOpen}
-        onClose={() => setIsFreetimeModalOpen(false)}
+        isOpen={openModal === "freetime"}
+        onClose={closeM}
       />
-
-      {/* Recurring template modal (adds to day todo on Monday / 1st of month) */}
       <RecurringTemplateModal
-        isOpen={isRecurringModalOpen}
-        onClose={() => setIsRecurringModalOpen(false)}
+        isOpen={openModal === "recurring"}
+        onClose={closeM}
         initialTab="week"
       />
-
-      {/* Goal Modal */}
       <GoalModal
-        isOpen={isGoalModalOpen}
-        onClose={() => setIsGoalModalOpen(false)}
+        isOpen={openModal === "goal"}
+        onClose={closeM}
       />
-
-      {/* Review Modal */}
       <ReviewModal
-        isOpen={isReviewModalOpen}
+        isOpen={openModal === "review"}
         onClose={() => {
-          setIsReviewModalOpen(false);
+          closeM();
           setReviewModalSlot(null);
         }}
         type={reviewModalSlot?.type}
         period={reviewModalSlot?.period}
         onOpenHistory={() => {
-          setIsReviewModalOpen(false);
           setReviewModalSlot(null);
-          setIsReviewHistoryModalOpen(true);
+          openM("reviewHistory");
         }}
       />
-
-      {/* People Notes Modal */}
       <PeopleNotesModal
-        isOpen={isPeopleNotesModalOpen}
-        onClose={() => setIsPeopleNotesModalOpen(false)}
+        isOpen={openModal === "peopleNotes"}
+        onClose={closeM}
       />
-
-      {/* Review History Modal */}
       <ReviewHistoryModal
-        isOpen={isReviewHistoryModalOpen}
-        onClose={() => setIsReviewHistoryModalOpen(false)}
+        isOpen={openModal === "reviewHistory"}
+        onClose={closeM}
         onOpenSlot={(type, period) => {
           setReviewModalSlot({ type, period });
-          setIsReviewHistoryModalOpen(false);
-          setIsReviewModalOpen(true);
+          openM("review");
         }}
       />
     </div>

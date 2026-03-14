@@ -2,10 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, Users, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Users, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
 import type { PersonNote } from "@/types";
+import { useModalClose } from "@/hooks/useModalClose";
+import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalHeader } from "@/components/shared/ModalHeader";
+import { ItemAddInput } from "@/components/shared/ItemAddInput";
 
 interface PeopleNotesModalProps {
   isOpen: boolean;
@@ -61,15 +65,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
     if (editingNameId) editNameRef.current?.focus();
   }, [editingNameId]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  useModalClose(isOpen, onClose, contentRef);
 
   const addPerson = () => {
     const trimmed = newName.trim();
@@ -105,79 +101,22 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-          >
-            <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-                      <Users className="w-5 h-5 text-[#7C85E0]" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-white">
-                        {t("peopleNotesModal.title")}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {t("peopleNotesModal.subtitle")}
-                      </p>
-                    </div>
-                  </div>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
-                  >
-                    <X className="w-5 h-5" />
-                  </motion.button>
-                </div>
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+                <ModalHeader
+                  icon={<Users className="w-5 h-5 text-[#7C85E0]" />}
+                  title={t("peopleNotesModal.title")}
+                  subtitle={t("peopleNotesModal.subtitle")}
+                  onClose={onClose}
+                />
 
-                {/* Add Person Input */}
-                <div className="p-4 border-b border-white/[0.04]">
-                  <div className="flex gap-3">
-                    <div className="relative flex-1 group">
-                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <Plus className="w-5 h-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
-                      </div>
-                      <input
-                        type="text"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addPerson()}
-                        placeholder={t("peopleNotesModal.addPersonPlaceholder")}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 hover:border-white/[0.1] transition-all duration-200"
-                      />
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={addPerson}
-                      disabled={!newName.trim() || createMutation.isPending}
-                      className="px-5 py-3 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all duration-200 shadow-lg shadow-[#5E6AD2]/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t("peopleNotesModal.addPerson")}
-                    </motion.button>
-                  </div>
-                </div>
+                <ItemAddInput
+                  value={newName}
+                  onChange={setNewName}
+                  onAdd={addPerson}
+                  placeholder={t("peopleNotesModal.addPersonPlaceholder")}
+                  addLabel={t("peopleNotesModal.addPerson")}
+                  disabled={!newName.trim() || createMutation.isPending}
+                />
 
                 {/* People List */}
                 <div className="p-4 max-h-[400px] overflow-y-auto">
@@ -325,11 +264,6 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                     </ul>
                   )}
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </ModalContainer>
   );
 }

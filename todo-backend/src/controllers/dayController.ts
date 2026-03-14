@@ -4,6 +4,7 @@ import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IDayTodoItem, IRecurringTemplateItem } from "../types/index.js";
 import { isFirstDayOfWeek, isFirstDayOfMonth } from "../utils/datePeriod.js";
+import { normalizeItems } from "../utils/normalizeItem.js";
 
 /** Parse YYYY-MM-DD to Date at noon UTC for weekday/monthday checks */
 function parseDateString(dateStr: string): Date {
@@ -89,6 +90,30 @@ function shouldIncludeYearlyItem(
   return month === 1 && dayOfMonth === 1;
 }
 
+async function fetchAndFilterTemplateItems(
+  userId: string,
+  weekdayIndex: number,
+  isMonday: boolean,
+  dayOfMonth: number,
+  isFirstOfMonth: boolean,
+  month: number
+): Promise<{ title: string; subTasks?: { title: string }[] }[]> {
+  const types = ["week", "month", "year"] as const;
+  const templates = await RecurringTemplate.find({ userId, type: { $in: types } });
+
+  const filtered: { title: string; subTasks?: { title: string }[] }[] = [];
+  for (const tpl of templates) {
+    for (const item of tpl.items) {
+      let include = false;
+      if (tpl.type === "week") include = shouldIncludeWeeklyItem(item, weekdayIndex, isMonday);
+      else if (tpl.type === "month") include = shouldIncludeMonthlyItem(item, dayOfMonth, isFirstOfMonth);
+      else if (tpl.type === "year") include = shouldIncludeYearlyItem(item, month, dayOfMonth);
+      if (include) filtered.push(item);
+    }
+  }
+  return filtered;
+}
+
 /**
  * GET /api/days/:date
  * Returns day todo list. Creates from List 1 (daily default) if not exists.
@@ -117,44 +142,13 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
     }));
 
     // Recurring templates: week / month / year, filtered by schedule
-    const weekTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "week",
-    });
-    if (weekTemplate?.items?.length) {
-      const weeklyItems = weekTemplate.items.filter((it) =>
-        shouldIncludeWeeklyItem(it, weekdayIndex, isMonday)
-      );
-      if (weeklyItems.length) {
-        items = mergeItemsByTitle(items, weeklyItems, items.length);
-      }
+    const recurringItems = await fetchAndFilterTemplateItems(
+      userId, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
+    );
+    if (recurringItems.length) {
+      items = mergeItemsByTitle(items, recurringItems, items.length);
     }
 
-    const monthTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "month",
-    });
-    if (monthTemplate?.items?.length) {
-      const monthlyItems = monthTemplate.items.filter((it) =>
-        shouldIncludeMonthlyItem(it, dayOfMonth, isFirstOfMonth)
-      );
-      if (monthlyItems.length) {
-        items = mergeItemsByTitle(items, monthlyItems, items.length);
-      }
-    }
-
-    const yearTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "year",
-    });
-    if (yearTemplate?.items?.length) {
-      const yearlyItems = yearTemplate.items.filter((it) =>
-        shouldIncludeYearlyItem(it, month, dayOfMonth)
-      );
-      if (yearlyItems.length) {
-        items = mergeItemsByTitle(items, yearlyItems, items.length);
-      }
-    }
     const dateTemplate = await DateTemplate.findOne({ userId, date });
     if (dateTemplate?.items?.length) {
       items = mergeItemsByTitle(items, dateTemplate.items, items.length);
@@ -180,61 +174,17 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
     }
 
     // List 2: merge recurring templates (week / month / year) based on schedule
-    const weekTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "week",
-    });
-    if (weekTemplate?.items?.length) {
-      const weeklyItems = weekTemplate.items.filter((it) =>
-        shouldIncludeWeeklyItem(it, weekdayIndex, isMonday)
+    const recurringItems = await fetchAndFilterTemplateItems(
+      userId, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
+    );
+    if (recurringItems.length) {
+      const before = dayTodo.items.length;
+      dayTodo.items = mergeItemsByTitle(
+        dayTodo.items,
+        recurringItems,
+        dayTodo.items.length
       );
-      if (weeklyItems.length) {
-        const before = dayTodo.items.length;
-        dayTodo.items = mergeItemsByTitle(
-          dayTodo.items,
-          weeklyItems,
-          dayTodo.items.length
-        );
-        if (dayTodo.items.length !== before) modified = true;
-      }
-    }
-
-    const monthTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "month",
-    });
-    if (monthTemplate?.items?.length) {
-      const monthlyItems = monthTemplate.items.filter((it) =>
-        shouldIncludeMonthlyItem(it, dayOfMonth, isFirstOfMonth)
-      );
-      if (monthlyItems.length) {
-        const before = dayTodo.items.length;
-        dayTodo.items = mergeItemsByTitle(
-          dayTodo.items,
-          monthlyItems,
-          dayTodo.items.length
-        );
-        if (dayTodo.items.length !== before) modified = true;
-      }
-    }
-
-    const yearTemplate = await RecurringTemplate.findOne({
-      userId,
-      type: "year",
-    });
-    if (yearTemplate?.items?.length) {
-      const yearlyItems = yearTemplate.items.filter((it) =>
-        shouldIncludeYearlyItem(it, month, dayOfMonth)
-      );
-      if (yearlyItems.length) {
-        const before = dayTodo.items.length;
-        dayTodo.items = mergeItemsByTitle(
-          dayTodo.items,
-          yearlyItems,
-          dayTodo.items.length
-        );
-        if (dayTodo.items.length !== before) modified = true;
-      }
+      if (dayTodo.items.length !== before) modified = true;
     }
 
     const dateTemplate = await DateTemplate.findOne({ userId, date });
@@ -269,17 +219,7 @@ export const patchDay = catchAsync(async (req: Request, res: Response) => {
   }
 
   if (Array.isArray(items)) {
-    dayTodo.items = items.map((item, i) => ({
-      title: item.title ?? "",
-      completed: Boolean(item.completed),
-      order: typeof item.order === "number" ? item.order : i,
-      subTasks: Array.isArray(item.subTasks)
-        ? item.subTasks.map((st) => ({
-            title: st.title ?? "",
-            completed: Boolean(st.completed),
-          }))
-        : undefined,
-    }));
+    dayTodo.items = normalizeItems(items);
     await dayTodo.save();
   }
 

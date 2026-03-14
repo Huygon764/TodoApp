@@ -25,13 +25,19 @@ class TelegramBot {
     return chatId === this.adminChatId;
   }
 
+  private requireAdmin(ctx: Context): boolean {
+    if (!this.isAdmin(ctx)) {
+      ctx.reply("You do not have permission to use this bot.");
+      return false;
+    }
+    return true;
+  }
+
   private setupCommands(): void {
     if (!this.bot) return;
 
     this.bot.start((ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
       return ctx.reply(
         "📋 Todo App Bot\n\n" +
           "Commands:\n" +
@@ -42,9 +48,7 @@ class TelegramBot {
     });
 
     this.bot.help((ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
       return ctx.reply(
         "📖 Hướng dẫn:\n\n" +
           "/register <username> <password> - Tạo user mới\n" +
@@ -54,9 +58,7 @@ class TelegramBot {
     });
 
     this.bot.command("register", async (ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
       try {
         const text = ctx.message.text;
         const args = text.split(" ").slice(1);
@@ -98,9 +100,7 @@ class TelegramBot {
     });
 
     this.bot.command("remove", async (ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
       try {
         const args = ctx.message.text.split(" ").slice(1);
         if (args.length < 1) {
@@ -120,9 +120,7 @@ class TelegramBot {
     });
 
     this.bot.command("list", async (ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
       try {
         const users = await User.find({ isActive: true }).sort({
           createdAt: -1,
@@ -146,9 +144,7 @@ class TelegramBot {
     });
 
     this.bot.on(message("text"), (ctx) => {
-      if (!this.isAdmin(ctx)) {
-        return ctx.reply("⛔ Bạn không có quyền sử dụng bot này.");
-      }
+      if (!this.requireAdmin(ctx)) return;
     });
   }
 

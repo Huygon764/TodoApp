@@ -1,5 +1,14 @@
 import { body, param, query } from "express-validator";
 
+const MAX_TITLE_LENGTH = 500;
+const MAX_NAME_LENGTH = 200;
+const MIN_DAY_OF_WEEK = 1;
+const MAX_DAY_OF_WEEK = 7;
+const MIN_DAY_OF_MONTH = 1;
+const MAX_DAY_OF_MONTH = 31;
+const MIN_MONTH = 1;
+const MAX_MONTH = 12;
+
 export const validateLogin = [
   body("username").trim().notEmpty().withMessage("Username is required"),
   body("password").notEmpty().withMessage("Password is required"),
@@ -16,8 +25,8 @@ export const validateDefaultItemBody = [
     .trim()
     .notEmpty()
     .withMessage("Title is required")
-    .isLength({ max: 500 })
-    .withMessage("Title cannot exceed 500 characters"),
+    .isLength({ max: MAX_TITLE_LENGTH })
+    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
   body("order")
     .optional()
     .isInt({ min: 0 })
@@ -61,8 +70,8 @@ export const validatePatchDefaultBody = [
     .trim()
     .notEmpty()
     .withMessage("Title cannot be empty")
-    .isLength({ max: 500 })
-    .withMessage("Title cannot exceed 500 characters"),
+    .isLength({ max: MAX_TITLE_LENGTH })
+    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
   body("order").optional().isInt({ min: 0 }),
   body("subTasks")
     .optional()
@@ -161,8 +170,8 @@ export const validatePostRecurringTemplateBody = [
     .trim()
     .notEmpty()
     .withMessage("Title is required")
-    .isLength({ max: 500 })
-    .withMessage("Title cannot exceed 500 characters"),
+    .isLength({ max: MAX_TITLE_LENGTH })
+    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
   body("order").optional().isInt({ min: 0 }),
   body("daysOfWeek")
     .optional()
@@ -170,28 +179,28 @@ export const validatePostRecurringTemplateBody = [
     .withMessage("daysOfWeek must be an array"),
   body("daysOfWeek.*")
     .optional()
-    .isInt({ min: 1, max: 7 })
-    .withMessage("daysOfWeek values must be between 1 and 7"),
+    .isInt({ min: MIN_DAY_OF_WEEK, max: MAX_DAY_OF_WEEK })
+    .withMessage(`daysOfWeek values must be between ${MIN_DAY_OF_WEEK} and ${MAX_DAY_OF_WEEK}`),
   body("daysOfMonth")
     .optional()
     .isArray()
     .withMessage("daysOfMonth must be an array"),
   body("daysOfMonth.*")
     .optional()
-    .isInt({ min: 1, max: 31 })
-    .withMessage("daysOfMonth values must be between 1 and 31"),
+    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
+    .withMessage(`daysOfMonth values must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
   body("datesOfYear")
     .optional()
     .isArray()
     .withMessage("datesOfYear must be an array"),
   body("datesOfYear.*.month")
     .optional()
-    .isInt({ min: 1, max: 12 })
-    .withMessage("datesOfYear.month must be between 1 and 12"),
+    .isInt({ min: MIN_MONTH, max: MAX_MONTH })
+    .withMessage(`datesOfYear.month must be between ${MIN_MONTH} and ${MAX_MONTH}`),
   body("datesOfYear.*.day")
     .optional()
-    .isInt({ min: 1, max: 31 })
-    .withMessage("datesOfYear.day must be between 1 and 31"),
+    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
+    .withMessage(`datesOfYear.day must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
   body("subTasks")
     .optional()
     .isArray()
@@ -211,36 +220,36 @@ export const validatePatchRecurringTemplateItemBody = [
     .trim()
     .notEmpty()
     .withMessage("Title cannot be empty")
-    .isLength({ max: 500 })
-    .withMessage("Title cannot exceed 500 characters"),
+    .isLength({ max: MAX_TITLE_LENGTH })
+    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
   body("daysOfWeek")
     .optional()
     .isArray()
     .withMessage("daysOfWeek must be an array"),
   body("daysOfWeek.*")
     .optional()
-    .isInt({ min: 1, max: 7 })
-    .withMessage("daysOfWeek values must be between 1 and 7"),
+    .isInt({ min: MIN_DAY_OF_WEEK, max: MAX_DAY_OF_WEEK })
+    .withMessage(`daysOfWeek values must be between ${MIN_DAY_OF_WEEK} and ${MAX_DAY_OF_WEEK}`),
   body("daysOfMonth")
     .optional()
     .isArray()
     .withMessage("daysOfMonth must be an array"),
   body("daysOfMonth.*")
     .optional()
-    .isInt({ min: 1, max: 31 })
-    .withMessage("daysOfMonth values must be between 1 and 31"),
+    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
+    .withMessage(`daysOfMonth values must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
   body("datesOfYear")
     .optional()
     .isArray()
     .withMessage("datesOfYear must be an array"),
   body("datesOfYear.*.month")
     .optional()
-    .isInt({ min: 1, max: 12 })
-    .withMessage("datesOfYear.month must be between 1 and 12"),
+    .isInt({ min: MIN_MONTH, max: MAX_MONTH })
+    .withMessage(`datesOfYear.month must be between ${MIN_MONTH} and ${MAX_MONTH}`),
   body("datesOfYear.*.day")
     .optional()
-    .isInt({ min: 1, max: 31 })
-    .withMessage("datesOfYear.day must be between 1 and 31"),
+    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
+    .withMessage(`datesOfYear.day must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
   body("subTasks")
     .optional()
     .isArray()
@@ -309,8 +318,8 @@ export const validatePatchDateTemplateBody = [
     .trim()
     .notEmpty()
     .withMessage("Item title is required")
-    .isLength({ max: 500 })
-    .withMessage("Title cannot exceed 500 characters"),
+    .isLength({ max: MAX_TITLE_LENGTH })
+    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
   body("items.*.order")
     .isInt({ min: 0 })
     .withMessage("Item order must be a non-negative integer"),
@@ -326,8 +335,8 @@ export const validatePersonNoteBody = [
     .trim()
     .notEmpty()
     .withMessage("Name is required")
-    .isLength({ max: 200 })
-    .withMessage("Name cannot exceed 200 characters"),
+    .isLength({ max: MAX_NAME_LENGTH })
+    .withMessage(`Name cannot exceed ${MAX_NAME_LENGTH} characters`),
   body("notes")
     .optional()
     .isArray()
@@ -345,8 +354,8 @@ export const validatePatchPersonNoteBody = [
     .trim()
     .notEmpty()
     .withMessage("Name cannot be empty")
-    .isLength({ max: 200 })
-    .withMessage("Name cannot exceed 200 characters"),
+    .isLength({ max: MAX_NAME_LENGTH })
+    .withMessage(`Name cannot exceed ${MAX_NAME_LENGTH} characters`),
   body("notes")
     .optional()
     .isArray()

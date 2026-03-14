@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Trash2, FileText, History } from "lucide-react";
+import { motion } from "framer-motion";
+import { Plus, Trash2, FileText, History } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import { getWeekPeriod, getMonthPeriod, formatWeekPeriodLabel } from "@/lib/datePeriod";
 import type { Review } from "@/types";
+import { useModalClose } from "@/hooks/useModalClose";
+import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalHeader } from "@/components/shared/ModalHeader";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -159,15 +162,7 @@ export function ReviewModal({
     },
   });
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose]);
+  useModalClose(isOpen, onClose, contentRef);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,44 +170,17 @@ export function ReviewModal({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, pointerEvents: "none" }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          >
-            <div className="relative w-full max-w-lg" ref={contentRef}>
-              <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
                 <form onSubmit={handleSubmit}>
-                  <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-                        <FileText className="w-5 h-5 text-[#7C85E0]" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-semibold text-white">
-                          {t("reviewModal.title")}
-                        </h2>
-                        <p className="text-sm text-slate-500">
-                          {activeTab === "week"
-                            ? formatWeekPeriodLabel(period)
-                            : t("reviewModal.monthLabel", { period })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {onOpenHistory && (
+                  <ModalHeader
+                    icon={<FileText className="w-5 h-5 text-[#7C85E0]" />}
+                    title={t("reviewModal.title")}
+                    subtitle={activeTab === "week"
+                      ? formatWeekPeriodLabel(period)
+                      : t("reviewModal.monthLabel", { period })}
+                    onClose={onClose}
+                    extraActions={
+                      onOpenHistory ? (
                         <motion.button
                           type="button"
                           whileHover={{ scale: 1.1 }}
@@ -223,18 +191,9 @@ export function ReviewModal({
                         >
                           <History className="w-5 h-5" />
                         </motion.button>
-                      )}
-                      <motion.button
-                        type="button"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={onClose}
-                        className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
-                      >
-                        <X className="w-5 h-5" />
-                      </motion.button>
-                    </div>
-                  </div>
+                      ) : undefined
+                    }
+                  />
 
                   {!typeProp && (
                     <div className="flex border-b border-white/[0.04]">
@@ -312,11 +271,6 @@ export function ReviewModal({
                     </motion.button>
                   </div>
                 </form>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </ModalContainer>
   );
 }

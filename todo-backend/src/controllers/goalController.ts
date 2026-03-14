@@ -3,6 +3,7 @@ import { Goal } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IGoalItem } from "../types/index.js";
+import { normalizeItems } from "../utils/normalizeItem.js";
 
 /**
  * GET /api/goals?type=week|month|year&period=...
@@ -40,21 +41,10 @@ export const createGoal = catchAsync(async (req: Request, res: Response) => {
   };
 
   const existing = await Goal.findOne({ userId, type, period });
-  const mapGoalItem = (item: IGoalItem, i: number) => ({
-    title: item.title ?? "",
-    completed: Boolean(item.completed),
-    order: typeof item.order === "number" ? item.order : i,
-    subTasks: Array.isArray(item.subTasks)
-      ? item.subTasks.map((st) => ({
-          title: st.title ?? "",
-          completed: Boolean(st.completed),
-        }))
-      : undefined,
-  });
 
   if (existing) {
     if (Array.isArray(items) && items.length > 0) {
-      existing.items = items.map(mapGoalItem);
+      existing.items = normalizeItems(items);
       await existing.save();
       return sendSuccess(res, 200, { goal: existing });
     }
@@ -62,7 +52,7 @@ export const createGoal = catchAsync(async (req: Request, res: Response) => {
   }
 
   const goalItems: IGoalItem[] = Array.isArray(items)
-    ? items.map(mapGoalItem)
+    ? normalizeItems(items)
     : [];
 
   const goal = await Goal.create({
@@ -90,17 +80,7 @@ export const patchGoal = catchAsync(async (req: Request, res: Response) => {
   }
 
   if (Array.isArray(items)) {
-    goal.items = items.map((item, i) => ({
-      title: item.title ?? "",
-      completed: Boolean(item.completed),
-      order: typeof item.order === "number" ? item.order : i,
-      subTasks: Array.isArray(item.subTasks)
-        ? item.subTasks.map((st) => ({
-            title: st.title ?? "",
-            completed: Boolean(st.completed),
-          }))
-        : undefined,
-    }));
+    goal.items = normalizeItems(items);
     await goal.save();
   }
 

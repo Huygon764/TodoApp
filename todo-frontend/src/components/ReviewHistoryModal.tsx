@@ -243,7 +243,7 @@ export function ReviewHistoryModal({
                               onClick={() => {
                                 if (onOpenSlot) {
                                   onOpenSlot(slot.type, slot.period);
-                                  onClose();
+                                  // Do not call onClose(); parent switches to review modal, so this modal's isOpen becomes false
                                 } else {
                                   setEditingSlot({ type: slot.type, period: slot.period });
                                 }

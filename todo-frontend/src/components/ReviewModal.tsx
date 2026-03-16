@@ -2,10 +2,18 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Plus, Trash2, FileText, History } from "lucide-react";
+import { Plus, Trash2, FileText, History, ChevronLeft, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import { getWeekPeriod, getMonthPeriod, formatWeekPeriodLabel } from "@/lib/datePeriod";
+import {
+  getWeekPeriod,
+  getMonthPeriod,
+  formatWeekPeriodLabel,
+  getPrevWeekPeriod,
+  getNextWeekPeriod,
+  getPrevMonthPeriod,
+  getNextMonthPeriod,
+} from "@/lib/datePeriod";
 import type { Review } from "@/types";
 import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
@@ -97,9 +105,10 @@ export function ReviewModal({
 }: ReviewModalProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"week" | "month">(typeProp ?? "week");
-  const period =
-    periodProp ??
-    (activeTab === "week" ? getWeekPeriod() : getMonthPeriod());
+  const [slotPeriod, setSlotPeriod] = useState<string | null>(null);
+  const period = typeProp
+    ? (slotPeriod ?? periodProp ?? (activeTab === "week" ? getWeekPeriod() : getMonthPeriod()))
+    : (periodProp ?? (activeTab === "week" ? getWeekPeriod() : getMonthPeriod()));
   const [goodThings, setGoodThings] = useState<string[]>([]);
   const [badThings, setBadThings] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
@@ -126,6 +135,11 @@ export function ReviewModal({
   useEffect(() => {
     if (typeProp) setActiveTab(typeProp);
   }, [typeProp]);
+
+  useEffect(() => {
+    if (!isOpen) setSlotPeriod(null);
+    else if (typeProp && periodProp) setSlotPeriod(periodProp);
+  }, [isOpen, typeProp, periodProp]);
 
   useEffect(() => {
     if (existing) {
@@ -180,18 +194,58 @@ export function ReviewModal({
                       : t("reviewModal.monthLabel", { period })}
                     onClose={onClose}
                     extraActions={
-                      onOpenHistory ? (
-                        <motion.button
-                          type="button"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={onOpenHistory}
-                          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
-                          title={t("reviewModal.historyTitle")}
-                        >
-                          <History className="w-5 h-5" />
-                        </motion.button>
-                      ) : undefined
+                      <>
+                        {typeProp && (
+                          <div className="flex items-center gap-0.5">
+                            <motion.button
+                              type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() =>
+                                setSlotPeriod(
+                                  activeTab === "week"
+                                    ? getPrevWeekPeriod(period)
+                                    : getPrevMonthPeriod(period)
+                                )
+                              }
+                              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                              title={t("dateNav.prevAria", "Previous period")}
+                              aria-label={t("dateNav.prevAria", "Previous period")}
+                            >
+                              <ChevronLeft className="w-5 h-5" />
+                            </motion.button>
+                            <motion.button
+                              type="button"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() =>
+                                setSlotPeriod(
+                                  activeTab === "week"
+                                    ? getNextWeekPeriod(period)
+                                    : getNextMonthPeriod(period)
+                                )
+                              }
+                              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                              title={t("dateNav.nextAria", "Next period")}
+                              aria-label={t("dateNav.nextAria", "Next period")}
+                            >
+                              <ChevronRight className="w-5 h-5" />
+                            </motion.button>
+                          </div>
+                        )}
+                        {onOpenHistory && (
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={onOpenHistory}
+                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                            title={t("reviewModal.historyTitle")}
+                          >
+                            <History className="w-5 h-5" />
+                          </motion.button>
+                        )}
+                      </>
                     }
                   />
 

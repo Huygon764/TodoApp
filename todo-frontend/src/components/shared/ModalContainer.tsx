@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import type { ReactNode, RefObject } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,8 +21,22 @@ export function ModalContainer({
   zBackdrop = "z-[60]",
   zContent = "z-[70]",
 }: ModalContainerProps) {
+  // Force cleanup stuck exit animations when returning to a backgrounded tab.
+  // Browsers pause requestAnimationFrame when a tab is hidden, so framer-motion
+  // exit animations never complete and the overlay stays in the DOM.
+  const [animKey, setAnimKey] = useState(0);
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && !isOpen) {
+        setAnimKey((k) => k + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [isOpen]);
+
   return (
-    <AnimatePresence>
+    <AnimatePresence key={animKey}>
       {isOpen && (
         <>
           <motion.div

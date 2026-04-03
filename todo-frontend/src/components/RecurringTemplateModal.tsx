@@ -226,7 +226,7 @@ export function RecurringTemplateModal({
                               className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                                 active
                                   ? "bg-accent-primary/20 border-accent-primary/60 text-accent-hover"
-                                  : "bg-bg-surface/60 border-white/5 text-text-tertiary hover:bg-bg-surface/60 hover:text-text-secondary"
+                                  : "bg-bg-surface/60 border-border-subtle text-text-tertiary hover:bg-bg-surface/60 hover:text-text-secondary"
                               }`}
                             >
                               {day.label}
@@ -245,7 +245,7 @@ export function RecurringTemplateModal({
                       <select
                         value={monthlyContextDay}
                         onChange={(e) => setMonthlyContextDay(Number(e.target.value) || 1)}
-                        className="rounded-lg bg-bg-surface border border-white/10 text-xs text-text-secondary px-3 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
+                        className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-3 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                       >
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                           <option key={d} value={d}>
@@ -275,7 +275,7 @@ export function RecurringTemplateModal({
                               month: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-bg-surface border border-white/10 text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
+                          className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                         >
                           {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                             <option key={m} value={m}>
@@ -291,7 +291,7 @@ export function RecurringTemplateModal({
                               day: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-bg-surface border border-white/10 text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
+                          className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                         >
                           {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                             <option key={d} value={d}>

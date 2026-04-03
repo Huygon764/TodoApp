@@ -36,9 +36,9 @@ export function ModalContainer({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`fixed inset-0 ${zContent} flex items-center justify-center p-4`}
+            className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
           >
-            <div className={`relative w-full ${maxWidth}`} ref={contentRef as React.RefObject<HTMLDivElement>}>
+            <div className={`relative w-full ${maxWidth} pointer-events-auto`} ref={contentRef as React.RefObject<HTMLDivElement>}>
               <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] shadow-2xl overflow-hidden">
                 {children}
               </div>

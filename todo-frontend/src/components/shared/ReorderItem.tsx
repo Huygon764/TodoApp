@@ -21,7 +21,7 @@ function ReorderItemInner<T>(
     <button
       type="button"
       onPointerDown={(e) => dragControls.start(e)}
-      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
+      className="shrink-0 p-2 rounded-lg text-text-muted hover:text-text-secondary hover:bg-bg-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
       aria-label="Reorder item"
     >
       <GripVertical className="w-4 h-4" />

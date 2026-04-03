@@ -174,17 +174,17 @@ export function DateTemplateModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<Calendar className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<Calendar className="w-5 h-5 text-accent-hover" />}
                   title={t("dateTemplateModal.title")}
                   subtitle={t("dateTemplateModal.subtitle")}
                   onClose={onClose}
                 />
 
-                <div className="p-4 border-b border-white/[0.04]">
-                  <p className="text-sm text-slate-400 mb-3">
+                <div className="p-4 border-b border-border-subtle">
+                  <p className="text-sm text-text-tertiary mb-3">
                     {selectedDate}
                   </p>
-                  <div className="rounded-xl border border-white/[0.06] bg-linear-surface p-2">
+                  <div className="rounded-xl border border-border-default bg-bg-surface p-2">
                     <DayPicker
                       mode="single"
                       locale={locale}
@@ -225,11 +225,11 @@ export function DateTemplateModal({
 
                 <div className="p-4 max-h-[240px] overflow-y-auto">
                   {isLoading ? (
-                    <div className="flex items-center justify-center py-8 text-slate-500">
+                    <div className="flex items-center justify-center py-8 text-text-muted">
                       <span className="text-sm">Loading...</span>
                     </div>
                   ) : items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <Calendar className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("dateTemplateModal.empty")}</p>
                     </div>
@@ -243,7 +243,7 @@ export function DateTemplateModal({
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200"
+                            className="rounded-xl bg-bg-surface border border-border-subtle hover:bg-bg-surface/80 group transition-all duration-200"
                           >
                             <div className="flex items-center gap-3 p-3">
                               {editingIndex === index ? (
@@ -257,7 +257,7 @@ export function DateTemplateModal({
                                     if (e.key === "Escape") cancelEdit();
                                   }}
                                   onBlur={() => saveTitleEdit(index)}
-                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
                                 />
                               ) : (
                                 <span
@@ -267,7 +267,7 @@ export function DateTemplateModal({
                                   onKeyDown={(e) =>
                                     e.key === "Enter" && handleTitleClick(index)
                                   }
-                                  className="flex-1 text-slate-200 cursor-text"
+                                  className="flex-1 text-text-secondary cursor-text"
                                 >
                                   {item.title}
                                 </span>
@@ -279,7 +279,7 @@ export function DateTemplateModal({
                                 onClick={() =>
                                   setExpandedIdx((prev) => (prev === index ? null : index))
                                 }
-                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
                               >
                                 {expandedIdx === index ? (
                                   <ChevronDown className="w-4 h-4" />
@@ -288,14 +288,14 @@ export function DateTemplateModal({
                                 )}
                               </motion.button>
                               {(item.subTasks ?? []).length > 0 && expandedIdx !== index && (
-                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
                               )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => removeItem(index)}
-                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                                className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200"
                                 aria-label={t("dateTemplateModal.deleteAria")}
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -319,18 +319,18 @@ export function DateTemplateModal({
                   )}
                 </div>
 
-                <div className="p-4 border-t border-white/[0.06] bg-slate-900/30 flex flex-col gap-2">
+                <div className="p-4 border-t border-border-default bg-bg-page/30 flex flex-col gap-2">
                   <button
                     type="button"
                     onClick={handleSave}
                     disabled={!isDirty || patchMutation.isPending}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-semibold transition-all duration-200 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-success to-success-to hover:from-success hover:to-success-to text-white font-semibold transition-all duration-200 shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {patchMutation.isPending
                       ? t("dateTemplateModal.saving")
                       : t("dateTemplateModal.save")}
                   </button>
-                  <p className="text-xs text-slate-500 text-center">
+                  <p className="text-xs text-text-muted text-center">
                     {t("dateTemplateModal.footerTip")}
                   </p>
                 </div>

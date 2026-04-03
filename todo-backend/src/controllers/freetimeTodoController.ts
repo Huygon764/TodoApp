@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { FreetimeTodo } from "../models/index.js";
-import { catchAsync, sendSuccess } from "../utils/index.js";
+import { catchAsync, sendSuccess, getOrCreate } from "../utils/index.js";
 import type { IFreetimeTodoItem } from "../types/index.js";
 import { normalizeItems } from "../utils/normalizeItem.js";
 
@@ -12,14 +12,7 @@ export const getFreetimeTodo = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
 
-    let freetimeTodo = await FreetimeTodo.findOne({ userId });
-
-    if (!freetimeTodo) {
-      freetimeTodo = await FreetimeTodo.create({
-        userId,
-        items: [],
-      });
-    }
+    const freetimeTodo = await getOrCreate(FreetimeTodo, { userId }, { items: [] });
 
     sendSuccess(res, 200, { freetimeTodo });
   }
@@ -35,14 +28,7 @@ export const patchFreetimeTodo = catchAsync(
     const userId = req.user!.userId;
     const items = (req.body.items ?? []) as IFreetimeTodoItem[];
 
-    let freetimeTodo = await FreetimeTodo.findOne({ userId });
-
-    if (!freetimeTodo) {
-      freetimeTodo = await FreetimeTodo.create({
-        userId,
-        items: [],
-      });
-    }
+    const freetimeTodo = await getOrCreate(FreetimeTodo, { userId }, { items: [] });
 
     freetimeTodo.items = normalizeItems(items);
 

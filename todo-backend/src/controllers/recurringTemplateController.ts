@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { RecurringTemplate } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
+import { catchAsync, sendSuccess, notFound, getOrCreate, removeAndReorder } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IRecurringTemplateItem } from "../types/index.js";
 
@@ -13,8 +13,8 @@ function normalizeUniqueSortedInts(
   const cleaned = Array.from(
     new Set(
       values
-        .map((v) => Number(v))
-        .filter((n) => Number.isInteger(n) && n >= min && n <= max)
+        .map((val) => Number(val))
+        .filter((num) => Number.isInteger(num) && num >= min && num <= max)
     )
   ).sort((a, b) => a - b);
   return cleaned.length > 0 ? cleaned : undefined;
@@ -24,12 +24,12 @@ function normalizeDatesOfYear(
   values: unknown
 ): IRecurringTemplateItem["datesOfYear"] | undefined {
   if (!Array.isArray(values)) return undefined;
-  const uniqueKey = (m: number, d: number) => `${m}-${d}`;
+  const uniqueKey = (month: number, day: number) => `${month}-${day}`;
   const seen = new Set<string>();
   const cleaned: { month: number; day: number }[] = [];
-  for (const v of values) {
-    const month = Number((v as any)?.month);
-    const day = Number((v as any)?.day);
+  for (const entry of values) {
+    const month = Number((entry as any)?.month);
+    const day = Number((entry as any)?.day);
     if (
       Number.isInteger(month) &&
       month >= 1 &&
@@ -57,15 +57,7 @@ export const getRecurringTemplate = catchAsync(
     const userId = req.user!.userId;
     const type = req.query.type as "week" | "month" | "year";
 
-    let template = await RecurringTemplate.findOne({ userId, type });
-
-    if (!template) {
-      template = await RecurringTemplate.create({
-        userId,
-        type,
-        items: [],
-      });
-    }
+    const template = await getOrCreate(RecurringTemplate, { userId, type }, { items: [] });
 
     sendSuccess(res, 200, { template });
   }
@@ -89,15 +81,7 @@ export const addRecurringTemplateItem = catchAsync(
       subTasks?: { title: string }[];
     };
 
-    let template = await RecurringTemplate.findOne({ userId, type });
-
-    if (!template) {
-      template = await RecurringTemplate.create({
-        userId,
-        type,
-        items: [],
-      });
-    }
+    const template = await getOrCreate(RecurringTemplate, { userId, type }, { items: [] });
 
     const count = template.items.length;
     const newOrder = typeof order === "number" ? order : count;
@@ -231,10 +215,7 @@ export const deleteRecurringTemplateItem = catchAsync(
       throw notFound(MESSAGES.RECURRING_TEMPLATE.NOT_FOUND);
     }
 
-    template.items.splice(index, 1);
-    template.items.forEach((item, i) => {
-      item.order = i;
-    });
+    removeAndReorder(template.items, index);
     await template.save();
 
     sendSuccess(res, 200, { template });

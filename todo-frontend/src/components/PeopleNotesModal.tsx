@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, Users, ChevronDown, ChevronRight } from "lucide-react";
@@ -24,9 +25,15 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   const [newName, setNewName] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newNoteText, setNewNoteText] = useState<Record<string, string>>({});
-  const [editingNameId, setEditingNameId] = useState<string | null>(null);
-  const [editNameValue, setEditNameValue] = useState("");
-  const editNameRef = useRef<HTMLInputElement>(null);
+  const {
+    editingId: editingNameId,
+    editValue: editNameValue,
+    setEditValue: setEditNameValue,
+    editInputRef: editNameRef,
+    startEdit: startEditName,
+    cancelEdit: cancelEditName,
+    finishEdit: finishEditName,
+  } = useInlineEdit<string>();
 
   const queryKey = ["peopleNotes"];
 
@@ -61,10 +68,6 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
-  useEffect(() => {
-    if (editingNameId) editNameRef.current?.focus();
-  }, [editingNameId]);
-
   useModalClose(isOpen, onClose, contentRef);
 
   const addPerson = () => {
@@ -74,17 +77,14 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
     setNewName("");
   };
 
-  const startEditName = (person: PersonNote) => {
-    setEditingNameId(person._id);
-    setEditNameValue(person.name);
+  const handleStartEditName = (person: PersonNote) => {
+    startEditName(person._id, person.name);
   };
 
   const saveEditName = (id: string) => {
-    const trimmed = editNameValue.trim();
-    setEditingNameId(null);
-    setEditNameValue("");
-    if (!trimmed) return;
-    patchMutation.mutate({ id, name: trimmed });
+    const value = finishEditName();
+    if (!value) return;
+    patchMutation.mutate({ id, name: value });
   };
 
   const addNote = (person: PersonNote) => {
@@ -165,10 +165,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                   onChange={(e) => setEditNameValue(e.target.value)}
                                   onKeyDown={(e) => {
                                     if (e.key === "Enter") saveEditName(person._id);
-                                    if (e.key === "Escape") {
-                                      setEditingNameId(null);
-                                      setEditNameValue("");
-                                    }
+                                    if (e.key === "Escape") cancelEditName();
                                   }}
                                   onBlur={() => saveEditName(person._id)}
                                   className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 font-medium focus:ring-0"
@@ -177,9 +174,9 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                 <span
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => startEditName(person)}
+                                  onClick={() => handleStartEditName(person)}
                                   onKeyDown={(e) =>
-                                    e.key === "Enter" && startEditName(person)
+                                    e.key === "Enter" && handleStartEditName(person)
                                   }
                                   className="flex-1 text-slate-200 font-medium cursor-text"
                                 >

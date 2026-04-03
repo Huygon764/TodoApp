@@ -2,14 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
-import { X, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown, GripVertical } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { X, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -49,52 +51,6 @@ function removeIdsFromItems(
   return items.map(({ id, ...rest }) => rest);
 }
 
-interface GoalReorderItemProps {
-  item: GoalItem & { id: string };
-  isMobile: boolean;
-  children: (dragHandle: ReactNode) => ReactNode;
-}
-
-function GoalReorderItem({ item, isMobile, children }: GoalReorderItemProps) {
-  const dragControls = useDragControls();
-
-  const dragHandle = (
-    <button
-      type="button"
-      onPointerDown={(e) => dragControls.start(e)}
-      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
-      aria-label="Reorder item"
-    >
-      <GripVertical className="w-4 h-4" />
-    </button>
-  );
-
-  return (
-    <Reorder.Item
-      value={item}
-      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: isMobile
-          ? { duration: 0.16, ease: "easeOut" }
-          : { type: "spring", stiffness: 100, damping: 25 },
-      }}
-      exit={{
-        opacity: 0,
-        x: isMobile ? -40 : -100,
-        transition: { duration: isMobile ? 0.12 : 0.2 },
-      }}
-      layout
-      dragListener={false}
-      dragControls={dragControls}
-      className="group"
-    >
-      {children(dragHandle)}
-    </Reorder.Item>
-  );
-}
-
 export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -109,19 +65,13 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [newTitle, setNewTitle] = useState("");
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
-  const editInputRef = useRef<HTMLInputElement>(null);
   const initialOrderRef = useRef<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (editingId) editInputRef.current?.focus();
-  }, [editingId]);
 
   const period =
     activeTab === "week"
@@ -376,27 +326,17 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
   const handleTitleClick = (id: string) => {
     const item = localItems.find((i) => i.id === id);
-    if (item) {
-      setEditingId(id);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(id, item.title);
   };
 
   const saveGoalTitle = (id: string) => {
-    const trimmed = editValue.trim();
-    setEditingId(null);
-    setEditValue("");
-    if (trimmed === "") return;
+    const value = finishEdit();
+    if (!value) return;
     const updated = localItems.map((it) =>
-      it.id === id ? { ...it, title: trimmed } : it
+      it.id === id ? { ...it, title: value } : it
     );
     setLocalItems(updated);
     if (goal) patchMutation.mutate(removeIdsFromItems(updated));
-  };
-
-  const cancelGoalEdit = () => {
-    setEditingId(null);
-    setEditValue("");
   };
 
   const reorderCompleted = (newCompleted: (GoalItem & { id: string })[]) => {
@@ -481,7 +421,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") saveGoalTitle(item.id);
-              if (e.key === "Escape") cancelGoalEdit();
+              if (e.key === "Escape") cancelEdit();
             }}
             onBlur={() => saveGoalTitle(item.id)}
             className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
@@ -678,16 +618,16 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           <div className="space-y-2">
             <Reorder.Group axis="y" values={incomplete} onReorder={reorderIncomplete} className="space-y-2">
               {incomplete.map((item) => (
-                <GoalReorderItem key={item.id} item={item} isMobile={isMobile}>
+                <ReorderItem key={item.id} item={item} isMobile={isMobile}>
                   {(dragHandle) => renderGoalItem(item, dragHandle)}
-                </GoalReorderItem>
+                </ReorderItem>
               ))}
             </Reorder.Group>
             <Reorder.Group axis="y" values={completed} onReorder={reorderCompleted} className="space-y-2">
               {completed.map((item) => (
-                <GoalReorderItem key={item.id} item={item} isMobile={isMobile}>
+                <ReorderItem key={item.id} item={item} isMobile={isMobile}>
                   {(dragHandle) => renderGoalItem(item, dragHandle)}
-                </GoalReorderItem>
+                </ReorderItem>
               ))}
             </Reorder.Group>
           </div>

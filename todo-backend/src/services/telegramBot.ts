@@ -8,6 +8,33 @@ import type { RequestHandler } from "express";
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 5000;
 
+const MESSAGES_VI = {
+  START_HEADER: "Todo App Bot\n\nCommands:\n",
+  HELP_HEADER: "Huong dan:\n\n",
+  COMMAND_LIST:
+    "/register <username> <password> - Tao user moi\n" +
+    "/remove <username> - Xoa user\n" +
+    "/list - Xem danh sach users",
+  REGISTER_USAGE: "Su dung: /register <username> <password>",
+  USERNAME_LENGTH: "Username phai tu 3-30 ky tu.",
+  USERNAME_CHARS: "Username chi duoc chua chu cai, so va dau gach duoi.",
+  PASSWORD_LENGTH: "Password phai it nhat 6 ky tu.",
+  USERNAME_EXISTS: (name: string) => `Username "${name}" da ton tai.`,
+  REGISTER_SUCCESS: (name: string, pass: string, dateStr: string) =>
+    `Tao user thanh cong!\n\nUsername: ${name}\nPassword: ${pass}\nNgay tao: ${dateStr}`,
+  REGISTER_ERROR: "Co loi xay ra khi tao user.",
+  REMOVE_USAGE: "Su dung: /remove <username>",
+  USER_NOT_FOUND: (name: string) => `Khong tim thay user "${name}".`,
+  REMOVE_SUCCESS: (name: string) => `Da xoa user "${name}" thanh cong!`,
+  REMOVE_ERROR: "Co loi xay ra khi xoa user.",
+  NO_USERS: "Chua co user nao.",
+  USER_LIST_HEADER: (count: number) => `Danh sach users (${count}):\n\n`,
+  NEVER_LOGGED_IN: "Chua dang nhap",
+  LOGIN_LABEL: "Dang nhap",
+  LIST_ERROR: "Co loi xay ra khi lay danh sach users.",
+  NO_PERMISSION: "You do not have permission to use this bot.",
+} as const;
+
 class TelegramBot {
   private bot: Telegraf | null = null;
   private adminChatId: string | null;
@@ -27,121 +54,117 @@ class TelegramBot {
 
   private requireAdmin(ctx: Context): boolean {
     if (!this.isAdmin(ctx)) {
-      ctx.reply("You do not have permission to use this bot.");
+      ctx.reply(MESSAGES_VI.NO_PERMISSION);
       return false;
     }
     return true;
   }
 
+  private handleStart(ctx: Context): void {
+    if (!this.requireAdmin(ctx)) return;
+    ctx.reply(MESSAGES_VI.START_HEADER + MESSAGES_VI.COMMAND_LIST);
+  }
+
+  private handleHelp(ctx: Context): void {
+    if (!this.requireAdmin(ctx)) return;
+    ctx.reply(MESSAGES_VI.HELP_HEADER + MESSAGES_VI.COMMAND_LIST);
+  }
+
+  private async handleRegister(ctx: Context & { message: { text: string } }): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const text = ctx.message.text;
+      const args = text.split(" ").slice(1);
+      if (args.length < 2) {
+        ctx.reply(MESSAGES_VI.REGISTER_USAGE);
+        return;
+      }
+      const [username, password] = args;
+      if (username.length < 3 || username.length > 30) {
+        ctx.reply(MESSAGES_VI.USERNAME_LENGTH);
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        ctx.reply(MESSAGES_VI.USERNAME_CHARS);
+        return;
+      }
+      if (password.length < 6) {
+        ctx.reply(MESSAGES_VI.PASSWORD_LENGTH);
+        return;
+      }
+      const existingUser = await User.findByUsername(username);
+      if (existingUser) {
+        ctx.reply(MESSAGES_VI.USERNAME_EXISTS(username));
+        return;
+      }
+      const newUser = new User({
+        username,
+        password,
+        displayName: username,
+      });
+      await newUser.save();
+      ctx.reply(MESSAGES_VI.REGISTER_SUCCESS(username, password, formatDateVi(new Date())));
+    } catch (error) {
+      console.error("Error registering user:", error);
+      ctx.reply(MESSAGES_VI.REGISTER_ERROR);
+    }
+  }
+
+  private async handleRemove(ctx: Context & { message: { text: string } }): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const args = ctx.message.text.split(" ").slice(1);
+      if (args.length < 1) {
+        ctx.reply(MESSAGES_VI.REMOVE_USAGE);
+        return;
+      }
+      const [username] = args;
+      const user = await User.findByUsername(username);
+      if (!user) {
+        ctx.reply(MESSAGES_VI.USER_NOT_FOUND(username));
+        return;
+      }
+      await User.findByIdAndDelete(user._id);
+      ctx.reply(MESSAGES_VI.REMOVE_SUCCESS(username));
+    } catch (error) {
+      console.error("Error removing user:", error);
+      ctx.reply(MESSAGES_VI.REMOVE_ERROR);
+    }
+  }
+
+  private async handleList(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const users = await User.find({ isActive: true }).sort({
+        createdAt: -1,
+      });
+      if (users.length === 0) {
+        ctx.reply(MESSAGES_VI.NO_USERS);
+        return;
+      }
+      const userList = users
+        .map((user, index) => {
+          const lastLogin = user.lastLogin
+            ? formatDateVi(user.lastLogin)
+            : MESSAGES_VI.NEVER_LOGGED_IN;
+          return `${index + 1}. ${user.username} (${user.displayName})\n   -> ${MESSAGES_VI.LOGIN_LABEL}: ${lastLogin}`;
+        })
+        .join("\n\n");
+      ctx.reply(MESSAGES_VI.USER_LIST_HEADER(users.length) + userList);
+    } catch (error) {
+      console.error("Error listing users:", error);
+      ctx.reply(MESSAGES_VI.LIST_ERROR);
+    }
+  }
+
   private setupCommands(): void {
     if (!this.bot) return;
 
-    this.bot.start((ctx) => {
-      if (!this.requireAdmin(ctx)) return;
-      return ctx.reply(
-        "📋 Todo App Bot\n\n" +
-          "Commands:\n" +
-          "/register <username> <password> - Tạo user mới\n" +
-          "/remove <username> - Xóa user\n" +
-          "/list - Xem danh sách users"
-      );
-    });
-
-    this.bot.help((ctx) => {
-      if (!this.requireAdmin(ctx)) return;
-      return ctx.reply(
-        "📖 Hướng dẫn:\n\n" +
-          "/register <username> <password> - Tạo user mới\n" +
-          "/remove <username> - Xóa user\n" +
-          "/list - Xem danh sách users"
-      );
-    });
-
-    this.bot.command("register", async (ctx) => {
-      if (!this.requireAdmin(ctx)) return;
-      try {
-        const text = ctx.message.text;
-        const args = text.split(" ").slice(1);
-        if (args.length < 2) {
-          return ctx.reply("❌ Sử dụng: /register <username> <password>");
-        }
-        const [username, password] = args;
-        if (username.length < 3 || username.length > 30) {
-          return ctx.reply("❌ Username phải từ 3-30 ký tự.");
-        }
-        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-          return ctx.reply(
-            "❌ Username chỉ được chứa chữ cái, số và dấu gạch dưới."
-          );
-        }
-        if (password.length < 6) {
-          return ctx.reply("❌ Password phải ít nhất 6 ký tự.");
-        }
-        const existingUser = await User.findByUsername(username);
-        if (existingUser) {
-          return ctx.reply(`❌ Username "${username}" đã tồn tại.`);
-        }
-        const newUser = new User({
-          username,
-          password,
-          displayName: username,
-        });
-        await newUser.save();
-        return ctx.reply(
-          `✅ Tạo user thành công!\n\n` +
-            `👤 Username: ${username}\n` +
-            `🔑 Password: ${password}\n` +
-            `📅 Ngày tạo: ${formatDateVi(new Date())}`
-        );
-      } catch (error) {
-        console.error("Error registering user:", error);
-        return ctx.reply("❌ Có lỗi xảy ra khi tạo user.");
-      }
-    });
-
-    this.bot.command("remove", async (ctx) => {
-      if (!this.requireAdmin(ctx)) return;
-      try {
-        const args = ctx.message.text.split(" ").slice(1);
-        if (args.length < 1) {
-          return ctx.reply("❌ Sử dụng: /remove <username>");
-        }
-        const [username] = args;
-        const user = await User.findByUsername(username);
-        if (!user) {
-          return ctx.reply(`❌ Không tìm thấy user "${username}".`);
-        }
-        await User.findByIdAndDelete(user._id);
-        return ctx.reply(`✅ Đã xóa user "${username}" thành công!`);
-      } catch (error) {
-        console.error("Error removing user:", error);
-        return ctx.reply("❌ Có lỗi xảy ra khi xóa user.");
-      }
-    });
-
-    this.bot.command("list", async (ctx) => {
-      if (!this.requireAdmin(ctx)) return;
-      try {
-        const users = await User.find({ isActive: true }).sort({
-          createdAt: -1,
-        });
-        if (users.length === 0) {
-          return ctx.reply("📋 Chưa có user nào.");
-        }
-        const userList = users
-          .map((user, index) => {
-            const lastLogin = user.lastLogin
-              ? formatDateVi(user.lastLogin)
-              : "Chưa đăng nhập";
-            return `${index + 1}. ${user.username} (${user.displayName})\n   └ Đăng nhập: ${lastLogin}`;
-          })
-          .join("\n\n");
-        return ctx.reply(`📋 Danh sách users (${users.length}):\n\n${userList}`);
-      } catch (error) {
-        console.error("Error listing users:", error);
-        return ctx.reply("❌ Có lỗi xảy ra khi lấy danh sách users.");
-      }
-    });
+    this.bot.start((ctx) => this.handleStart(ctx));
+    this.bot.help((ctx) => this.handleHelp(ctx));
+    this.bot.command("register", (ctx) => this.handleRegister(ctx));
+    this.bot.command("remove", (ctx) => this.handleRemove(ctx));
+    this.bot.command("list", (ctx) => this.handleList(ctx));
 
     this.bot.on(message("text"), (ctx) => {
       if (!this.requireAdmin(ctx)) return;
@@ -161,7 +184,7 @@ class TelegramBot {
 
   async launch(): Promise<void> {
     if (!this.bot) {
-      console.log("⚠️ Telegram bot not configured. Skipping...");
+      console.log("Telegram bot not configured. Skipping...");
       return;
     }
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -169,10 +192,10 @@ class TelegramBot {
         if (env.telegramWebhookDomain) {
           const webhookUrl = `${env.telegramWebhookDomain}/webhook/telegram`;
           await this.bot.telegram.setWebhook(webhookUrl);
-          console.log(`✅ Telegram bot started (webhook: ${webhookUrl})`);
+          console.log(`Telegram bot started (webhook: ${webhookUrl})`);
         } else {
           await this.bot.launch();
-          console.log("✅ Telegram bot started (polling)");
+          console.log("Telegram bot started (polling)");
         }
         process.once("SIGINT", () => this.bot?.stop("SIGINT"));
         process.once("SIGTERM", () => this.bot?.stop("SIGTERM"));
@@ -181,7 +204,7 @@ class TelegramBot {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown";
         console.error(
-          `❌ Telegram bot launch attempt ${attempt}/${MAX_RETRIES} failed:`,
+          `Telegram bot launch attempt ${attempt}/${MAX_RETRIES} failed:`,
           errorMessage
         );
         if (attempt < MAX_RETRIES) {

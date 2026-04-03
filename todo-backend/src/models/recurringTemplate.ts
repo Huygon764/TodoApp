@@ -13,12 +13,7 @@ const recurringTemplateDayOfYearSchema = new Schema<IRecurringTemplateDayOfYear>
   { _id: false }
 );
 
-const recurringTemplateSubTaskSchema = new Schema(
-  {
-    title: { type: String, required: true, trim: true },
-  },
-  { _id: false }
-);
+import { subTaskTitleOnlySchema } from "./schemas/subTask.js";
 
 const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
   {
@@ -50,7 +45,7 @@ const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
       default: undefined,
     },
     subTasks: {
-      type: [recurringTemplateSubTaskSchema],
+      type: [subTaskTitleOnlySchema],
       default: undefined,
     },
   },

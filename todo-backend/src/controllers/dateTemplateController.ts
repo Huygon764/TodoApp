@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { DateTemplate } from "../models/index.js";
-import { catchAsync, sendSuccess } from "../utils/index.js";
+import { catchAsync, sendSuccess, getOrCreate } from "../utils/index.js";
 import type { IDateTemplateItem } from "../types/index.js";
 
 /**
@@ -12,15 +12,7 @@ export const getDateTemplate = catchAsync(
     const userId = req.user!.userId;
     const date = req.params.date as string;
 
-    let dateTemplate = await DateTemplate.findOne({ userId, date });
-
-    if (!dateTemplate) {
-      dateTemplate = await DateTemplate.create({
-        userId,
-        date,
-        items: [],
-      });
-    }
+    const dateTemplate = await getOrCreate(DateTemplate, { userId, date }, { items: [] });
 
     sendSuccess(res, 200, { dateTemplate });
   }
@@ -37,15 +29,7 @@ export const patchDateTemplate = catchAsync(
     const date = req.params.date as string;
     const rawItems = req.body.items as IDateTemplateItem[];
 
-    let dateTemplate = await DateTemplate.findOne({ userId, date });
-
-    if (!dateTemplate) {
-      dateTemplate = await DateTemplate.create({
-        userId,
-        date,
-        items: [],
-      });
-    }
+    const dateTemplate = await getOrCreate(DateTemplate, { userId, date }, { items: [] });
 
     const items = rawItems.map((item, i) => {
       const base: { title: string; order: number; subTasks?: { title: string }[] } = {

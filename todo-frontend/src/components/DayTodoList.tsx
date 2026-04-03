@@ -1,11 +1,12 @@
-import { forwardRef, useState, useEffect, useRef } from "react";
-import type { ReactNode } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
-import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { generateId } from "@/lib/generateId";
+import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 // Extend DayTodoItem với unique ID
@@ -34,62 +35,6 @@ interface DayTodoListProps {
   onUpdateItems: (items: DayTodoItem[]) => void;
 }
 
-interface DayTodoReorderItemProps {
-  item: DayTodoItemWithId;
-  isMobile: boolean;
-  children: (dragHandle: ReactNode) => ReactNode;
-}
-
-const DayTodoReorderItem = forwardRef<HTMLLIElement, DayTodoReorderItemProps>(
-  ({ item, isMobile, children }, ref) => {
-    const dragControls = useDragControls();
-
-    const dragHandle = (
-      <button
-        type="button"
-        onPointerDown={(e) => dragControls.start(e)}
-        className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
-        aria-label="Reorder item"
-      >
-        <GripVertical className="w-4 h-4" />
-      </button>
-    );
-
-    return (
-      <Reorder.Item
-        ref={ref}
-        value={item}
-        initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: isMobile
-            ? { duration: 0.16, ease: "easeOut" }
-            : {
-                type: "spring",
-                stiffness: 100,
-                damping: 25,
-              },
-        }}
-        exit={{
-          opacity: 0,
-          x: isMobile ? -40 : -100,
-          transition: { duration: isMobile ? 0.12 : 0.2 },
-        }}
-        layout
-        layoutId={item.id}
-        dragListener={false}
-        dragControls={dragControls}
-        className="group"
-      >
-        {children(dragHandle)}
-      </Reorder.Item>
-    );
-  }
-);
-
-DayTodoReorderItem.displayName = "DayTodoReorderItem";
-
 export function DayTodoList({
   dayTodo,
   isLoading,
@@ -100,17 +45,11 @@ export function DayTodoList({
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
   const [pendingToggle, setPendingToggle] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
-  const editInputRef = useRef<HTMLInputElement>(null);
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const REORDER_DEBOUNCE_MS = 600;
-
-  useEffect(() => {
-    if (editingId) editInputRef.current?.focus();
-  }, [editingId]);
 
   // Sync items from props
   useEffect(() => {
@@ -240,27 +179,17 @@ export function DayTodoList({
 
   const handleTitleClick = (id: string) => {
     const item = items.find((i) => i.id === id);
-    if (item) {
-      setEditingId(id);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(id, item.title);
   };
 
   const saveTitle = (id: string) => {
-    const trimmed = editValue.trim();
-    setEditingId(null);
-    setEditValue("");
-    if (trimmed === "") return;
+    const value = finishEdit();
+    if (!value) return;
     const updated = items.map((it) =>
-      it.id === id ? { ...it, title: trimmed } : it
+      it.id === id ? { ...it, title: value } : it
     );
     setItems(updated);
     onUpdateItems(removeIdsFromItems(updated));
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditValue("");
   };
 
   const handleReorder = (newOrder: DayTodoItemWithId[]) => {
@@ -397,7 +326,7 @@ export function DayTodoList({
             >
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
-                  <DayTodoReorderItem key={item.id} item={item} isMobile={isMobile}>
+                  <ReorderItem key={item.id} item={item} isMobile={isMobile} layoutId={item.id}>
                     {(dragHandle) => (
                       <>
                     <motion.div 
@@ -534,7 +463,7 @@ export function DayTodoList({
                     )}
                       </>
                     )}
-                  </DayTodoReorderItem>
+                  </ReorderItem>
                 ))}
               </AnimatePresence>
             </Reorder.Group>

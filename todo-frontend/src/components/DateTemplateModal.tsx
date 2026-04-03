@@ -6,37 +6,16 @@ import { DayPicker } from "react-day-picker";
 import { Trash2, Calendar, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
 import { API_PATHS } from "@/constants/api";
+import { DAY_PICKER_CLASS_NAMES } from "@/constants/dayPickerStyles";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { DateTemplate, DateTemplateItem } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
-
-const dayPickerClassNames = {
-  root: "p-3",
-  month_caption: "flex items-center justify-between mb-3",
-  caption_label: "text-slate-200 font-medium text-sm",
-  nav: "flex items-center gap-1",
-  button_previous:
-    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
-  button_next:
-    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
-  month_grid: "w-full border-collapse",
-  weekdays: "border-b border-white/[0.06]",
-  weekday: "text-slate-500 text-xs font-medium py-2 w-[2.25rem]",
-  week: "",
-  day: "p-0.5",
-  day_button:
-    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-linear-card hover:border-[#5E6AD2]/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
-  selected:
-    "bg-[#5E6AD2]/20 text-[#7C85E0] border-[#5E6AD2]/50 hover:bg-[#5E6AD2]/30",
-  today: "border-[#5E6AD2]/40 text-[#7C85E0]",
-  outside: "text-slate-600 opacity-60",
-  disabled: "opacity-40 cursor-not-allowed",
-};
 
 interface DateTemplateModalProps {
   isOpen: boolean;
@@ -53,19 +32,13 @@ export function DateTemplateModal({
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const contentRef = useRef<HTMLDivElement>(null);
-  const editInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedDate, setSelectedDate] = useState(() => getTodayInTimezone());
   const [items, setItems] = useState<DateTemplateItem[]>([]);
   const [newTitle, setNewTitle] = useState("");
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId: editingIndex, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<number>();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<number, string>>({});
-
-  useEffect(() => {
-    if (editingIndex !== null) editInputRef.current?.focus();
-  }, [editingIndex]);
 
   useEffect(() => {
     if (isOpen) setSelectedDate(getTodayInTimezone());
@@ -131,26 +104,16 @@ export function DateTemplateModal({
 
   const handleTitleClick = (index: number) => {
     const item = items[index];
-    if (item) {
-      setEditingIndex(index);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(index, item.title);
   };
 
   const saveTitleEdit = (index: number) => {
-    const trimmed = editValue.trim();
-    setEditingIndex(null);
-    setEditValue("");
-    if (trimmed === "" || trimmed === items[index]?.title) return;
+    const value = finishEdit();
+    if (!value || value === items[index]?.title) return;
     const next = items.map((it, i) =>
-      i === index ? { ...it, title: trimmed } : it
+      i === index ? { ...it, title: value } : it
     );
     setItems(next);
-  };
-
-  const cancelEdit = () => {
-    setEditingIndex(null);
-    setEditValue("");
   };
 
   const addSubTask = (index: number, title: string) => {
@@ -227,14 +190,14 @@ export function DateTemplateModal({
                       locale={locale}
                       selected={selectedDateObj}
                       onSelect={handleSelectDay}
-                      classNames={dayPickerClassNames}
+                      classNames={DAY_PICKER_CLASS_NAMES}
                       weekStartsOn={i18n.language === "vi" ? 1 : 0}
                       components={{
                         Chevron: () => <span className="sr-only" />,
                         PreviousMonthButton: (props) => (
                           <button
                             {...props}
-                            className={`${dayPickerClassNames.button_previous} ${props.className ?? ""}`}
+                            className={`${DAY_PICKER_CLASS_NAMES.button_previous} ${props.className ?? ""}`}
                           >
                             <ChevronLeft className="w-4 h-4" />
                           </button>
@@ -242,7 +205,7 @@ export function DateTemplateModal({
                         NextMonthButton: (props) => (
                           <button
                             {...props}
-                            className={`${dayPickerClassNames.button_next} ${props.className ?? ""}`}
+                            className={`${DAY_PICKER_CLASS_NAMES.button_next} ${props.className ?? ""}`}
                           >
                             <ChevronRight className="w-4 h-4" />
                           </button>

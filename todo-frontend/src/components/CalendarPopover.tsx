@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
 import { getTodayInTimezone } from "@/lib/datePeriod";
+import { DAY_PICKER_CLASS_NAMES } from "@/constants/dayPickerStyles";
 
 interface CalendarPopoverProps {
   isOpen: boolean;
@@ -15,29 +16,6 @@ interface CalendarPopoverProps {
   anchorRef: React.RefObject<HTMLDivElement | null>;
   timezone?: string;
 }
-
-const dayPickerClassNames = {
-  root: "p-3",
-  month_caption: "flex items-center justify-between mb-3",
-  caption_label: "text-slate-200 font-medium text-sm",
-  nav: "flex items-center gap-1",
-  button_previous:
-    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
-  button_next:
-    "p-2 rounded-lg bg-linear-card hover:bg-linear-card/80 text-slate-400 hover:text-linear-accent-hover border border-white/[0.04] hover:border-[#5E6AD2]/30 transition-all cursor-pointer",
-  month_grid: "w-full border-collapse",
-  weekdays: "border-b border-white/[0.06]",
-  weekday: "text-slate-500 text-xs font-medium py-2 w-[2.25rem]",
-  week: "",
-  day: "p-0.5",
-  day_button:
-    "w-9 h-9 rounded-lg text-sm font-medium text-slate-200 hover:bg-linear-card hover:border-[#5E6AD2]/30 border border-transparent transition-all cursor-pointer flex items-center justify-center",
-  selected:
-    "bg-[#5E6AD2]/20 text-[#7C85E0] border-[#5E6AD2]/50 hover:bg-[#5E6AD2]/30",
-  today: "border-[#5E6AD2]/40 text-[#7C85E0]",
-  outside: "text-slate-600 opacity-60",
-  disabled: "opacity-40 cursor-not-allowed",
-};
 
 export function CalendarPopover({
   isOpen,
@@ -128,14 +106,14 @@ export function CalendarPopover({
             locale={locale}
             selected={selectedDateObj}
             onSelect={handleSelect}
-            classNames={dayPickerClassNames}
+            classNames={DAY_PICKER_CLASS_NAMES}
             weekStartsOn={i18n.language === "vi" ? 1 : 0}
             components={{
               Chevron: () => <></>,
               PreviousMonthButton: (props) => (
                 <button
                   {...props}
-                  className={`${dayPickerClassNames.button_previous} ${props.className ?? ""}`}
+                  className={`${DAY_PICKER_CLASS_NAMES.button_previous} ${props.className ?? ""}`}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -143,7 +121,7 @@ export function CalendarPopover({
               NextMonthButton: (props) => (
                 <button
                   {...props}
-                  className={`${dayPickerClassNames.button_next} ${props.className ?? ""}`}
+                  className={`${DAY_PICKER_CLASS_NAMES.button_next} ${props.className ?? ""}`}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

@@ -67,14 +67,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const logout = catchAsync(async (_req: Request, res: Response) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    maxAge: 0,
-    path: "/",
-    sameSite: "lax",
-    // secure: env.nodeEnv === "production",
-    secure: false, // false because on vps dont have domain name, only ip address, later when buy domain name, can change this
-  });
+  res.cookie("token", "", { ...COOKIE_OPTIONS, maxAge: 0 });
   sendSuccess(res, 200, undefined, "Đã đăng xuất");
 });
 

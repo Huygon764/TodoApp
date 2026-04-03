@@ -1,16 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
-import { Trash2, ListTodo, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 export type DefaultOrderUpdate = { id: string; order: number };
@@ -22,52 +23,6 @@ interface DefaultListModalProps {
   onAddItem: (title: string) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
-}
-
-interface DefaultReorderItemProps {
-  item: DefaultItem;
-  isMobile: boolean;
-  children: (dragHandle: ReactNode) => ReactNode;
-}
-
-function DefaultReorderItem({ item, isMobile, children }: DefaultReorderItemProps) {
-  const dragControls = useDragControls();
-
-  const dragHandle = (
-    <button
-      type="button"
-      onPointerDown={(e) => dragControls.start(e)}
-      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
-      aria-label="Reorder item"
-    >
-      <GripVertical className="w-4 h-4" />
-    </button>
-  );
-
-  return (
-    <Reorder.Item
-      value={item}
-      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: isMobile
-          ? { duration: 0.16, ease: "easeOut" }
-          : { type: "spring", stiffness: 100, damping: 25 },
-      }}
-      exit={{
-        opacity: 0,
-        x: isMobile ? -40 : -100,
-        transition: { duration: isMobile ? 0.12 : 0.2 },
-      }}
-      layout
-      dragListener={false}
-      dragControls={dragControls}
-      className="group"
-    >
-      {children(dragHandle)}
-    </Reorder.Item>
-  );
 }
 
 export function DefaultListModal({
@@ -84,20 +39,14 @@ export function DefaultListModal({
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
   const [newTitle, setNewTitle] = useState("");
   const [localItems, setLocalItems] = useState<DefaultItem[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
-  const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
   }, [isOpen, items]);
-
-  useEffect(() => {
-    if (editingId) editInputRef.current?.focus();
-  }, [editingId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -150,26 +99,16 @@ export function DefaultListModal({
 
   const handleTitleClick = (id: string) => {
     const item = localItems.find((i) => i._id === id);
-    if (item) {
-      setEditingId(id);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(id, item.title);
   };
 
   const saveDefaultTitle = (id: string) => {
-    const trimmed = editValue.trim();
-    setEditingId(null);
-    setEditValue("");
-    if (trimmed === "") return;
+    const value = finishEdit();
+    if (!value) return;
     setLocalItems((prev) =>
-      prev.map((it) => (it._id === id ? { ...it, title: trimmed } : it))
+      prev.map((it) => (it._id === id ? { ...it, title: value } : it))
     );
-    patchMutation.mutate({ id, title: trimmed });
-  };
-
-  const cancelDefaultEdit = () => {
-    setEditingId(null);
-    setEditValue("");
+    patchMutation.mutate({ id, title: value });
   };
 
   const addSubTask = (itemId: string, title: string) => {
@@ -228,7 +167,7 @@ export function DefaultListModal({
                     >
                       <AnimatePresence mode="popLayout">
                         {localItems.map((item) => (
-                          <DefaultReorderItem key={item._id} item={item} isMobile={isMobile}>
+                          <ReorderItem key={item._id} item={item} isMobile={isMobile}>
                             {(dragHandle) => (
                               <>
                             <div className="rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200">
@@ -241,7 +180,7 @@ export function DefaultListModal({
                                     onChange={(e) => setEditValue(e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") saveDefaultTitle(item._id);
-                                      if (e.key === "Escape") cancelDefaultEdit();
+                                      if (e.key === "Escape") cancelEdit();
                                     }}
                                     onBlur={() => saveDefaultTitle(item._id)}
                                     className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
@@ -304,7 +243,7 @@ export function DefaultListModal({
                             </div>
                               </>
                             )}
-                          </DefaultReorderItem>
+                          </ReorderItem>
                         ))}
                       </AnimatePresence>
                     </Reorder.Group>

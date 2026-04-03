@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 
+const MOBILE_BREAKPOINT = 768;
+
 function getIsMobile() {
   if (typeof window === "undefined") {
     return false;
   }
 
-  return window.innerWidth < 768;
+  return window.innerWidth < MOBILE_BREAKPOINT;
 }
 
 export function useIsMobile() {
@@ -16,7 +18,7 @@ export function useIsMobile() {
       return;
     }
 
-    const updateIsMobile = () => setIsMobile(window.innerWidth < 768);
+    const updateIsMobile = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
 
     updateIsMobile();
     window.addEventListener("resize", updateIsMobile);

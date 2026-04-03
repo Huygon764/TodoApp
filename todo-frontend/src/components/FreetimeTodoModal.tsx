@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
-import { Trash2, Check, Circle, ChevronDown, ChevronRight, GripVertical } from "lucide-react";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { Trash2, Check, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
 import { generateId } from "@/lib/generateId";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 
 interface FreetimeTodoModalProps {
@@ -36,63 +37,15 @@ const addIdsToItems = (items: FreetimeTodoItem[]): FreetimeTodoItemWithId[] =>
 const removeIdsFromItems = (items: FreetimeTodoItemWithId[]): FreetimeTodoItem[] =>
   items.map(({ id, ...rest }) => rest);
 
-interface FreetimeReorderItemProps {
-  item: FreetimeTodoItemWithId;
-  isMobile: boolean;
-  children: (dragHandle: ReactNode) => ReactNode;
-}
-
-function FreetimeReorderItem({ item, isMobile, children }: FreetimeReorderItemProps) {
-  const dragControls = useDragControls();
-
-  const dragHandle = (
-    <button
-      type="button"
-      onPointerDown={(e) => dragControls.start(e)}
-      className="shrink-0 p-2 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-linear-surface transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
-      aria-label="Reorder item"
-    >
-      <GripVertical className="w-4 h-4" />
-    </button>
-  );
-
-  return (
-    <Reorder.Item
-      value={item}
-      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: isMobile
-          ? { duration: 0.16, ease: "easeOut" }
-          : { type: "spring", stiffness: 100, damping: 25 },
-      }}
-      exit={{
-        opacity: 0,
-        x: isMobile ? -40 : -100,
-        transition: { duration: isMobile ? 0.12 : 0.2 },
-      }}
-      layout
-      dragListener={false}
-      dragControls={dragControls}
-      className="group"
-    >
-      {children(dragHandle)}
-    </Reorder.Item>
-  );
-}
-
 export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const contentRef = useRef<HTMLDivElement>(null);
-  const editInputRef = useRef<HTMLInputElement>(null);
 
   const [items, setItems] = useState<FreetimeTodoItemWithId[]>([]);
   const [newTitle, setNewTitle] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
 
@@ -102,10 +55,6 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
   const REORDER_DEBOUNCE_MS = 600;
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (editingId) editInputRef.current?.focus();
-  }, [editingId]);
 
   const queryKey = ["freetime-todo"];
 
@@ -207,26 +156,16 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
   const handleTitleClick = (id: string) => {
     const item = items.find((i) => i.id === id);
-    if (item) {
-      setEditingId(id);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(id, item.title);
   };
 
   const saveTitle = (id: string) => {
-    const trimmed = editValue.trim();
-    setEditingId(null);
-    setEditValue("");
-    if (!trimmed) return;
+    const value = finishEdit();
+    if (!value) return;
     const updated = items.map((it) =>
-      it.id === id ? { ...it, title: trimmed } : it
+      it.id === id ? { ...it, title: value } : it
     );
     syncItems(updated);
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditValue("");
   };
 
   const addSubTask = (itemId: string, title: string) => {
@@ -347,7 +286,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     >
                       <AnimatePresence mode="popLayout">
                         {items.map((item) => (
-                          <FreetimeReorderItem key={item.id} item={item} isMobile={isMobile}>
+                          <ReorderItem key={item.id} item={item} isMobile={isMobile}>
                             {(dragHandle) => (
                               <>
                             <motion.div
@@ -471,7 +410,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             )}
                               </>
                             )}
-                          </FreetimeReorderItem>
+                          </ReorderItem>
                         ))}
                       </AnimatePresence>
                     </Reorder.Group>

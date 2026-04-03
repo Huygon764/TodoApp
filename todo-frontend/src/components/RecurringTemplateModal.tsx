@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
@@ -29,11 +30,9 @@ export function RecurringTemplateModal({
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<RecurringTab>(initialTab);
   const [newTitle, setNewTitle] = useState("");
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState("");
+  const { editingId: editingIndex, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<number>();
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<number, string>>({});
-  const editInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -44,10 +43,6 @@ export function RecurringTemplateModal({
     const today = new Date();
     return { month: today.getMonth() + 1, day: today.getDate() };
   });
-
-  useEffect(() => {
-    if (editingIndex !== null) editInputRef.current?.focus();
-  }, [editingIndex]);
 
   const queryKey = ["recurringTemplate", activeTab];
 
@@ -136,23 +131,13 @@ export function RecurringTemplateModal({
 
   const handleTitleClick = (index: number) => {
     const item = items[index];
-    if (item) {
-      setEditingIndex(index);
-      setEditValue(item.title);
-    }
+    if (item) startEdit(index, item.title);
   };
 
   const saveRecurringTitle = (index: number) => {
-    const trimmed = editValue.trim();
-    setEditingIndex(null);
-    setEditValue("");
-    if (trimmed === "") return;
-    patchItemMutation.mutate({ idx: index, title: trimmed });
-  };
-
-  const cancelRecurringEdit = () => {
-    setEditingIndex(null);
-    setEditValue("");
+    const value = finishEdit();
+    if (!value) return;
+    patchItemMutation.mutate({ idx: index, title: value });
   };
 
   const addSubTask = (idx: number, title: string) => {
@@ -356,7 +341,7 @@ export function RecurringTemplateModal({
                                     onChange={(e) => setEditValue(e.target.value)}
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") saveRecurringTitle(idx);
-                                      if (e.key === "Escape") cancelRecurringEdit();
+                                      if (e.key === "Escape") cancelEdit();
                                     }}
                                     onBlur={() => saveRecurringTitle(idx)}
                                     className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"

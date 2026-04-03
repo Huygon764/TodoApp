@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Goal } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
+import { catchAsync, sendSuccess, notFound, getOrCreate, removeAndReorder } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IGoalItem } from "../types/index.js";
 import { normalizeItems } from "../utils/normalizeItem.js";
@@ -14,16 +14,7 @@ export const getGoal = catchAsync(async (req: Request, res: Response) => {
   const type = req.query.type as "week" | "month" | "year";
   const period = req.query.period as string;
 
-  let goal = await Goal.findOne({ userId, type, period });
-
-  if (!goal) {
-    goal = await Goal.create({
-      userId,
-      type,
-      period,
-      items: [],
-    });
-  }
+  const goal = await getOrCreate(Goal, { userId, type, period }, { items: [] });
 
   sendSuccess(res, 200, { goal });
 });
@@ -105,10 +96,7 @@ export const deleteGoalItem = catchAsync(async (req: Request, res: Response) => 
     throw notFound(MESSAGES.GOAL.NOT_FOUND);
   }
 
-  goal.items.splice(index, 1);
-  goal.items.forEach((item, i) => {
-    item.order = i;
-  });
+  removeAndReorder(goal.items, index);
   await goal.save();
 
   sendSuccess(res, 200, { goal });

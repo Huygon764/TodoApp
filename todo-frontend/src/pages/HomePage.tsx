@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import { CheckCircle2, ListTodo, Settings, Target, Languages, CalendarRange, FileText, Calendar, Circle, Users, Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { ListTodo, CalendarRange, Calendar, Circle } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
-import { LogoutButton } from "@/components/LogoutButton";
 import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
 import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
@@ -20,10 +18,11 @@ import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { PeopleNotesModal } from "@/components/PeopleNotesModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { Header, type ModalKey } from "@/components/Header";
+import { SectionCard } from "@/components/SectionCard";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
-// Subtle Animated Background (solid Linear style; particles added in Phase 5)
-const AnimatedBackground = () => {
+function AnimatedBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-linear-bg" />
@@ -37,45 +36,13 @@ const AnimatedBackground = () => {
       <ParticleBackground />
     </div>
   );
-};
-
-// App Logo Component
-const AppLogo = () => {
-  const { t } = useTranslation();
-  return (
-    <div className="flex items-center gap-3">
-      <div className="relative w-9 h-9">
-        <div className="relative w-full h-full bg-linear-accent rounded-xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/20">
-          <CheckCircle2 className="w-5 h-5 text-white" />
-        </div>
-      </div>
-      <span className="text-xl font-bold text-white">{t("appName")}</span>
-    </div>
-  );
-};
-
-interface HeaderMenuItemProps {
-  icon: LucideIcon;
-  label: string;
-  onClick: () => void;
-}
-
-function HeaderMenuItem({ icon: Icon, label, onClick }: HeaderMenuItemProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
-    >
-      <Icon className="w-5 h-5 shrink-0" />
-      <span className="text-sm font-medium">{label}</span>
-    </button>
-  );
 }
 
 export function HomePage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
+
   const { data: user } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
@@ -84,6 +51,7 @@ export function HomePage() {
     },
     retry: false,
   });
+
   const [selectedDate, setSelectedDate] = useState(() => getTodayInTimezone());
   const hasInitializedDate = useRef(false);
   useEffect(() => {
@@ -92,43 +60,20 @@ export function HomePage() {
       setSelectedDate(getTodayInTimezone(user.timezone));
     }
   }, [user]);
-  type ModalKey = "default" | "recurring" | "goal" | "review" | "reviewHistory" | "dateTemplate" | "freetime" | "peopleNotes";
+
   const [openModal, setOpenModal] = useState<ModalKey | null>(null);
   const openM = (key: ModalKey) => setOpenModal(key);
   const closeM = () => setOpenModal(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [reviewModalSlot, setReviewModalSlot] = useState<{ type: "week" | "month"; period: string } | null>(null);
-  const queryClient = useQueryClient();
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [reviewModalSlot, setReviewModalSlot] = useState<{
+    type: "week" | "month";
+    period: string;
+  } | null>(null);
 
-  const toggleLang = () => {
-    const next = i18n.language === "vi" ? "en" : "vi";
-    i18n.changeLanguage(next);
-    if (typeof localStorage !== "undefined") localStorage.setItem("lang", next);
-  };
-
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current?.contains(event.target as Node)) return;
-      setMenuOpen(false);
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!isMobile) setMenuOpen(false);
-  }, [isMobile]);
-
+  // Queries
   const { data: dayData, isLoading: dayLoading } = useQuery({
     queryKey: ["day", selectedDate],
     queryFn: async () => {
-      const res = await apiGet<{ dayTodo: DayTodo }>(
-        API_PATHS.DAY(selectedDate)
-      );
+      const res = await apiGet<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate));
       return res.data?.dayTodo ?? null;
     },
   });
@@ -136,19 +81,15 @@ export function HomePage() {
   const { data: defaultData } = useQuery({
     queryKey: ["default"],
     queryFn: async () => {
-      const res = await apiGet<{ items: DefaultItem[] }>(
-        API_PATHS.DEFAULT
-      );
+      const res = await apiGet<{ items: DefaultItem[] }>(API_PATHS.DEFAULT);
       return res.data?.items ?? [];
     },
   });
 
+  // Mutations
   const patchDayMutation = useMutation({
     mutationFn: (items: DayTodoItem[]) =>
-      apiPatch<{ dayTodo: DayTodo }>(
-        API_PATHS.DAY(selectedDate),
-        { items }
-      ),
+      apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate), { items }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
     },
@@ -158,7 +99,7 @@ export function HomePage() {
     mutationFn: (title: string) =>
       apiPost<{ item: DefaultItem }>(API_PATHS.DEFAULT, {
         title,
-        order: (defaultData?.length ?? 0),
+        order: defaultData?.length ?? 0,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default"] });
@@ -168,9 +109,7 @@ export function HomePage() {
   const reorderDefaultMutation = useMutation({
     mutationFn: (updates: DefaultOrderUpdate[]) =>
       Promise.all(
-        updates.map((u) =>
-          apiPatch(API_PATHS.DEFAULT_BY_ID(u.id), { order: u.order })
-        )
+        updates.map((u) => apiPatch(API_PATHS.DEFAULT_BY_ID(u.id), { order: u.order }))
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default"] });
@@ -179,10 +118,7 @@ export function HomePage() {
 
   const dayTodo = dayData ?? null;
   const defaultItems = defaultData ?? [];
-  const iconHover = isMobile ? undefined : { scale: 1.05 };
-  const iconTap = isMobile ? { scale: 0.98 } : { scale: 0.95 };
-  const cardHover = isMobile ? undefined : { scale: 1.01 };
-  const cardTap = isMobile ? { scale: 0.995 } : { scale: 0.99 };
+
   const getSectionMotion = (desktopDelay = 0) => ({
     initial: isMobile ? { opacity: 0, y: 4 } : { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
@@ -190,149 +126,20 @@ export function HomePage() {
       ? { duration: 0.18, ease: "easeOut" }
       : { duration: 0.3, delay: desktopDelay },
   });
-  const closeMenu = () => setMenuOpen(false);
+
+  const handleOpenReview = () => {
+    setReviewModalSlot(null);
+    openM("review");
+  };
 
   return (
     <div className="min-h-screen text-slate-100 relative">
       <AnimatedBackground />
-      
-      {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-linear-surface">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between relative">
-          <AppLogo />
-          {!isMobile ? (
-            <div className="flex items-center gap-2">
-              <motion.button
-                type="button"
-                whileHover={iconHover}
-                whileTap={iconTap}
-                onClick={toggleLang}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
-                title={i18n.language === "vi" ? "English" : "Tiếng Việt"}
-              >
-                <Languages className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                whileHover={iconHover}
-                whileTap={iconTap}
-                onClick={() => openM("goal")}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-                title={t("home.goalsTitle")}
-              >
-                <Target className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                type="button"
-                whileHover={iconHover}
-                whileTap={iconTap}
-                onClick={() => openM("peopleNotes")}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-                title={t("peopleNotesModal.title")}
-              >
-                <Users className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                type="button"
-                whileHover={iconHover}
-                whileTap={iconTap}
-                onClick={() => {
-                  setReviewModalSlot(null);
-                  openM("review");
-                }}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-                title={t("dayTodo.reviewMyself")}
-              >
-                <FileText className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                whileHover={iconHover}
-                whileTap={iconTap}
-                onClick={() => openM("default")}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
-                title={t("home.defaultTemplateTitle")}
-              >
-                <Settings className="w-5 h-5" />
-              </motion.button>
-              <LogoutButton />
-            </div>
-          ) : (
-            <div ref={menuRef} className="relative">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setMenuOpen((prev) => !prev)}
-                className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-300 hover:text-white transition-colors duration-200 cursor-pointer"
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-              >
-                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </motion.button>
 
-              <AnimatePresence>
-                {menuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.16, ease: "easeOut" }}
-                    className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-linear-card border border-white/[0.06] shadow-2xl shadow-black/30 p-2 z-30"
-                  >
-                    <HeaderMenuItem
-                      icon={Languages}
-                      label={i18n.language === "vi" ? "English" : "Tiếng Việt"}
-                      onClick={() => {
-                        toggleLang();
-                        closeMenu();
-                      }}
-                    />
-                    <HeaderMenuItem
-                      icon={Target}
-                      label={t("home.goalsTitle")}
-                      onClick={() => {
-                        openM("goal");
-                        closeMenu();
-                      }}
-                    />
-                    <HeaderMenuItem
-                      icon={Users}
-                      label={t("peopleNotesModal.title")}
-                      onClick={() => {
-                        openM("peopleNotes");
-                        closeMenu();
-                      }}
-                    />
-                    <HeaderMenuItem
-                      icon={FileText}
-                      label={t("dayTodo.reviewMyself")}
-                      onClick={() => {
-                        setReviewModalSlot(null);
-                        openM("review");
-                        closeMenu();
-                      }}
-                    />
-                    <HeaderMenuItem
-                      icon={Settings}
-                      label={t("home.defaultTemplateTitle")}
-                      onClick={() => {
-                        openM("default");
-                        closeMenu();
-                      }}
-                    />
-                    <div className="my-1 h-px bg-white/[0.06]" />
-                    <LogoutButton variant="menu" onAfterClick={closeMenu} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
-      </header>
+      <Header onOpenModal={openM} onOpenReview={handleOpenReview} />
 
-      {/* Main Content */}
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Date Navigation */}
-        <motion.section
-          {...getSectionMotion()}
-        >
+        <motion.section {...getSectionMotion()}>
           <DateNav
             date={selectedDate}
             onDateChange={setSelectedDate}
@@ -340,11 +147,7 @@ export function HomePage() {
           />
         </motion.section>
 
-        {/* Day Todo List - Expanded */}
-        <motion.section
-          {...getSectionMotion(0.05)}
-          className="flex-1"
-        >
+        <motion.section {...getSectionMotion(0.05)} className="flex-1">
           <DayTodoList
             dayTodo={dayTodo}
             isLoading={dayLoading}
@@ -352,143 +155,44 @@ export function HomePage() {
           />
         </motion.section>
 
-        {/* Default List Button */}
-        <motion.section
-          {...getSectionMotion(0.1)}
-        >
-          <motion.button
-            whileHover={cardHover}
-            whileTap={cardTap}
+        <motion.section {...getSectionMotion(0.1)}>
+          <SectionCard
+            icon={ListTodo}
+            title={t("home.templateDefault")}
+            description={t("home.defaultTemplateDesc", { count: defaultItems.length })}
             onClick={() => openM("default")}
-            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
-                  <ListTodo className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-200">{t("home.templateDefault")}</p>
-                  <p className="text-sm text-slate-500">{t("home.defaultTemplateDesc", { count: defaultItems.length })}</p>
-                </div>
-              </div>
-              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          </motion.button>
+          />
         </motion.section>
 
-        {/* Date template (specific date → day todo) */}
-        <motion.section
-          {...getSectionMotion(0.12)}
-        >
-          <motion.button
-            type="button"
-            whileHover={cardHover}
-            whileTap={cardTap}
+        <motion.section {...getSectionMotion(0.12)}>
+          <SectionCard
+            icon={Calendar}
+            title={t("home.dateTemplateTitle")}
+            description={t("home.dateTemplateDesc")}
             onClick={() => openM("dateTemplate")}
-            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-200">{t("home.dateTemplateTitle")}</p>
-                  <p className="text-sm text-slate-500">{t("home.dateTemplateDesc")}</p>
-                </div>
-              </div>
-              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          </motion.button>
+          />
         </motion.section>
 
-        {/* Freetime list (things to do when you have time) */}
-        <motion.section
-          {...getSectionMotion(0.14)}
-        >
-          <motion.button
-            type="button"
-            whileHover={cardHover}
-            whileTap={cardTap}
+        <motion.section {...getSectionMotion(0.14)}>
+          <SectionCard
+            icon={Circle}
+            title={t("freetimeModal.title", "Freetime list")}
+            description={t("freetimeModal.subtitle", "Things you want to do when you have free time")}
             onClick={() => openM("freetime")}
-            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
-                  <Circle className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-200">
-                    {t("freetimeModal.title", "Freetime list")}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {t(
-                      "freetimeModal.subtitle",
-                      "Things you want to do when you have free time"
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </div>
-          </motion.button>
+          />
         </motion.section>
 
-        {/* Recurring template (week/month/year → day todo) */}
-        <motion.section
-          {...getSectionMotion(0.15)}
-        >
-          <motion.button
-            type="button"
-            whileHover={cardHover}
-            whileTap={cardTap}
+        <motion.section {...getSectionMotion(0.15)}>
+          <SectionCard
+            icon={CalendarRange}
+            title={t("home.recurringTemplateTitle")}
+            description={t("home.recurringTemplateDesc")}
             onClick={() => openM("recurring")}
-            className="w-full p-4 rounded-2xl bg-linear-card/50 border border-white/[0.06] hover:border-[#5E6AD2]/30 hover:bg-linear-card/80 transition-all duration-200 group cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10 text-[#7C85E0] group-hover:bg-[#5E6AD2]/20 transition-colors">
-                  <CalendarRange className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-200">{t("home.recurringTemplateTitle")}</p>
-                  <p className="text-sm text-slate-500">{t("home.recurringTemplateDesc")}</p>
-                </div>
-              </div>
-              <div className="text-slate-500 group-hover:text-linear-accent-hover transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </div>
-          </motion.button>
+          />
         </motion.section>
       </main>
 
+      {/* Modals */}
       <DefaultListModal
         isOpen={openModal === "default"}
         onClose={closeM}
@@ -506,19 +210,13 @@ export function HomePage() {
           }
         }}
       />
-      <FreetimeTodoModal
-        isOpen={openModal === "freetime"}
-        onClose={closeM}
-      />
+      <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
       <RecurringTemplateModal
         isOpen={openModal === "recurring"}
         onClose={closeM}
         initialTab="week"
       />
-      <GoalModal
-        isOpen={openModal === "goal"}
-        onClose={closeM}
-      />
+      <GoalModal isOpen={openModal === "goal"} onClose={closeM} />
       <ReviewModal
         isOpen={openModal === "review"}
         onClose={() => {
@@ -532,10 +230,7 @@ export function HomePage() {
           openM("reviewHistory");
         }}
       />
-      <PeopleNotesModal
-        isOpen={openModal === "peopleNotes"}
-        onClose={closeM}
-      />
+      <PeopleNotesModal isOpen={openModal === "peopleNotes"} onClose={closeM} />
       <ReviewHistoryModal
         isOpen={openModal === "reviewHistory"}
         onClose={closeM}

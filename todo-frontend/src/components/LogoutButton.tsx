@@ -39,8 +39,8 @@ export function LogoutButton({
       disabled={logoutMutation.isPending}
       className={
         isMenu
-          ? "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 cursor-pointer text-left"
-          : "flex items-center gap-2 px-4 py-2.5 rounded-xl text-slate-400 hover:text-red-400 bg-slate-800/50 hover:bg-red-500/10 border border-white/[0.06] hover:border-red-500/30 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+          ? "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-text-secondary hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-50 cursor-pointer text-left"
+          : "flex items-center gap-2 px-4 py-2.5 rounded-xl text-text-tertiary hover:text-danger bg-bg-elevated hover:bg-danger-bg border border-border-default hover:border-danger-border transition-all duration-200 disabled:opacity-50 cursor-pointer"
       }
     >
       {logoutMutation.isPending ? (

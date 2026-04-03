@@ -26,7 +26,7 @@ function HeaderMenuItem({ icon: Icon, label, onClick }: HeaderMenuItemProps) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+      className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-text-secondary hover:text-white hover:bg-border-subtle transition-colors text-left cursor-pointer"
     >
       <Icon className="w-5 h-5 shrink-0" />
       <span className="text-sm font-medium">{label}</span>
@@ -39,7 +39,7 @@ function AppLogo() {
   return (
     <div className="flex items-center gap-3">
       <div className="relative w-9 h-9">
-        <div className="relative w-full h-full bg-linear-accent rounded-xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/20">
+        <div className="relative w-full h-full bg-accent-primary rounded-xl flex items-center justify-center shadow-lg shadow-accent-primary/20">
           <CheckCircle2 className="w-5 h-5 text-white" />
         </div>
       </div>
@@ -100,7 +100,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/[0.06] bg-linear-surface">
+    <header className="sticky top-0 z-20 border-b border-border-default bg-bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between relative">
         <AppLogo />
         {!isMobile ? (
@@ -110,7 +110,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               whileHover={iconHover}
               whileTap={iconTap}
               onClick={toggleLang}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-text-secondary hover:border-border-strong transition-all duration-200 cursor-pointer"
               title={i18n.language === "vi" ? "English" : "Tieng Viet"}
             >
               <Languages className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("goal")}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("home.goalsTitle")}
             >
               <Target className="w-5 h-5" />
@@ -129,7 +129,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("peopleNotes")}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("peopleNotesModal.title")}
             >
               <Users className="w-5 h-5" />
@@ -139,7 +139,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               whileHover={iconHover}
               whileTap={iconTap}
               onClick={onOpenReview}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("dayTodo.reviewMyself")}
             >
               <FileText className="w-5 h-5" />
@@ -148,7 +148,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("default")}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-400 hover:text-linear-accent-hover hover:border-[#5E6AD2]/30 transition-all duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("home.defaultTemplateTitle")}
             >
               <Settings className="w-5 h-5" />
@@ -161,7 +161,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               type="button"
               whileTap={{ scale: 0.97 }}
               onClick={() => setMenuOpen((prev) => !prev)}
-              className="p-2.5 rounded-xl bg-linear-card border border-white/[0.06] text-slate-300 hover:text-white transition-colors duration-200 cursor-pointer"
+              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-secondary hover:text-white transition-colors duration-200 cursor-pointer"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
             >
               {menuOpen ? (
@@ -178,7 +178,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-linear-card border border-white/[0.06] shadow-2xl shadow-black/30 p-2 z-30"
+                  className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
                 >
                   <HeaderMenuItem
                     icon={Languages}
@@ -205,7 +205,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                     label={t("home.defaultTemplateTitle")}
                     onClick={() => menuAction(() => onOpenModal("default"))}
                   />
-                  <div className="my-1 h-px bg-white/[0.06]" />
+                  <div className="my-1 h-px bg-border-default" />
                   <LogoutButton variant="menu" onAfterClick={closeMenu} />
                 </motion.div>
               )}

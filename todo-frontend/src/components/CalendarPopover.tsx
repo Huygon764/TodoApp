@@ -91,12 +91,12 @@ export function CalendarPopover({
         className="fixed z-[9999] -translate-x-1/2"
         style={{ top: position.top, left: position.left }}
       >
-        <div className="relative rounded-2xl border border-white/[0.06] bg-linear-surface shadow-xl">
-          <div className="border-b border-white/[0.06] px-3 py-2">
+        <div className="relative rounded-2xl border border-border-default bg-bg-surface shadow-xl">
+          <div className="border-b border-border-default px-3 py-2">
             <button
               type="button"
               onClick={handleTodayClick}
-              className="w-full rounded-xl bg-linear-card px-3 py-2 text-sm font-medium text-slate-300 hover:bg-linear-card/80 hover:text-linear-accent-hover transition-colors cursor-pointer"
+              className="w-full rounded-xl bg-bg-card px-3 py-2 text-sm font-medium text-text-secondary hover:bg-bg-card/80 hover:text-accent-hover transition-colors cursor-pointer"
             >
               {t("dateNav.today")}
             </button>

@@ -373,8 +373,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         layout
         className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
           item.completed
-            ? "bg-[#5E6AD2]/5 border-[#5E6AD2]/20"
-            : "bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80"
+            ? "bg-accent-primary/5 border-accent-primary/20"
+            : "bg-bg-surface border-border-subtle hover:bg-bg-surface/80"
         }`}
         animate={{
           scale: pendingToggle === item.id ? 0.98 : 1,
@@ -392,8 +392,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           disabled={pendingToggle !== null}
           className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
             item.completed
-              ? "bg-linear-accent border-linear-accent"
-              : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
+              ? "bg-accent-primary border-accent-primary"
+              : "border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
           } disabled:cursor-not-allowed`}
         >
           <AnimatePresence mode="wait">
@@ -424,7 +424,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               if (e.key === "Escape") cancelEdit();
             }}
             onBlur={() => saveGoalTitle(item.id)}
-            className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+            className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
           />
         ) : (
           <span
@@ -433,7 +433,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             onClick={() => handleTitleClick(item.id)}
             onKeyDown={(e) => e.key === "Enter" && handleTitleClick(item.id)}
             className={`flex-1 cursor-text ${
-              item.completed ? "line-through text-slate-500" : "text-slate-200"
+              item.completed ? "line-through text-text-muted" : "text-text-secondary"
             }`}
           >
             {item.title}
@@ -444,7 +444,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           whileHover={controlHover}
           whileTap={controlTap}
           onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
-          className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all cursor-pointer"
+          className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all cursor-pointer"
           aria-label={expandedId === item.id ? "Collapse" : "Expand sub-tasks"}
         >
           {expandedId === item.id ? (
@@ -454,7 +454,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           )}
         </motion.button>
         {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
-          <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+          <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
         )}
         {dragHandle}
         <motion.button
@@ -463,7 +463,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           whileTap={controlTap}
           onClick={() => handleDelete(item.id)}
           disabled={deleteItemMutation.isPending}
-          className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+          className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 disabled:opacity-50 cursor-pointer"
           aria-label={t("goalModal.deleteAria")}
         >
           <Trash2 className="w-4 h-4" />
@@ -493,7 +493,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handlePrevPeriod}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"
           aria-label={t("dateNav.prevAria")}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -501,7 +501,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         <button
           type="button"
           onClick={() => setPickerOpen((o) => !o)}
-          className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-linear-surface transition-colors text-left truncate cursor-pointer"
+          className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-text-tertiary hover:text-text-secondary hover:bg-bg-surface transition-colors text-left truncate cursor-pointer"
         >
           {periodLabel}
         </button>
@@ -510,14 +510,14 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleNextPeriod}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"
           aria-label={t("dateNav.nextAria")}
         >
           <ChevronRight className="w-4 h-4" />
         </motion.button>
       </div>
       {pickerOpen && (
-        <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-linear-surface border border-white/[0.06] shadow-xl z-10 py-1">
+        <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-bg-surface border border-border-default shadow-xl z-10 py-1">
           {pickerOptions.map((opt) => (
             <button
               key={opt.period}
@@ -525,8 +525,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               onClick={() => handleSelectPeriod(opt.period)}
               className={`w-full px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
                 opt.period === period
-                  ? "bg-[#5E6AD2]/20 text-[#7C85E0]"
-                  : "text-slate-300 hover:bg-linear-surface"
+                  ? "bg-accent-primary/20 text-accent-hover"
+                  : "text-text-secondary hover:bg-bg-surface"
               }`}
             >
               {opt.label}
@@ -545,10 +545,10 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       zBackdrop="z-40"
       zContent="z-50"
     >
-      <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between p-6 border-b border-border-default">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-[#5E6AD2]/10">
-            <Target className="w-5 h-5 text-[#7C85E0]" />
+          <div className="p-2.5 rounded-xl bg-accent-primary/10">
+            <Target className="w-5 h-5 text-accent-hover" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">
@@ -563,7 +563,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+            className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </motion.button>
@@ -571,7 +571,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/[0.04]">
+      <div className="flex border-b border-border-subtle">
         {(["week", "month", "year"] as const).map((tab) => (
           <button
             key={tab}
@@ -579,8 +579,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${
               activeTab === tab
-                ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
-                : "text-slate-500 hover:text-slate-300"
+                ? "text-accent-hover border-b-2 border-accent-primary bg-accent-primary/5"
+                : "text-text-muted hover:text-text-secondary"
             }`}
           >
             {tab === "week"
@@ -606,11 +606,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 rounded-xl bg-linear-surface animate-pulse" />
+              <div key={i} className="h-14 rounded-xl bg-bg-surface animate-pulse" />
             ))}
           </div>
         ) : sortedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-8 text-text-muted">
             <Circle className="w-10 h-10 mb-2 opacity-30" />
             <p>{t("goalModal.empty")}</p>
           </div>

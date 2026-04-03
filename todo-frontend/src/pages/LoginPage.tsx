@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 const AnimatedBackground = () => {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 bg-linear-bg" />
+      <div className="absolute inset-0 bg-bg-page" />
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
@@ -38,7 +38,7 @@ const AppLogo = ({ isMobile }: { isMobile: boolean }) => (
     }
     className="relative w-16 h-16 mx-auto mb-4"
   >
-    <div className="relative w-full h-full bg-linear-accent rounded-2xl flex items-center justify-center shadow-lg shadow-[#5E6AD2]/25">
+    <div className="relative w-full h-full bg-accent-primary rounded-2xl flex items-center justify-center shadow-lg shadow-accent-primary/25">
       <span className="text-2xl font-bold text-white">✓</span>
     </div>
   </motion.div>
@@ -108,7 +108,7 @@ export function LoginPage() {
       >
         {/* Card */}
         <div className="relative">
-          <div className="relative bg-linear-card rounded-3xl border border-white/[0.06] p-8 sm:p-10 shadow-2xl">
+          <div className="relative bg-bg-card rounded-3xl border border-border-default p-8 sm:p-10 shadow-2xl">
             {/* Logo */}
             <AppLogo isMobile={isMobile} />
 
@@ -120,7 +120,7 @@ export function LoginPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                 Todo App
               </h1>
-              <p className="text-slate-400 text-sm sm:text-base">
+              <p className="text-text-tertiary text-sm sm:text-base">
                 Chào mừng trở lại! Đăng nhập để tiếp tục
               </p>
             </motion.div>
@@ -131,20 +131,20 @@ export function LoginPage() {
               <motion.div
                 {...getSlideInMotion(0.3)}
               >
-                <label className="block text-slate-300 text-sm font-medium mb-2">
+                <label className="block text-text-secondary text-sm font-medium mb-2">
                   Tên đăng nhập
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
+                    <User className="h-5 w-5 text-text-muted group-focus-within:text-accent-hover transition-colors" />
                   </div>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 
-                      focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
-                      hover:border-white/[0.1] transition-all duration-200"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-bg-elevated border border-border-subtle text-white placeholder-text-muted
+                      focus:outline-none focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary/50
+                      hover:border-border-strong transition-all duration-200"
                     placeholder="Nhập tên đăng nhập"
                     autoComplete="username"
                   />
@@ -155,27 +155,27 @@ export function LoginPage() {
               <motion.div
                 {...getSlideInMotion(0.4)}
               >
-                <label className="block text-slate-300 text-sm font-medium mb-2">
+                <label className="block text-text-secondary text-sm font-medium mb-2">
                   Mật khẩu
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-linear-accent-hover transition-colors" />
+                    <Lock className="h-5 w-5 text-text-muted group-focus-within:text-accent-hover transition-colors" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 text-white placeholder-slate-500 
-                      focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 focus:border-[#5E6AD2]/50 
-                      hover:border-white/[0.1] transition-all duration-200"
+                    className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-bg-elevated border border-border-subtle text-white placeholder-text-muted
+                      focus:outline-none focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary/50
+                      hover:border-border-strong transition-all duration-200"
                     placeholder="Nhập mật khẩu"
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-text-muted hover:text-text-secondary transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />
@@ -196,7 +196,7 @@ export function LoginPage() {
                       ? { duration: 0.16, ease: "easeOut" }
                       : undefined
                   }
-                  className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+                  className="flex items-center gap-2 p-3 rounded-lg bg-danger-bg border border-danger-border text-danger text-sm"
                 >
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   <span>{error}</span>
@@ -213,7 +213,7 @@ export function LoginPage() {
                   whileHover={buttonHover}
                   whileTap={buttonTap}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-white overflow-hidden
-                    bg-linear-accent hover:bg-linear-accent-hover
+                    bg-accent-primary hover:bg-accent-hover
                     disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
                     transition-all duration-200 flex items-center justify-center gap-2"
                 >

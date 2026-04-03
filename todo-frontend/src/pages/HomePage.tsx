@@ -25,7 +25,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 function AnimatedBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 bg-linear-bg" />
+      <div className="absolute inset-0 bg-bg-page" />
       <div
         className="absolute inset-0 opacity-[0.02]"
         style={{

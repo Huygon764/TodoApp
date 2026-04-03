@@ -15,7 +15,7 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 
 const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components"] = {
   h2: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
-    <h2 className="text-base font-semibold text-[#7C85E0] mt-4 mb-2 first:mt-0 border-l-2 border-[#5E6AD2]/50 pl-3" {...props}>
+    <h2 className="text-base font-semibold text-accent-hover mt-4 mb-2 first:mt-0 border-l-2 border-accent-primary/50 pl-3" {...props}>
       {children}
     </h2>
   ),
@@ -25,17 +25,17 @@ const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components
     </h3>
   ),
   p: ({ children, ...props }: React.ComponentPropsWithoutRef<"p">) => (
-    <p className="text-sm text-slate-300 mb-2 last:mb-0" {...props}>
+    <p className="text-sm text-text-secondary mb-2 last:mb-0" {...props}>
       {children}
     </p>
   ),
   ul: ({ children, ...props }: React.ComponentPropsWithoutRef<"ul">) => (
-    <ul className="text-sm text-slate-300 list-disc list-inside mb-2 space-y-1 marker:text-[#7C85E0]/80" {...props}>
+    <ul className="text-sm text-text-secondary list-disc list-inside mb-2 space-y-1 marker:text-accent-hover/80" {...props}>
       {children}
     </ul>
   ),
   ol: ({ children, ...props }: React.ComponentPropsWithoutRef<"ol">) => (
-    <ol className="text-sm text-slate-300 list-decimal list-inside mb-2 space-y-1 marker:text-[#7C85E0]/80" {...props}>
+    <ol className="text-sm text-text-secondary list-decimal list-inside mb-2 space-y-1 marker:text-accent-hover/80" {...props}>
       {children}
     </ol>
   ),
@@ -45,12 +45,12 @@ const markdownComponents: React.ComponentProps<typeof ReactMarkdown>["components
     </li>
   ),
   strong: ({ children, ...props }: React.ComponentPropsWithoutRef<"strong">) => (
-    <strong className="font-semibold text-slate-200" {...props}>
+    <strong className="font-semibold text-text-secondary" {...props}>
       {children}
     </strong>
   ),
   a: ({ children, href, ...props }: React.ComponentPropsWithoutRef<"a">) => (
-    <a href={href} className="text-[#7C85E0] hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
+    <a href={href} className="text-accent-hover hover:underline" target="_blank" rel="noopener noreferrer" {...props}>
       {children}
     </a>
   ),
@@ -151,15 +151,15 @@ export function ReviewHistoryModal({
     <>
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<FileText className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<FileText className="w-5 h-5 text-accent-hover" />}
                   title={t("reviewHistory.title")}
                   subtitle={t("reviewHistory.subtitle")}
                   onClose={onClose}
                 />
 
-                <div className="p-4 border-b border-white/[0.04] space-y-3">
+                <div className="p-4 border-b border-border-subtle space-y-3">
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">
+                    <label className="block text-sm text-text-tertiary mb-2">
                       {t("reviewHistory.fromMonth")}
                     </label>
                     <select
@@ -169,7 +169,7 @@ export function ReviewHistoryModal({
                         setSelectedFromMonth(v);
                         if (v > selectedToMonth) setSelectedToMonth(v);
                       }}
-                      className="w-full px-3 py-2.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 appearance-none cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-xl bg-bg-surface border border-border-subtle text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-primary/40 appearance-none cursor-pointer"
                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
                     >
                       {monthOptions.map((ym) => (
@@ -180,7 +180,7 @@ export function ReviewHistoryModal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">
+                    <label className="block text-sm text-text-tertiary mb-2">
                       {t("reviewHistory.toMonth")}
                     </label>
                     <select
@@ -190,7 +190,7 @@ export function ReviewHistoryModal({
                         setSelectedToMonth(v);
                         if (v < selectedFromMonth) setSelectedFromMonth(v);
                       }}
-                      className="w-full px-3 py-2.5 rounded-xl bg-linear-surface border border-white/[0.04] text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 appearance-none cursor-pointer"
+                      className="w-full px-3 py-2.5 rounded-xl bg-bg-surface border border-border-subtle text-slate-100 focus:outline-none focus:ring-2 focus:ring-accent-primary/40 appearance-none cursor-pointer"
                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', paddingRight: '2.5rem' }}
                     >
                       {monthOptions.map((ym) => (
@@ -205,7 +205,7 @@ export function ReviewHistoryModal({
                 <div className="p-4 max-h-[50vh] overflow-y-auto space-y-3">
                   <>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-sm text-slate-500">
+                      <span className="text-sm text-text-muted">
                         {t("reviewHistory.selectToAnalyze")}
                       </span>
                       <motion.button
@@ -214,14 +214,14 @@ export function ReviewHistoryModal({
                         whileTap={{ scale: 0.98 }}
                         onClick={handleAnalyze}
                         disabled={selectedIds.size === 0 || analysisLoading}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-500/20 text-violet-400 hover:bg-violet-500/30 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent-primary/20 text-accent-hover hover:bg-accent-primary/30 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Sparkles className="w-4 h-4" />
                         {analysisLoading ? t("reviewHistory.analyzing") : t("reviewHistory.analyzeBtn")}
                       </motion.button>
                     </div>
                     {slots.length === 0 ? (
-                      <div className="py-8 text-center text-slate-500">
+                      <div className="py-8 text-center text-text-muted">
                         {t("reviewHistory.empty")}
                       </div>
                     ) : (
@@ -235,10 +235,10 @@ export function ReviewHistoryModal({
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0 }}
-                              className={`p-4 rounded-xl border border-white/[0.04] transition-colors ${
+                              className={`p-4 rounded-xl border border-border-subtle transition-colors ${
                                 review && selectedIds.has(review._id)
-                                  ? "bg-violet-500/10 border-violet-500/30 cursor-pointer"
-                                  : "bg-slate-700/30 hover:bg-linear-surface cursor-pointer"
+                                  ? "bg-accent-primary/10 border-accent-primary/30 cursor-pointer"
+                                  : "bg-bg-surface/30 hover:bg-bg-surface cursor-pointer"
                               }`}
                               onClick={() => {
                                 if (onOpenSlot) {
@@ -259,14 +259,14 @@ export function ReviewHistoryModal({
                                       toggleSelect(review._id);
                                     }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-4 h-4 rounded border-slate-500 text-violet-500 focus:ring-violet-500"
+                                    className="w-4 h-4 rounded border-text-muted text-accent-primary focus:ring-accent-primary"
                                   />
                                 )}
-                                <span className="font-medium text-[#7C85E0]">
+                                <span className="font-medium text-accent-hover">
                                   {slot.label}
                                 </span>
                                 {!review && (
-                                  <span className="text-xs text-slate-500">
+                                  <span className="text-xs text-text-muted">
                                     ({t("reviewHistory.noEntry")})
                                   </span>
                                 )}
@@ -274,19 +274,19 @@ export function ReviewHistoryModal({
                               {review && (
                                 <>
                                   {review.goodThings?.length > 0 && (
-                                    <div className="text-sm text-slate-300 mb-1">
-                                      <span className="text-slate-500">{t("reviewHistory.goodLabel")}: </span>
+                                    <div className="text-sm text-text-secondary mb-1">
+                                      <span className="text-text-muted">{t("reviewHistory.goodLabel")}: </span>
                                       {review.goodThings.join("; ")}
                                     </div>
                                   )}
                                   {review.badThings?.length > 0 && (
-                                    <div className="text-sm text-slate-300 mb-1">
-                                      <span className="text-slate-500">{t("reviewHistory.badLabel")}: </span>
+                                    <div className="text-sm text-text-secondary mb-1">
+                                      <span className="text-text-muted">{t("reviewHistory.badLabel")}: </span>
                                       {review.badThings.join("; ")}
                                     </div>
                                   )}
                                   {review.notes && (
-                                    <div className="text-sm text-slate-400 mt-1 line-clamp-2">
+                                    <div className="text-sm text-text-tertiary mt-1 line-clamp-2">
                                       {review.notes}
                                     </div>
                                   )}
@@ -298,8 +298,8 @@ export function ReviewHistoryModal({
                       </AnimatePresence>
                     )}
                     {analysisResult !== null && (
-                      <div className="mt-4 p-4 rounded-xl bg-slate-800/50 border border-white/[0.04] overflow-y-auto max-h-[320px]">
-                        <div className="text-sm font-medium text-[#7C85E0] mb-2">
+                      <div className="mt-4 p-4 rounded-xl bg-bg-elevated border border-border-subtle overflow-y-auto max-h-[320px]">
+                        <div className="text-sm font-medium text-accent-hover mb-2">
                           {t("reviewHistory.aiResponse")}
                         </div>
                         <div className="prose-invert">

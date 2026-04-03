@@ -103,7 +103,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<Users className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<Users className="w-5 h-5 text-accent-hover" />}
                   title={t("peopleNotesModal.title")}
                   subtitle={t("peopleNotesModal.subtitle")}
                   onClose={onClose}
@@ -121,7 +121,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                 {/* People List */}
                 <div className="p-4 max-h-[400px] overflow-y-auto">
                   {people.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <Users className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("peopleNotesModal.empty")}</p>
                     </div>
@@ -135,10 +135,10 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="rounded-xl bg-linear-surface border border-white/[0.04] overflow-hidden"
+                            className="rounded-xl bg-bg-surface border border-border-subtle overflow-hidden"
                           >
                             {/* Person header */}
-                            <div className="flex items-center gap-3 p-3 hover:bg-linear-surface/80 group transition-all duration-200">
+                            <div className="flex items-center gap-3 p-3 hover:bg-bg-surface/80 group transition-all duration-200">
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}
@@ -148,7 +148,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                     prev === person._id ? null : person._id
                                   )
                                 }
-                                className="p-1 rounded-lg text-slate-500 hover:text-linear-accent-hover transition-all cursor-pointer"
+                                className="p-1 rounded-lg text-text-muted hover:text-accent-hover transition-all cursor-pointer"
                               >
                                 {expandedId === person._id ? (
                                   <ChevronDown className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                     if (e.key === "Escape") cancelEditName();
                                   }}
                                   onBlur={() => saveEditName(person._id)}
-                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 font-medium focus:ring-0"
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary font-medium focus:ring-0"
                                 />
                               ) : (
                                 <span
@@ -178,14 +178,14 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                   onKeyDown={(e) =>
                                     e.key === "Enter" && handleStartEditName(person)
                                   }
-                                  className="flex-1 text-slate-200 font-medium cursor-text"
+                                  className="flex-1 text-text-secondary font-medium cursor-text"
                                 >
                                   {person.name}
                                 </span>
                               )}
 
                               {person.notes.length > 0 && expandedId !== person._id && (
-                                <span className="text-xs text-[#7C85E0] font-medium">
+                                <span className="text-xs text-accent-hover font-medium">
                                   [{person.notes.length}]
                                 </span>
                               )}
@@ -196,7 +196,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => deleteMutation.mutate(person._id)}
                                 disabled={deleteMutation.isPending}
-                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 disabled:opacity-50 cursor-pointer"
                                 aria-label={t("peopleNotesModal.deletePersonAria")}
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -205,14 +205,14 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
 
                             {/* Expanded notes */}
                             {expandedId === person._id && (
-                              <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-white/[0.04]">
+                              <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-border-subtle">
                                 {person.notes.map((note, noteIdx) => (
                                   <div
                                     key={noteIdx}
                                     className="flex items-start gap-2 py-1.5 pl-3 rounded-lg"
                                   >
-                                    <span className="text-slate-500 mt-0.5 shrink-0">•</span>
-                                    <span className="flex-1 text-sm text-slate-300">
+                                    <span className="text-text-muted mt-0.5 shrink-0">•</span>
+                                    <span className="flex-1 text-sm text-text-secondary">
                                       {note}
                                     </span>
                                     <motion.button
@@ -220,7 +220,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                       whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
                                       onClick={() => deleteNote(person, noteIdx)}
-                                      className="p-1.5 rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 shrink-0 cursor-pointer"
+                                      className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-bg shrink-0 cursor-pointer"
                                       aria-label={t("peopleNotesModal.deleteNoteAria")}
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
@@ -241,14 +241,14 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                       if (e.key === "Enter") addNote(person);
                                     }}
                                     placeholder={t("peopleNotesModal.addNotePlaceholder")}
-                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/40"
+                                    className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-bg-surface border border-border-subtle text-text-secondary text-sm placeholder-text-muted focus:outline-none focus:ring-1 focus:ring-accent-primary/40"
                                   />
                                   <motion.button
                                     type="button"
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => addNote(person)}
-                                    className="px-3 py-2 rounded-lg bg-[#5E6AD2]/20 text-[#7C85E0] text-sm font-medium hover:bg-[#5E6AD2]/30 cursor-pointer"
+                                    className="px-3 py-2 rounded-lg bg-accent-primary/20 text-accent-hover text-sm font-medium hover:bg-accent-primary/30 cursor-pointer"
                                   >
                                     {t("peopleNotesModal.addNote")}
                                   </motion.button>

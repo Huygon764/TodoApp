@@ -220,7 +220,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} maxWidth="max-w-xl">
                 <ModalHeader
-                  icon={<Circle className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<Circle className="w-5 h-5 text-accent-hover" />}
                   title={t("freetimeModal.title", "Freetime list")}
                   subtitle={t("freetimeModal.subtitle", "Things you want to do when you have time")}
                   onClose={onClose}
@@ -236,7 +236,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
                 <div className="px-6 pt-4">
                   {totalCount > 0 && (
-                    <div className="flex items-center justify-between mb-3 text-xs text-slate-500">
+                    <div className="flex items-center justify-between mb-3 text-xs text-text-muted">
                       <span>
                         {t("dayTodo.completedCount", {
                           done: completedCount,
@@ -247,9 +247,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     </div>
                   )}
                   {totalCount > 0 && (
-                    <div className="relative h-1.5 bg-linear-surface rounded-full overflow-hidden mb-2">
+                    <div className="relative h-1.5 bg-bg-surface rounded-full overflow-hidden mb-2">
                       <motion.div
-                        className="absolute inset-y-0 left-0 bg-linear-accent rounded-full"
+                        className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercent}%` }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
@@ -260,12 +260,12 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
                 <div className="p-4 pt-2 min-h-[200px] max-h-[400px] overflow-y-auto">
                   {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-10 text-text-muted">
                       <Circle className="w-10 h-10 mb-3 animate-spin opacity-40" />
                       <p className="text-sm">Loading freetime tasks...</p>
                     </div>
                   ) : items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-10 text-text-muted">
                       <Circle className="w-10 h-10 mb-3 opacity-30" />
                       <p>
                         {t("freetimeModal.emptyTitle", "No freetime tasks yet")}
@@ -292,8 +292,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             <motion.div
                               className={`flex items-center gap-4 p-3.5 rounded-xl border transition-colors duration-200 ${
                                 item.completed
-                                  ? "bg-[#5E6AD2]/5 border-[#5E6AD2]/20"
-                                  : "bg-linear-surface border-white/[0.04] hover:bg-linear-surface/80 hover:border-white/[0.1]"
+                                  ? "bg-accent-primary/5 border-accent-primary/20"
+                                  : "bg-bg-surface border-border-subtle hover:bg-bg-surface/80 hover:border-border-strong"
                               }`}
                             >
                               <motion.button
@@ -303,8 +303,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 onClick={() => handleToggle(item.id)}
                                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
-                                    ? "bg-linear-accent border-linear-accent"
-                                    : "border-slate-500 hover:border-linear-accent-hover hover:bg-[#5E6AD2]/10"
+                                    ? "bg-accent-primary border-accent-primary"
+                                    : "border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
                                 }`}
                               >
                                 <AnimatePresence mode="wait">
@@ -336,7 +336,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                     if (e.key === "Escape") cancelEdit();
                                   }}
                                   onBlur={() => saveTitle(item.id)}
-                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                  className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
                                 />
                               ) : (
                                 <span
@@ -348,8 +348,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   }
                                   className={`flex-1 cursor-text text-sm ${
                                     item.completed
-                                      ? "line-through text-slate-500"
-                                      : "text-slate-200"
+                                      ? "line-through text-text-muted"
+                                      : "text-text-secondary"
                                   }`}
                                 >
                                   {item.title}
@@ -365,7 +365,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                     prev === item.id ? null : item.id
                                   )
                                 }
-                                className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
                                 aria-label={
                                   expandedId === item.id ? "Collapse" : "Expand sub-tasks"
                                 }
@@ -377,7 +377,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 )}
                               </motion.button>
                               {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
-                                <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
                               )}
                               {dragHandle}
 
@@ -386,7 +386,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 whileHover={controlHover}
                                 whileTap={controlTap}
                                 onClick={() => handleDelete(item.id)}
-                                className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
+                                className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 cursor-pointer"
                                 aria-label={t("freetimeModal.deleteAria", "Delete")}
                               >
                                 <Trash2 className="w-4 h-4" />

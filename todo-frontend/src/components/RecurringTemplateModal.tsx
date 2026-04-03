@@ -173,13 +173,13 @@ export function RecurringTemplateModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<ListTodo className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<ListTodo className="w-5 h-5 text-accent-hover" />}
                   title={t("recurringModal.title")}
                   subtitle={t("recurringModal.subtitle")}
                   onClose={onClose}
                 />
 
-                <div className="flex border-b border-white/[0.04]">
+                <div className="flex border-b border-border-subtle">
                   {(["week", "month", "year"] as const).map((tab) => (
                     <button
                       key={tab}
@@ -187,8 +187,8 @@ export function RecurringTemplateModal({
                       onClick={() => setActiveTab(tab)}
                       className={`flex-1 py-3 text-sm font-medium transition-colors ${
                         activeTab === tab
-                          ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
-                          : "text-slate-500 hover:text-slate-300"
+                          ? "text-accent-hover border-b-2 border-accent-primary bg-accent-primary/5"
+                          : "text-text-muted hover:text-text-secondary"
                       }`}
                     >
                       {tab === "week"
@@ -201,10 +201,10 @@ export function RecurringTemplateModal({
                 </div>
 
                 {/* Context selector per tab (single-day context, like DateTemplateModal) */}
-                <div className="p-4 border-b border-white/[0.04]">
+                <div className="p-4 border-b border-border-subtle">
                   {activeTab === "week" && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-slate-400">
+                      <span className="text-xs font-medium text-text-tertiary">
                         {t("recurringModal.tabWeek")}:
                       </span>
                       <div className="flex gap-1 flex-wrap">
@@ -225,8 +225,8 @@ export function RecurringTemplateModal({
                               onClick={() => setWeeklyContextDay(day.value)}
                               className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                                 active
-                                  ? "bg-[#5E6AD2]/20 border-[#5E6AD2]/60 text-[#7C85E0]"
-                                  : "bg-slate-800/60 border-white/5 text-slate-400 hover:bg-slate-700/60 hover:text-slate-200"
+                                  ? "bg-accent-primary/20 border-accent-primary/60 text-accent-hover"
+                                  : "bg-bg-surface/60 border-border-subtle text-text-tertiary hover:bg-bg-surface/60 hover:text-text-secondary"
                               }`}
                             >
                               {day.label}
@@ -239,13 +239,13 @@ export function RecurringTemplateModal({
 
                   {activeTab === "month" && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-slate-400">
+                      <span className="text-xs font-medium text-text-tertiary">
                         {t("recurringModal.tabMonth")}:
                       </span>
                       <select
                         value={monthlyContextDay}
                         onChange={(e) => setMonthlyContextDay(Number(e.target.value) || 1)}
-                        className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
+                        className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-3 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                       >
                         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                           <option key={d} value={d}>
@@ -258,10 +258,10 @@ export function RecurringTemplateModal({
 
                   {activeTab === "year" && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-slate-400">
+                      <span className="text-xs font-medium text-text-tertiary">
                         {t("recurringModal.tabYear")}:
                       </span>
-                      <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <div className="flex items-center gap-2 text-xs text-text-secondary">
                         <span>
                           {String(yearlyContext.day).padStart(2, "0")}/
                           {String(yearlyContext.month).padStart(2, "0")}
@@ -275,7 +275,7 @@ export function RecurringTemplateModal({
                               month: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
+                          className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                         >
                           {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                             <option key={m} value={m}>
@@ -291,7 +291,7 @@ export function RecurringTemplateModal({
                               day: Number(e.target.value) || 1,
                             }))
                           }
-                          className="rounded-lg bg-linear-surface border border-white/10 text-xs text-slate-200 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#5E6AD2]/60 focus:border-[#5E6AD2]/60"
+                          className="rounded-lg bg-bg-surface border border-border-strong text-xs text-text-secondary px-2 py-1 focus:outline-none focus:ring-1 focus:ring-accent-primary/60 focus:border-accent-primary/60"
                         >
                           {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                             <option key={d} value={d}>
@@ -315,7 +315,7 @@ export function RecurringTemplateModal({
 
                 <div className="p-4 max-h-[300px] overflow-y-auto">
                   {visibleItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <ListTodo className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("recurringModal.empty")}</p>
                     </div>
@@ -330,7 +330,7 @@ export function RecurringTemplateModal({
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               exit={{ opacity: 0, x: 10 }}
-                              className="rounded-xl bg-slate-700/30 border border-white/[0.04] hover:bg-slate-700/50 group transition-all duration-200"
+                              className="rounded-xl bg-bg-surface/30 border border-border-subtle hover:bg-bg-surface/50 group transition-all duration-200"
                             >
                               <div className="flex items-center gap-3 p-3">
                                 {editingIndex === idx ? (
@@ -344,7 +344,7 @@ export function RecurringTemplateModal({
                                       if (e.key === "Escape") cancelEdit();
                                     }}
                                     onBlur={() => saveRecurringTitle(idx)}
-                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
                                   />
                                 ) : (
                                   <span
@@ -354,7 +354,7 @@ export function RecurringTemplateModal({
                                     onKeyDown={(e) =>
                                       e.key === "Enter" && handleTitleClick(idx)
                                     }
-                                    className="flex-1 text-slate-200 cursor-text"
+                                    className="flex-1 text-text-secondary cursor-text"
                                   >
                                     {item.title}
                                   </span>
@@ -366,7 +366,7 @@ export function RecurringTemplateModal({
                                   onClick={() =>
                                     setExpandedIdx((prev) => (prev === idx ? null : idx))
                                   }
-                                  className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+                                  className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
                                 >
                                   {expandedIdx === idx ? (
                                     <ChevronDown className="w-4 h-4" />
@@ -375,7 +375,7 @@ export function RecurringTemplateModal({
                                   )}
                                 </motion.button>
                                 {(item.subTasks ?? []).length > 0 && expandedIdx !== idx && (
-                                  <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                  <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
                                 )}
                                 <motion.button
                                   type="button"
@@ -383,7 +383,7 @@ export function RecurringTemplateModal({
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => deleteMutation.mutate(idx)}
                                   disabled={deleteMutation.isPending}
-                                  className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50"
+                                  className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 disabled:opacity-50"
                                   aria-label={t("recurringModal.deleteAria")}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -408,8 +408,8 @@ export function RecurringTemplateModal({
                   )}
                 </div>
 
-                <div className="p-4 border-t border-white/[0.06] bg-slate-900/30">
-                  <p className="text-xs text-slate-500 text-center">
+                <div className="p-4 border-t border-border-default bg-bg-page/30">
+                  <p className="text-xs text-text-muted text-center">
                     {t("recurringModal.footerTip")}
                   </p>
                 </div>

@@ -137,7 +137,7 @@ export function DefaultListModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={handleClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
                 <ModalHeader
-                  icon={<ListTodo className="w-5 h-5 text-[#7C85E0]" />}
+                  icon={<ListTodo className="w-5 h-5 text-accent-hover" />}
                   title={t("defaultModal.title")}
                   subtitle={t("defaultModal.subtitle")}
                   onClose={handleClose}
@@ -154,7 +154,7 @@ export function DefaultListModal({
                 {/* List */}
                 <div className="p-4 max-h-[300px] overflow-y-auto">
                   {localItems.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-slate-500">
+                    <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <ListTodo className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("defaultModal.empty")}</p>
                     </div>
@@ -170,7 +170,7 @@ export function DefaultListModal({
                           <ReorderItem key={item._id} item={item} isMobile={isMobile}>
                             {(dragHandle) => (
                               <>
-                            <div className="rounded-xl bg-linear-surface border border-white/[0.04] hover:bg-linear-surface/80 group transition-all duration-200">
+                            <div className="rounded-xl bg-bg-surface border border-border-subtle hover:bg-bg-surface/80 group transition-all duration-200">
                               <div className="flex items-center gap-3 p-3">
                                 {editingId === item._id ? (
                                   <input
@@ -183,7 +183,7 @@ export function DefaultListModal({
                                       if (e.key === "Escape") cancelEdit();
                                     }}
                                     onBlur={() => saveDefaultTitle(item._id)}
-                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-slate-200 focus:ring-0"
+                                    className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
                                   />
                                 ) : (
                                   <span
@@ -193,7 +193,7 @@ export function DefaultListModal({
                                     onKeyDown={(e) =>
                                       e.key === "Enter" && handleTitleClick(item._id)
                                     }
-                                    className="flex-1 text-slate-200 cursor-text"
+                                    className="flex-1 text-text-secondary cursor-text"
                                   >
                                     {item.title}
                                   </span>
@@ -205,7 +205,7 @@ export function DefaultListModal({
                                   onClick={() =>
                                     setExpandedId((prev) => (prev === item._id ? null : item._id))
                                   }
-                                  className="p-2 rounded-lg text-slate-500 hover:text-linear-accent-hover hover:bg-linear-surface transition-all duration-200 cursor-pointer"
+                                  className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
                                 >
                                   {expandedId === item._id ? (
                                     <ChevronDown className="w-4 h-4" />
@@ -214,7 +214,7 @@ export function DefaultListModal({
                                   )}
                                 </motion.button>
                                 {(item.subTasks ?? []).length > 0 && expandedId !== item._id && (
-                                  <span className="text-xs text-[#7C85E0] font-medium">[{(item.subTasks ?? []).length}]</span>
+                                  <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
                                 )}
                                 {dragHandle}
                                 <motion.button
@@ -223,7 +223,7 @@ export function DefaultListModal({
                                   whileTap={controlTap}
                                   onClick={() => deleteMutation.mutate(item._id)}
                                   disabled={deleteMutation.isPending}
-                                  className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                  className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 disabled:opacity-50 cursor-pointer"
                                   aria-label={t("defaultModal.deleteAria")}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -251,8 +251,8 @@ export function DefaultListModal({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-white/[0.06] bg-slate-900/30">
-                  <p className="text-xs text-slate-500 text-center">
+                <div className="p-4 border-t border-border-default bg-bg-page/30">
+                  <p className="text-xs text-text-muted text-center">
                     💡 {t("defaultModal.footerTip")}
                   </p>
                 </div>

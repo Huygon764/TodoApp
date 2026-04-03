@@ -62,20 +62,20 @@ function ListEditor({
           exit={{ opacity: 0, x: 10 }}
           className="flex gap-2"
         >
-          <span className="text-slate-500 mt-2.5 w-5 shrink-0">•</span>
+          <span className="text-text-muted mt-2.5 w-5 shrink-0">•</span>
           <input
             type="text"
             value={value}
             onChange={(e) => setAt(i, e.target.value)}
             placeholder={placeholder}
-            className="flex-1 px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40"
+            className="flex-1 px-3 py-2 rounded-lg bg-bg-surface border border-border-subtle text-slate-100 placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40"
           />
           <motion.button
             type="button"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => remove(i)}
-            className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+            className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg shrink-0"
             aria-label={deleteAria}
           >
             <Trash2 className="w-4 h-4" />
@@ -87,7 +87,7 @@ function ListEditor({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={add}
-        className="flex items-center gap-2 text-sm text-slate-500 hover:text-linear-accent-hover transition-colors"
+        className="flex items-center gap-2 text-sm text-text-muted hover:text-accent-hover transition-colors"
       >
         <Plus className="w-4 h-4" />
         {addLabel}
@@ -187,7 +187,7 @@ export function ReviewModal({
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
                 <form onSubmit={handleSubmit}>
                   <ModalHeader
-                    icon={<FileText className="w-5 h-5 text-[#7C85E0]" />}
+                    icon={<FileText className="w-5 h-5 text-accent-hover" />}
                     title={t("reviewModal.title")}
                     subtitle={activeTab === "week"
                       ? formatWeekPeriodLabel(period)
@@ -208,7 +208,7 @@ export function ReviewModal({
                                     : getPrevMonthPeriod(period)
                                 )
                               }
-                              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                              className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
                               title={t("dateNav.prevAria", "Previous period")}
                               aria-label={t("dateNav.prevAria", "Previous period")}
                             >
@@ -225,7 +225,7 @@ export function ReviewModal({
                                     : getNextMonthPeriod(period)
                                 )
                               }
-                              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                              className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
                               title={t("dateNav.nextAria", "Next period")}
                               aria-label={t("dateNav.nextAria", "Next period")}
                             >
@@ -239,7 +239,7 @@ export function ReviewModal({
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={onOpenHistory}
-                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-linear-surface transition-all duration-200"
+                            className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
                             title={t("reviewModal.historyTitle")}
                           >
                             <History className="w-5 h-5" />
@@ -250,7 +250,7 @@ export function ReviewModal({
                   />
 
                   {!typeProp && (
-                    <div className="flex border-b border-white/[0.04]">
+                    <div className="flex border-b border-border-subtle">
                       {(["week", "month"] as const).map((tab) => (
                         <button
                           key={tab}
@@ -258,8 +258,8 @@ export function ReviewModal({
                           onClick={() => setActiveTab(tab)}
                           className={`flex-1 py-3 text-sm font-medium transition-colors ${
                             activeTab === tab
-                              ? "text-[#7C85E0] border-b-2 border-linear-accent bg-[#5E6AD2]/5"
-                              : "text-slate-500 hover:text-slate-300"
+                              ? "text-accent-hover border-b-2 border-accent-primary bg-accent-primary/5"
+                              : "text-text-muted hover:text-text-secondary"
                           }`}
                         >
                           {tab === "week" ? t("goalModal.tabWeek") : t("goalModal.tabMonth")}
@@ -270,7 +270,7 @@ export function ReviewModal({
 
                   <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">
+                      <label className="block text-sm font-medium text-text-tertiary mb-2">
                         {t("reviewModal.goodLabel")}
                       </label>
                       <ListEditor
@@ -282,7 +282,7 @@ export function ReviewModal({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">
+                      <label className="block text-sm font-medium text-text-tertiary mb-2">
                         {t("reviewModal.badLabel")}
                       </label>
                       <ListEditor
@@ -294,7 +294,7 @@ export function ReviewModal({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">
+                      <label className="block text-sm font-medium text-text-tertiary mb-2">
                         {t("reviewModal.notesLabel")}
                       </label>
                       <textarea
@@ -302,14 +302,14 @@ export function ReviewModal({
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder={t("reviewModal.notesPlaceholder")}
                         rows={4}
-                        className="w-full px-3 py-2 rounded-lg bg-linear-surface border border-white/[0.04] text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#5E6AD2]/40 resize-y"
+                        className="w-full px-3 py-2 rounded-lg bg-bg-surface border border-border-subtle text-slate-100 placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 resize-y"
                       />
                     </div>
                   </div>
 
-                  <div className="p-4 border-t border-white/[0.06] bg-slate-900/30 flex items-center justify-between gap-3">
+                  <div className="p-4 border-t border-border-default bg-bg-page/30 flex items-center justify-between gap-3">
                     {savedMessage && (
-                      <span className="text-sm text-[#7C85E0] animate-pulse">
+                      <span className="text-sm text-accent-hover animate-pulse">
                         {t("reviewModal.saved")}
                       </span>
                     )}
@@ -319,7 +319,7 @@ export function ReviewModal({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       disabled={saveMutation.isPending}
-                      className="px-5 py-2.5 rounded-xl bg-linear-accent hover:bg-linear-accent-hover text-white font-semibold transition-all disabled:opacity-50"
+                      className="px-5 py-2.5 rounded-xl bg-accent-primary hover:bg-accent-hover text-white font-semibold transition-all disabled:opacity-50"
                     >
                       {saveMutation.isPending ? t("reviewModal.saving") : t("reviewModal.save")}
                     </motion.button>

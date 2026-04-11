@@ -89,6 +89,7 @@ jobs:
             --region=${{ vars.GCP_LOCATION }} \
             --platform=managed \
             --port=3000 \
+            --service-account=${{ vars.GCP_SERVICE_ACCOUNT_NAME }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com \
             --set-secrets=MONGODB_URI=MONGODB_URI:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest \
             --allow-unauthenticated \
             --min-instances=0 \

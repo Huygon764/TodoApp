@@ -40,11 +40,11 @@ cd TodoApp
 ```bash
 # Backend
 cd todo-backend
-yarn install
+bun install
 
 # Frontend
 cd ../todo-frontend
-yarn install
+bun install
 ```
 
 ### 3. Setup environment variables
@@ -74,11 +74,11 @@ GEMINI_API_KEY=
 ```bash
 # Terminal 1 - Backend
 cd todo-backend
-yarn dev
+bun run dev
 
 # Terminal 2 - Frontend
 cd todo-frontend
-yarn dev
+bun run dev
 ```
 
 - Backend: http://localhost:5000

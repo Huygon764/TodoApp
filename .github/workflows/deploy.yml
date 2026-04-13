@@ -14,30 +14,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: |
-            todo-backend/yarn.lock
-            todo-frontend/yarn.lock
+          bun-version: "1.2"
 
       - name: Install backend dependencies
         working-directory: ./todo-backend
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Backend typecheck
         working-directory: ./todo-backend
-        run: yarn typecheck
+        run: bun run typecheck
 
       - name: Install frontend dependencies
         working-directory: ./todo-frontend
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Frontend typecheck
         working-directory: ./todo-frontend
-        run: yarn typecheck
+        run: bun run typecheck
 
   build-and-deploy:
     name: Build & Deploy to GCP

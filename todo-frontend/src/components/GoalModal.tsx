@@ -109,13 +109,17 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   });
 
   useEffect(() => {
-    if (isOpen && goal != null) {
+    if (!isOpen) return;
+    if (goal != null) {
       const next = addIdsToItems(goal.items ?? []).sort((a, b) => {
         if (a.completed === b.completed) return a.order - b.order;
         return a.completed ? 1 : -1;
       });
       setLocalItems(next);
       initialOrderRef.current = next.map((i) => i.id).join(",");
+    } else {
+      setLocalItems([]);
+      initialOrderRef.current = "";
     }
   }, [isOpen, goal]);
 

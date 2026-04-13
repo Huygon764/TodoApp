@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { ReactNode, RefObject } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ModalContainerProps {
   isOpen: boolean;
@@ -12,6 +12,8 @@ interface ModalContainerProps {
   zContent?: string;
 }
 
+const EXIT_DURATION_MS = 220;
+
 export function ModalContainer({
   isOpen,
   onClose,
@@ -21,46 +23,50 @@ export function ModalContainer({
   zBackdrop = "z-[60]",
   zContent = "z-[70]",
 }: ModalContainerProps) {
-  // Force cleanup stuck exit animations when returning to a backgrounded tab.
-  // Browsers pause requestAnimationFrame when a tab is hidden, so framer-motion
-  // exit animations never complete and the overlay stays in the DOM.
-  const [animKey, setAnimKey] = useState(0);
+  // Drive mount state from React, not framer-motion's AnimatePresence.
+  // AnimatePresence can leave the backdrop stuck in the DOM (opacity: 0) when
+  // nested layout-animated descendants disturb its exit tracking.
+  const [shouldRender, setShouldRender] = useState(isOpen);
+
   useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === "visible" && !isOpen) {
-        setAnimKey((k) => k + 1);
-      }
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
+    if (isOpen) {
+      setShouldRender(true);
+      return;
+    }
+    const timer = setTimeout(() => setShouldRender(false), EXIT_DURATION_MS);
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
+  if (!shouldRender) return null;
+
   return (
-    <AnimatePresence key={animKey}>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${zBackdrop}`}
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
-          >
-            <div className={`relative w-full ${maxWidth} pointer-events-auto`} ref={contentRef as React.RefObject<HTMLDivElement>}>
-              <div className="relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden">
-                {children}
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: EXIT_DURATION_MS / 1000 }}
+        onClick={onClose}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${zBackdrop}`}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={
+          isOpen
+            ? { opacity: 1, scale: 1, y: 0 }
+            : { opacity: 0, scale: 0.95, y: 20 }
+        }
+        transition={{ duration: EXIT_DURATION_MS / 1000 }}
+        className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
+      >
+        <div
+          className={`relative w-full ${maxWidth} pointer-events-auto`}
+          ref={contentRef as React.RefObject<HTMLDivElement>}
+        >
+          <div className="relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden">
+            {children}
+          </div>
+        </div>
+      </motion.div>
+    </>
   );
 }

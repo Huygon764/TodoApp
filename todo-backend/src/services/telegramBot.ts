@@ -2,38 +2,38 @@ import { Telegraf, Context, Markup } from "telegraf";
 import { message } from "telegraf/filters";
 import { env } from "../config/index.js";
 import { User, BackupRequest } from "../models/index.js";
-import { formatDateVi } from "../utils/index.js";
+import { formatDate } from "../utils/index.js";
 import { runBackupForRequest } from "./backupService.js";
 import type { RequestHandler } from "express";
 
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 5000;
 
-const MESSAGES_VI = {
+const MESSAGES = {
   START_HEADER: "Todo App Bot\n\nCommands:\n",
-  HELP_HEADER: "Huong dan:\n\n",
+  HELP_HEADER: "Help:\n\n",
   COMMAND_LIST:
-    "/register <username> <password> - Tao user moi\n" +
-    "/remove <username> - Xoa user\n" +
-    "/list - Xem danh sach users\n" +
+    "/register <username> <password> - Create a new user\n" +
+    "/remove <username> - Remove a user\n" +
+    "/list - Show user list\n" +
     "/backup - Back up MongoDB now",
-  REGISTER_USAGE: "Su dung: /register <username> <password>",
-  USERNAME_LENGTH: "Username phai tu 3-30 ky tu.",
-  USERNAME_CHARS: "Username chi duoc chua chu cai, so va dau gach duoi.",
-  PASSWORD_LENGTH: "Password phai it nhat 6 ky tu.",
-  USERNAME_EXISTS: (name: string) => `Username "${name}" da ton tai.`,
+  REGISTER_USAGE: "Usage: /register <username> <password>",
+  USERNAME_LENGTH: "Username must be 3-30 characters.",
+  USERNAME_CHARS: "Username may only contain letters, digits, and underscores.",
+  PASSWORD_LENGTH: "Password must be at least 6 characters.",
+  USERNAME_EXISTS: (name: string) => `Username "${name}" already exists.`,
   REGISTER_SUCCESS: (name: string, pass: string, dateStr: string) =>
-    `Tao user thanh cong!\n\nUsername: ${name}\nPassword: ${pass}\nNgay tao: ${dateStr}`,
-  REGISTER_ERROR: "Co loi xay ra khi tao user.",
-  REMOVE_USAGE: "Su dung: /remove <username>",
-  USER_NOT_FOUND: (name: string) => `Khong tim thay user "${name}".`,
-  REMOVE_SUCCESS: (name: string) => `Da xoa user "${name}" thanh cong!`,
-  REMOVE_ERROR: "Co loi xay ra khi xoa user.",
-  NO_USERS: "Chua co user nao.",
-  USER_LIST_HEADER: (count: number) => `Danh sach users (${count}):\n\n`,
-  NEVER_LOGGED_IN: "Chua dang nhap",
-  LOGIN_LABEL: "Dang nhap",
-  LIST_ERROR: "Co loi xay ra khi lay danh sach users.",
+    `User created successfully!\n\nUsername: ${name}\nPassword: ${pass}\nCreated at: ${dateStr}`,
+  REGISTER_ERROR: "An error occurred while creating the user.",
+  REMOVE_USAGE: "Usage: /remove <username>",
+  USER_NOT_FOUND: (name: string) => `User "${name}" not found.`,
+  REMOVE_SUCCESS: (name: string) => `User "${name}" removed successfully.`,
+  REMOVE_ERROR: "An error occurred while removing the user.",
+  NO_USERS: "No users yet.",
+  USER_LIST_HEADER: (count: number) => `User list (${count}):\n\n`,
+  NEVER_LOGGED_IN: "Never logged in",
+  LOGIN_LABEL: "Last login",
+  LIST_ERROR: "An error occurred while fetching the user list.",
   NO_PERMISSION: "You do not have permission to use this bot.",
   BACKUP_PROMPT: (dateStr: string) =>
     `It's the 1st of ${dateStr}. Do you want to back up MongoDB now?`,
@@ -68,7 +68,7 @@ class TelegramBot {
 
   private requireAdmin(ctx: Context): boolean {
     if (!this.isAdmin(ctx)) {
-      ctx.reply(MESSAGES_VI.NO_PERMISSION);
+      ctx.reply(MESSAGES.NO_PERMISSION);
       return false;
     }
     return true;
@@ -76,12 +76,12 @@ class TelegramBot {
 
   private handleStart(ctx: Context): void {
     if (!this.requireAdmin(ctx)) return;
-    ctx.reply(MESSAGES_VI.START_HEADER + MESSAGES_VI.COMMAND_LIST);
+    ctx.reply(MESSAGES.START_HEADER + MESSAGES.COMMAND_LIST);
   }
 
   private handleHelp(ctx: Context): void {
     if (!this.requireAdmin(ctx)) return;
-    ctx.reply(MESSAGES_VI.HELP_HEADER + MESSAGES_VI.COMMAND_LIST);
+    ctx.reply(MESSAGES.HELP_HEADER + MESSAGES.COMMAND_LIST);
   }
 
   private async handleRegister(ctx: Context & { message: { text: string } }): Promise<void> {
@@ -90,25 +90,25 @@ class TelegramBot {
       const text = ctx.message.text;
       const args = text.split(" ").slice(1);
       if (args.length < 2) {
-        ctx.reply(MESSAGES_VI.REGISTER_USAGE);
+        ctx.reply(MESSAGES.REGISTER_USAGE);
         return;
       }
       const [username, password] = args;
       if (username.length < 3 || username.length > 30) {
-        ctx.reply(MESSAGES_VI.USERNAME_LENGTH);
+        ctx.reply(MESSAGES.USERNAME_LENGTH);
         return;
       }
       if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        ctx.reply(MESSAGES_VI.USERNAME_CHARS);
+        ctx.reply(MESSAGES.USERNAME_CHARS);
         return;
       }
       if (password.length < 6) {
-        ctx.reply(MESSAGES_VI.PASSWORD_LENGTH);
+        ctx.reply(MESSAGES.PASSWORD_LENGTH);
         return;
       }
       const existingUser = await User.findByUsername(username);
       if (existingUser) {
-        ctx.reply(MESSAGES_VI.USERNAME_EXISTS(username));
+        ctx.reply(MESSAGES.USERNAME_EXISTS(username));
         return;
       }
       const newUser = new User({
@@ -117,10 +117,10 @@ class TelegramBot {
         displayName: username,
       });
       await newUser.save();
-      ctx.reply(MESSAGES_VI.REGISTER_SUCCESS(username, password, formatDateVi(new Date())));
+      ctx.reply(MESSAGES.REGISTER_SUCCESS(username, password, formatDate(new Date())));
     } catch (error) {
       console.error("Error registering user:", error);
-      ctx.reply(MESSAGES_VI.REGISTER_ERROR);
+      ctx.reply(MESSAGES.REGISTER_ERROR);
     }
   }
 
@@ -129,20 +129,20 @@ class TelegramBot {
     try {
       const args = ctx.message.text.split(" ").slice(1);
       if (args.length < 1) {
-        ctx.reply(MESSAGES_VI.REMOVE_USAGE);
+        ctx.reply(MESSAGES.REMOVE_USAGE);
         return;
       }
       const [username] = args;
       const user = await User.findByUsername(username);
       if (!user) {
-        ctx.reply(MESSAGES_VI.USER_NOT_FOUND(username));
+        ctx.reply(MESSAGES.USER_NOT_FOUND(username));
         return;
       }
       await User.findByIdAndDelete(user._id);
-      ctx.reply(MESSAGES_VI.REMOVE_SUCCESS(username));
+      ctx.reply(MESSAGES.REMOVE_SUCCESS(username));
     } catch (error) {
       console.error("Error removing user:", error);
-      ctx.reply(MESSAGES_VI.REMOVE_ERROR);
+      ctx.reply(MESSAGES.REMOVE_ERROR);
     }
   }
 
@@ -153,21 +153,21 @@ class TelegramBot {
         createdAt: -1,
       });
       if (users.length === 0) {
-        ctx.reply(MESSAGES_VI.NO_USERS);
+        ctx.reply(MESSAGES.NO_USERS);
         return;
       }
       const userList = users
         .map((user, index) => {
           const lastLogin = user.lastLogin
-            ? formatDateVi(user.lastLogin)
-            : MESSAGES_VI.NEVER_LOGGED_IN;
-          return `${index + 1}. ${user.username} (${user.displayName})\n   -> ${MESSAGES_VI.LOGIN_LABEL}: ${lastLogin}`;
+            ? formatDate(user.lastLogin)
+            : MESSAGES.NEVER_LOGGED_IN;
+          return `${index + 1}. ${user.username} (${user.displayName})\n   -> ${MESSAGES.LOGIN_LABEL}: ${lastLogin}`;
         })
         .join("\n\n");
-      ctx.reply(MESSAGES_VI.USER_LIST_HEADER(users.length) + userList);
+      ctx.reply(MESSAGES.USER_LIST_HEADER(users.length) + userList);
     } catch (error) {
       console.error("Error listing users:", error);
-      ctx.reply(MESSAGES_VI.LIST_ERROR);
+      ctx.reply(MESSAGES.LIST_ERROR);
     }
   }
 
@@ -202,14 +202,14 @@ class TelegramBot {
     const dateStr = `${monthName} ${today.getFullYear()}`;
     await this.bot.telegram.sendMessage(
       this.adminChatId,
-      MESSAGES_VI.BACKUP_PROMPT(dateStr),
+      MESSAGES.BACKUP_PROMPT(dateStr),
       Markup.inlineKeyboard([
         Markup.button.callback(
-          MESSAGES_VI.BACKUP_BTN_YES,
+          MESSAGES.BACKUP_BTN_YES,
           `backup:yes:${requestId}`
         ),
         Markup.button.callback(
-          MESSAGES_VI.BACKUP_BTN_NO,
+          MESSAGES.BACKUP_BTN_NO,
           `backup:no:${requestId}`
         ),
       ])
@@ -227,18 +227,18 @@ class TelegramBot {
 
     const request = await BackupRequest.findById(requestId);
     if (!request) {
-      await ctx.editMessageText(MESSAGES_VI.BACKUP_NOT_FOUND);
+      await ctx.editMessageText(MESSAGES.BACKUP_NOT_FOUND);
       return;
     }
     if (request.status !== "pending") {
-      await ctx.editMessageText(MESSAGES_VI.BACKUP_ALREADY_PROCESSING);
+      await ctx.editMessageText(MESSAGES.BACKUP_ALREADY_PROCESSING);
       return;
     }
 
     request.status = "approved";
     await request.save();
 
-    await ctx.editMessageText(MESSAGES_VI.BACKUP_STARTED);
+    await ctx.editMessageText(MESSAGES.BACKUP_STARTED);
 
     try {
       const result = await runBackupForRequest(
@@ -248,13 +248,13 @@ class TelegramBot {
       );
       await ctx.telegram.sendMessage(
         this.adminChatId,
-        MESSAGES_VI.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
+        MESSAGES.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "unknown";
       await ctx.telegram.sendMessage(
         this.adminChatId,
-        MESSAGES_VI.BACKUP_FAILED(msg)
+        MESSAGES.BACKUP_FAILED(msg)
       );
     }
   }
@@ -269,17 +269,17 @@ class TelegramBot {
     if (!requestId) return;
 
     await BackupRequest.findByIdAndUpdate(requestId, { status: "denied" });
-    await ctx.editMessageText(MESSAGES_VI.BACKUP_DENIED);
+    await ctx.editMessageText(MESSAGES.BACKUP_DENIED);
   }
 
   private async handleBackupCommand(ctx: Context): Promise<void> {
     if (!this.requireAdmin(ctx)) return;
     if (!this.bot || !this.adminChatId) {
-      ctx.reply(MESSAGES_VI.BACKUP_NOT_CONFIGURED);
+      ctx.reply(MESSAGES.BACKUP_NOT_CONFIGURED);
       return;
     }
     const request = await BackupRequest.create({ status: "approved" });
-    await ctx.reply(MESSAGES_VI.BACKUP_STARTED);
+    await ctx.reply(MESSAGES.BACKUP_STARTED);
     try {
       const result = await runBackupForRequest(
         request.id,
@@ -287,11 +287,11 @@ class TelegramBot {
         this.adminChatId
       );
       await ctx.reply(
-        MESSAGES_VI.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
+        MESSAGES.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "unknown";
-      await ctx.reply(MESSAGES_VI.BACKUP_FAILED(msg));
+      await ctx.reply(MESSAGES.BACKUP_FAILED(msg));
     }
   }
 

@@ -1,5 +1,5 @@
-export const formatDateVi = (date: Date): string => {
-  return date.toLocaleString("vi-VN", {
+export const formatDate = (date: Date): string => {
+  return date.toLocaleString("en-US", {
     timeZone: "Asia/Ho_Chi_Minh",
     year: "numeric",
     month: "long",

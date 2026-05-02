@@ -14,6 +14,7 @@ interface Env {
   telegramChatId: string | null;
   telegramWebhookDomain: string | null;
   geminiApiKey: string | null;
+  cronSecret: string | null;
 }
 
 function requireEnv(key: string): string {
@@ -40,4 +41,11 @@ export const env: Env = {
   telegramChatId: optionalEnv("TELEGRAM_CHAT_ID"),
   telegramWebhookDomain: optionalEnv("TELEGRAM_WEBHOOK_DOMAIN"),
   geminiApiKey: optionalEnv("GEMINI_API_KEY"),
+  cronSecret: optionalEnv("CRON_SECRET"),
 };
+
+if (!env.cronSecret) {
+  console.warn(
+    "[env] CRON_SECRET not set - /api/internal/cron/* will reject all requests"
+  );
+}

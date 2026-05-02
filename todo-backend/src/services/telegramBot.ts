@@ -1,8 +1,9 @@
-import { Telegraf, Context } from "telegraf";
+import { Telegraf, Context, Markup } from "telegraf";
 import { message } from "telegraf/filters";
 import { env } from "../config/index.js";
-import { User } from "../models/index.js";
+import { User, BackupRequest } from "../models/index.js";
 import { formatDateVi } from "../utils/index.js";
+import { runBackupForRequest } from "./backupService.js";
 import type { RequestHandler } from "express";
 
 const MAX_RETRIES = 5;
@@ -14,7 +15,8 @@ const MESSAGES_VI = {
   COMMAND_LIST:
     "/register <username> <password> - Tao user moi\n" +
     "/remove <username> - Xoa user\n" +
-    "/list - Xem danh sach users",
+    "/list - Xem danh sach users\n" +
+    "/backup - Backup MongoDB ngay",
   REGISTER_USAGE: "Su dung: /register <username> <password>",
   USERNAME_LENGTH: "Username phai tu 3-30 ky tu.",
   USERNAME_CHARS: "Username chi duoc chua chu cai, so va dau gach duoi.",
@@ -33,6 +35,18 @@ const MESSAGES_VI = {
   LOGIN_LABEL: "Dang nhap",
   LIST_ERROR: "Co loi xay ra khi lay danh sach users.",
   NO_PERMISSION: "You do not have permission to use this bot.",
+  BACKUP_PROMPT: (dateStr: string) =>
+    `Mung 1 thang ${dateStr} roi! Backup MongoDB ngay khong?`,
+  BACKUP_BTN_YES: "Yes, backup ngay",
+  BACKUP_BTN_NO: "Khong, bo qua",
+  BACKUP_NOT_FOUND: "Backup request khong ton tai hoac da het han.",
+  BACKUP_ALREADY_PROCESSING: "Backup dang chay, vui long doi...",
+  BACKUP_DENIED: "Da bo qua backup thang nay.",
+  BACKUP_STARTED: "Bat dau dump database, se gui file khi xong...",
+  BACKUP_SUCCESS: (sizeMb: string) =>
+    `Backup thanh cong! File size: ${sizeMb} MB`,
+  BACKUP_FAILED: (msg: string) => `Backup that bai: ${msg}`,
+  BACKUP_NOT_CONFIGURED: "Telegram bot chua duoc cau hinh.",
 } as const;
 
 class TelegramBot {
@@ -165,10 +179,119 @@ class TelegramBot {
     this.bot.command("register", (ctx) => this.handleRegister(ctx));
     this.bot.command("remove", (ctx) => this.handleRemove(ctx));
     this.bot.command("list", (ctx) => this.handleList(ctx));
+    this.bot.command("backup", (ctx) => this.handleBackupCommand(ctx));
+    this.bot.action(/^backup:yes:([a-f0-9]+)$/i, (ctx) =>
+      this.handleBackupYes(ctx)
+    );
+    this.bot.action(/^backup:no:([a-f0-9]+)$/i, (ctx) =>
+      this.handleBackupNo(ctx)
+    );
 
     this.bot.on(message("text"), (ctx) => {
       if (!this.requireAdmin(ctx)) return;
     });
+  }
+
+  async sendBackupPrompt(requestId: string): Promise<void> {
+    if (!this.bot || !this.adminChatId) {
+      console.warn("[backup] bot not configured, cannot send backup prompt");
+      return;
+    }
+    const today = new Date();
+    const dateStr = `${today.getMonth() + 1}/${today.getFullYear()}`;
+    await this.bot.telegram.sendMessage(
+      this.adminChatId,
+      MESSAGES_VI.BACKUP_PROMPT(dateStr),
+      Markup.inlineKeyboard([
+        Markup.button.callback(
+          MESSAGES_VI.BACKUP_BTN_YES,
+          `backup:yes:${requestId}`
+        ),
+        Markup.button.callback(
+          MESSAGES_VI.BACKUP_BTN_NO,
+          `backup:no:${requestId}`
+        ),
+      ])
+    );
+  }
+
+  private async handleBackupYes(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    await ctx.answerCbQuery();
+
+    const data = (ctx.callbackQuery as { data?: string })?.data;
+    const match = data?.match(/^backup:yes:([a-f0-9]+)$/i);
+    const requestId = match?.[1];
+    if (!requestId || !this.bot || !this.adminChatId) return;
+
+    const request = await BackupRequest.findById(requestId);
+    if (!request) {
+      await ctx.editMessageText(MESSAGES_VI.BACKUP_NOT_FOUND);
+      return;
+    }
+    if (request.status !== "pending") {
+      await ctx.editMessageText(MESSAGES_VI.BACKUP_ALREADY_PROCESSING);
+      return;
+    }
+
+    request.status = "approved";
+    await request.save();
+
+    await ctx.editMessageText(MESSAGES_VI.BACKUP_STARTED);
+
+    try {
+      const result = await runBackupForRequest(
+        requestId,
+        this.bot.telegram,
+        this.adminChatId
+      );
+      await ctx.telegram.sendMessage(
+        this.adminChatId,
+        MESSAGES_VI.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "unknown";
+      await ctx.telegram.sendMessage(
+        this.adminChatId,
+        MESSAGES_VI.BACKUP_FAILED(msg)
+      );
+    }
+  }
+
+  private async handleBackupNo(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    await ctx.answerCbQuery();
+
+    const data = (ctx.callbackQuery as { data?: string })?.data;
+    const match = data?.match(/^backup:no:([a-f0-9]+)$/i);
+    const requestId = match?.[1];
+    if (!requestId) return;
+
+    await BackupRequest.findByIdAndUpdate(requestId, { status: "denied" });
+    await ctx.editMessageText(MESSAGES_VI.BACKUP_DENIED);
+  }
+
+  private async handleBackupCommand(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    if (!this.bot || !this.adminChatId) {
+      ctx.reply(MESSAGES_VI.BACKUP_NOT_CONFIGURED);
+      return;
+    }
+    const request = await BackupRequest.create({ status: "approved" });
+    await ctx.reply(MESSAGES_VI.BACKUP_STARTED);
+    try {
+      const result = await runBackupForRequest(
+        request.id,
+        this.bot.telegram,
+        this.adminChatId
+      );
+      await ctx.reply(
+        MESSAGES_VI.BACKUP_SUCCESS((result.fileSize / 1024 / 1024).toFixed(2))
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "unknown";
+      await ctx.reply(MESSAGES_VI.BACKUP_FAILED(msg));
+    }
   }
 
   private sleep(ms: number): Promise<void> {

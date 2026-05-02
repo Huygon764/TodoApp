@@ -8,6 +8,7 @@ import freetimeTodoRouter from "./freetimeTodo.js";
 import dateTemplatesRouter from "./dateTemplates.js";
 import reviewsRouter from "./reviews.js";
 import personNotesRouter from "./personNotes.js";
+import internalRouter from "./internal.js";
 
 const router = Router();
 
@@ -36,5 +37,6 @@ router.use("/freetime-todo", freetimeTodoRouter);
 router.use("/date-templates", dateTemplatesRouter);
 router.use("/reviews", reviewsRouter);
 router.use("/people-notes", personNotesRouter);
+router.use("/internal", internalRouter);
 
 export default router;

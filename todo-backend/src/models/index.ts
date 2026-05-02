@@ -7,3 +7,4 @@ export * from "./freetimeTodo.js";
 export * from "./dateTemplate.js";
 export * from "./review.js";
 export * from "./personNote.js";
+export * from "./backupRequest.js";

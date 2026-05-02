@@ -16,7 +16,7 @@ const MESSAGES_VI = {
     "/register <username> <password> - Tao user moi\n" +
     "/remove <username> - Xoa user\n" +
     "/list - Xem danh sach users\n" +
-    "/backup - Backup MongoDB ngay",
+    "/backup - Back up MongoDB now",
   REGISTER_USAGE: "Su dung: /register <username> <password>",
   USERNAME_LENGTH: "Username phai tu 3-30 ky tu.",
   USERNAME_CHARS: "Username chi duoc chua chu cai, so va dau gach duoi.",
@@ -36,17 +36,17 @@ const MESSAGES_VI = {
   LIST_ERROR: "Co loi xay ra khi lay danh sach users.",
   NO_PERMISSION: "You do not have permission to use this bot.",
   BACKUP_PROMPT: (dateStr: string) =>
-    `Mung 1 thang ${dateStr} roi! Backup MongoDB ngay khong?`,
-  BACKUP_BTN_YES: "Yes, backup ngay",
-  BACKUP_BTN_NO: "Khong, bo qua",
-  BACKUP_NOT_FOUND: "Backup request khong ton tai hoac da het han.",
-  BACKUP_ALREADY_PROCESSING: "Backup dang chay, vui long doi...",
-  BACKUP_DENIED: "Da bo qua backup thang nay.",
-  BACKUP_STARTED: "Bat dau dump database, se gui file khi xong...",
+    `It's the 1st of ${dateStr}. Do you want to back up MongoDB now?`,
+  BACKUP_BTN_YES: "Yes, back up now",
+  BACKUP_BTN_NO: "No, skip",
+  BACKUP_NOT_FOUND: "Backup request not found or has expired.",
+  BACKUP_ALREADY_PROCESSING: "Backup already in progress, please wait...",
+  BACKUP_DENIED: "Backup skipped for this month.",
+  BACKUP_STARTED: "Starting database dump, file will arrive when ready...",
   BACKUP_SUCCESS: (sizeMb: string) =>
-    `Backup thanh cong! File size: ${sizeMb} MB`,
-  BACKUP_FAILED: (msg: string) => `Backup that bai: ${msg}`,
-  BACKUP_NOT_CONFIGURED: "Telegram bot chua duoc cau hinh.",
+    `Backup successful! File size: ${sizeMb} MB`,
+  BACKUP_FAILED: (msg: string) => `Backup failed: ${msg}`,
+  BACKUP_NOT_CONFIGURED: "Telegram bot is not configured.",
 } as const;
 
 class TelegramBot {
@@ -198,7 +198,8 @@ class TelegramBot {
       return;
     }
     const today = new Date();
-    const dateStr = `${today.getMonth() + 1}/${today.getFullYear()}`;
+    const monthName = today.toLocaleString("en-US", { month: "long" });
+    const dateStr = `${monthName} ${today.getFullYear()}`;
     await this.bot.telegram.sendMessage(
       this.adminChatId,
       MESSAGES_VI.BACKUP_PROMPT(dateStr),

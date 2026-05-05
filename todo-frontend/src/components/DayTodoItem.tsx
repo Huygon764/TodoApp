@@ -30,6 +30,7 @@ interface DayTodoItemProps {
   onSubTaskAdd: (id: string) => void;
   onSubTaskToggle: (id: string, subIndex: number) => void;
   onSubTaskDelete: (id: string, subIndex: number) => void;
+  onSubTaskEdit: (id: string, subIndex: number, newTitle: string) => void;
   onNewSubTaskTitleChange: (id: string, value: string) => void;
 }
 
@@ -53,6 +54,7 @@ export function DayTodoItem({
   onSubTaskAdd,
   onSubTaskToggle,
   onSubTaskDelete,
+  onSubTaskEdit,
   onNewSubTaskTitleChange,
 }: DayTodoItemProps) {
   const { t } = useTranslation();
@@ -174,6 +176,7 @@ export function DayTodoItem({
             showCheckbox={true}
             onToggle={(subIdx) => onSubTaskToggle(item.id, subIdx)}
             onDelete={(subIdx) => onSubTaskDelete(item.id, subIdx)}
+            onEditTitle={(subIdx, val) => onSubTaskEdit(item.id, subIdx, val)}
             newSubTaskTitle={newSubTaskTitle}
             onNewSubTaskTitleChange={(val) =>
               onNewSubTaskTitleChange(item.id, val)

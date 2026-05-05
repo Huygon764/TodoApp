@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
-  CheckCircle2,
   Settings,
   Target,
   Languages,
@@ -39,12 +38,15 @@ function AppLogo() {
   const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3">
-      <div className="relative w-9 h-9">
-        <div className="relative w-full h-full bg-accent-primary rounded-xl flex items-center justify-center shadow-lg shadow-accent-primary/20">
-          <CheckCircle2 className="w-5 h-5 text-white" />
-        </div>
-      </div>
-      <span className="text-xl font-bold text-white">{t("appName")}</span>
+      <img
+        src="/favicon.png"
+        alt=""
+        draggable={false}
+        className="w-9 h-9 select-none"
+      />
+      <span className="text-xl font-bold text-white tracking-tight">
+        {t("appName")}
+      </span>
     </div>
   );
 }

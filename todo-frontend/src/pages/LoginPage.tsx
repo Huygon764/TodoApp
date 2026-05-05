@@ -38,9 +38,12 @@ const AppLogo = ({ isMobile }: { isMobile: boolean }) => (
     }
     className="relative w-16 h-16 mx-auto mb-4"
   >
-    <div className="relative w-full h-full bg-accent-primary rounded-2xl flex items-center justify-center shadow-lg shadow-accent-primary/25">
-      <span className="text-2xl font-bold text-white">✓</span>
-    </div>
+    <img
+      src="/favicon.png"
+      alt=""
+      draggable={false}
+      className="w-full h-full select-none"
+    />
   </motion.div>
 );
 

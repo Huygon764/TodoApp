@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Check, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useInlineEdit } from "@/hooks/useInlineEdit";
 
 interface SubTask {
   title: string;
@@ -13,6 +14,8 @@ interface SubTaskSectionProps {
   showCheckbox?: boolean;
   onToggle?: (subIndex: number) => void;
   onDelete: (subIndex: number) => void;
+  /** Called when subtask title is edited. If omitted, titles are read-only. */
+  onEditTitle?: (subIndex: number, newTitle: string) => void;
   newSubTaskTitle: string;
   onNewSubTaskTitleChange: (value: string) => void;
   onAddSubTask: () => void;
@@ -23,11 +26,32 @@ export function SubTaskSection({
   showCheckbox = false,
   onToggle,
   onDelete,
+  onEditTitle,
   newSubTaskTitle,
   onNewSubTaskTitleChange,
   onAddSubTask,
 }: SubTaskSectionProps) {
   const { t } = useTranslation();
+  const {
+    editingId: editingIdx,
+    editValue,
+    setEditValue,
+    editInputRef,
+    startEdit,
+    cancelEdit,
+    finishEdit,
+  } = useInlineEdit<number>();
+
+  const handleTitleClick = (idx: number, currentTitle: string) => {
+    if (!onEditTitle) return;
+    startEdit(idx, currentTitle);
+  };
+
+  const handleSave = (idx: number, currentTitle: string) => {
+    const next = finishEdit();
+    if (next == null || next === currentTitle) return;
+    onEditTitle?.(idx, next);
+  };
 
   return (
     <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-border-subtle">
@@ -51,15 +75,36 @@ export function SubTaskSection({
           ) : (
             <span className="text-text-muted shrink-0">-</span>
           )}
-          <span
-            className={`flex-1 text-sm ${
-              showCheckbox && st.completed
-                ? "line-through text-text-muted"
-                : "text-text-secondary"
-            }`}
-          >
-            {st.title}
-          </span>
+          {editingIdx === subIdx && onEditTitle ? (
+            <input
+              ref={editInputRef}
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSave(subIdx, st.title);
+                if (e.key === "Escape") cancelEdit();
+              }}
+              onBlur={() => handleSave(subIdx, st.title)}
+              className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary text-sm focus:ring-0"
+            />
+          ) : (
+            <span
+              role={onEditTitle ? "button" : undefined}
+              tabIndex={onEditTitle ? 0 : undefined}
+              onClick={() => handleTitleClick(subIdx, st.title)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && handleTitleClick(subIdx, st.title)
+              }
+              className={`flex-1 text-sm ${onEditTitle ? "cursor-text" : ""} ${
+                showCheckbox && st.completed
+                  ? "line-through text-text-muted"
+                  : "text-text-secondary"
+              }`}
+            >
+              {st.title}
+            </span>
+          )}
           <motion.button
             type="button"
             whileHover={{ scale: 1.1 }}

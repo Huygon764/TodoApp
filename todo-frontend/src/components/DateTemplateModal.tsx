@@ -137,6 +137,19 @@ export function DateTemplateModal({
     setItems(next);
   };
 
+  const editSubTask = (index: number, subIndex: number, newTitle: string) => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    const next = items.map((it, i) => {
+      if (i !== index) return it;
+      const subTasks = (it.subTasks ?? []).map((st, si) =>
+        si === subIndex ? { ...st, title: trimmed } : st,
+      );
+      return { ...it, subTasks };
+    });
+    setItems(next);
+  };
+
   const handleSave = () => {
     const normalized = items
       .map((it, i) => ({
@@ -305,6 +318,9 @@ export function DateTemplateModal({
                               <SubTaskSection
                                 subTasks={item.subTasks ?? []}
                                 onDelete={(subIdx) => deleteSubTask(index, subIdx)}
+                                onEditTitle={(subIdx, val) =>
+                                  editSubTask(index, subIdx, val)
+                                }
                                 newSubTaskTitle={newSubTaskTitle[index] ?? ""}
                                 onNewSubTaskTitleChange={(val) =>
                                   setNewSubTaskTitle((prev) => ({ ...prev, [index]: val }))

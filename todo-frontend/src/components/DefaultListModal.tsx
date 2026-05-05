@@ -127,6 +127,20 @@ export function DefaultListModal({
     patchMutation.mutate({ id: itemId, subTasks });
   };
 
+  const editSubTask = (itemId: string, subIndex: number, newTitle: string) => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    const item = localItems.find((i) => i._id === itemId);
+    if (!item) return;
+    const subTasks = (item.subTasks ?? []).map((st, i) =>
+      i === subIndex ? { ...st, title: trimmed } : st,
+    );
+    setLocalItems((prev) =>
+      prev.map((it) => (it._id === itemId ? { ...it, subTasks } : it)),
+    );
+    patchMutation.mutate({ id: itemId, subTasks });
+  };
+
   return (
     <ModalContainer isOpen={isOpen} onClose={handleClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
                 <ModalHeader
@@ -226,6 +240,9 @@ export function DefaultListModal({
                                 <SubTaskSection
                                   subTasks={item.subTasks ?? []}
                                   onDelete={(subIdx) => deleteSubTask(item._id, subIdx)}
+                                  onEditTitle={(subIdx, val) =>
+                                    editSubTask(item._id, subIdx, val)
+                                  }
                                   newSubTaskTitle={newSubTaskTitle[item._id] ?? ""}
                                   onNewSubTaskTitleChange={(val) =>
                                     setNewSubTaskTitle((prev) => ({ ...prev, [item._id]: val }))

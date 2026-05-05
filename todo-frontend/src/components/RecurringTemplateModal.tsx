@@ -157,6 +157,17 @@ export function RecurringTemplateModal({
     patchItemMutation.mutate({ idx, subTasks });
   };
 
+  const editSubTask = (idx: number, subIndex: number, newTitle: string) => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    const item = items[idx];
+    if (!item) return;
+    const subTasks = (item.subTasks ?? []).map((st, i) =>
+      i === subIndex ? { ...st, title: trimmed } : st,
+    );
+    patchItemMutation.mutate({ idx, subTasks });
+  };
+
   useModalClose(isOpen, onClose, contentRef);
 
   useEffect(() => {
@@ -393,6 +404,9 @@ export function RecurringTemplateModal({
                                 <SubTaskSection
                                   subTasks={item.subTasks ?? []}
                                   onDelete={(subIdx) => deleteSubTask(idx, subIdx)}
+                                  onEditTitle={(subIdx, val) =>
+                                    editSubTask(idx, subIdx, val)
+                                  }
                                   newSubTaskTitle={newSubTaskTitle[idx] ?? ""}
                                   onNewSubTaskTitleChange={(val) =>
                                     setNewSubTaskTitle((prev) => ({ ...prev, [idx]: val }))

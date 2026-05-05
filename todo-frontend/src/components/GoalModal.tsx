@@ -3,31 +3,31 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Trash2, Check, Circle, Target, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { X, Trash2, Check, Circle, Target, ChevronRight, ChevronDown } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { PeriodSelector } from "@/components/shared/PeriodSelector";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { useModalClose } from "@/hooks/useModalClose";
+import { useSubTaskManager } from "@/hooks/useSubTaskManager";
+import { addClientIds, removeClientIds } from "@/lib/itemIds";
+import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
 import {
   getWeekPeriod,
   getMonthPeriod,
   getYearPeriod,
   formatWeekPeriodLabel,
   formatMonthLabel,
-  getPrevWeekPeriod,
-  getNextWeekPeriod,
-  getPrevMonthPeriod,
-  getNextMonthPeriod,
-  getPrevYearPeriod,
-  getNextYearPeriod,
   getWeekOptionsForPicker,
   getMonthOptionsForPicker,
   getYearOptionsForPicker,
 } from "@/lib/datePeriod";
+import { stepPeriod } from "@/lib/periodStep";
 import type { Goal, GoalItem } from "@/types";
 
 export type GoalPeriodType = "week" | "month" | "year";
@@ -38,17 +38,13 @@ interface GoalModalProps {
 }
 
 function addIdsToItems(items: GoalItem[]): (GoalItem & { id: string })[] {
-  return items.map((item, index) => ({
-    ...item,
-    id: `goal-item-${index}-${item.title.slice(0, 8)}`,
-    subTasks: item.subTasks ?? [],
-  }));
+  return addClientIds(items, "goal-item", 8) as (GoalItem & { id: string })[];
 }
 
 function removeIdsFromItems(
   items: (GoalItem & { id: string })[]
 ): GoalItem[] {
-  return items.map(({ id, ...rest }) => rest);
+  return removeClientIds(items);
 }
 
 export function GoalModal({ isOpen, onClose }: GoalModalProps) {
@@ -70,7 +66,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const initialOrderRef = useRef<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
-  const pickerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const period =
@@ -102,19 +97,12 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   });
 
   const goal = data ?? null;
-  const itemsWithIds = addIdsToItems(goal?.items ?? []);
-  const sortedItemsFromGoal = [...itemsWithIds].sort((a, b) => {
-    if (a.completed === b.completed) return a.order - b.order;
-    return a.completed ? 1 : -1;
-  });
+  const sortedItemsFromGoal = sortItemsByCompletion(addIdsToItems(goal?.items ?? []));
 
   useEffect(() => {
     if (!isOpen) return;
     if (goal != null) {
-      const next = addIdsToItems(goal.items ?? []).sort((a, b) => {
-        if (a.completed === b.completed) return a.order - b.order;
-        return a.completed ? 1 : -1;
-      });
+      const next = sortItemsByCompletion(addIdsToItems(goal.items ?? []));
       setLocalItems(next);
       initialOrderRef.current = next.map((i) => i.id).join(",");
     } else {
@@ -124,12 +112,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   }, [isOpen, goal]);
 
   const sortedItems =
-    localItems.length > 0
-      ? [...localItems].sort((a, b) => {
-          if (a.completed === b.completed) return a.order - b.order;
-          return a.completed ? 1 : -1;
-        })
-      : sortedItemsFromGoal;
+    localItems.length > 0 ? sortItemsByCompletion(localItems) : sortedItemsFromGoal;
   const incomplete = sortedItems.filter((i) => !i.completed);
   const completed = sortedItems.filter((i) => i.completed);
 
@@ -171,38 +154,19 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   });
 
   const handleCloseRef = useRef<() => void>(onClose);
+  useModalClose(isOpen, () => handleCloseRef.current(), contentRef);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      handleCloseRef.current();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!pickerOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (pickerRef.current?.contains(e.target as Node)) return;
-      setPickerOpen(false);
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [pickerOpen]);
-
-  const handlePrevPeriod = () => {
-    if (activeTab === "week") setSelectedWeekPeriod((p) => getPrevWeekPeriod(p));
-    else if (activeTab === "month") setSelectedMonthPeriod((p) => getPrevMonthPeriod(p));
-    else setSelectedYearPeriod((p) => getPrevYearPeriod(p));
+  const stepActivePeriod = (direction: "prev" | "next") => {
+    if (activeTab === "week") {
+      setSelectedWeekPeriod((p) => stepPeriod("week", p, direction));
+    } else if (activeTab === "month") {
+      setSelectedMonthPeriod((p) => stepPeriod("month", p, direction));
+    } else {
+      setSelectedYearPeriod((p) => stepPeriod("year", p, direction));
+    }
   };
-
-  const handleNextPeriod = () => {
-    if (activeTab === "week") setSelectedWeekPeriod((p) => getNextWeekPeriod(p));
-    else if (activeTab === "month") setSelectedMonthPeriod((p) => getNextMonthPeriod(p));
-    else setSelectedYearPeriod((p) => getNextYearPeriod(p));
-  };
+  const handlePrevPeriod = () => stepActivePeriod("prev");
+  const handleNextPeriod = () => stepActivePeriod("next");
 
   const pickerOptions =
     activeTab === "week"
@@ -246,63 +210,23 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       }
       return { ...item, completed: nextCompleted };
     });
-    const incomplete = toggled.filter((it) => !it.completed);
-    const completedItems = toggled.filter((it) => it.completed);
-    const reordered = [
-      ...incomplete.map((it, idx) => ({ ...it, order: idx })),
-      ...completedItems.map((it, idx) => ({
-        ...it,
-        order: incomplete.length + idx,
-      })),
-    ];
+    const reordered = regroupByCompletion(toggled);
     setLocalItems(reordered);
     patchMutation.mutate(removeIdsFromItems(reordered));
     setTimeout(() => setPendingToggle(null), 150);
   };
 
+  const subTaskManager = useSubTaskManager(localItems, (next) => {
+    setLocalItems(next);
+    patchMutation.mutate(removeIdsFromItems(next));
+  });
+
   const addSubTask = (itemId: string, title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    const updated = localItems.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = item.subTasks ?? [];
-      return {
-        ...item,
-        subTasks: [...subTasks, { title: trimmed, completed: false }],
-      };
-    });
-    setLocalItems(updated);
-    patchMutation.mutate(removeIdsFromItems(updated));
+    subTaskManager.addSubTask(itemId, title);
     setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
   };
-
-  const toggleSubTask = (itemId: string, subIndex: number) => {
-    const updated = localItems.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).map((st, i) =>
-        i === subIndex ? { ...st, completed: !st.completed } : st
-      );
-      const allCompleted =
-        subTasks.length > 0 && subTasks.every((st) => st.completed);
-      return {
-        ...item,
-        subTasks,
-        completed: allCompleted ? true : item.completed,
-      };
-    });
-    setLocalItems(updated);
-    patchMutation.mutate(removeIdsFromItems(updated));
-  };
-
-  const deleteSubTask = (itemId: string, subIndex: number) => {
-    const updated = localItems.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
-      return { ...item, subTasks };
-    });
-    setLocalItems(updated);
-    patchMutation.mutate(removeIdsFromItems(updated));
-  };
+  const toggleSubTask = subTaskManager.toggleSubTask;
+  const deleteSubTask = subTaskManager.deleteSubTask;
 
   const handleDelete = (clientId: string) => {
     const filtered = sortedItems.filter((it) => it.id !== clientId);
@@ -490,55 +414,17 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   );
 
   const periodSelector = (
-    <div ref={pickerRef} className="relative mt-1">
-      <div className="flex items-center gap-1">
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handlePrevPeriod}
-          className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"
-          aria-label={t("dateNav.prevAria")}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </motion.button>
-        <button
-          type="button"
-          onClick={() => setPickerOpen((o) => !o)}
-          className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-text-tertiary hover:text-text-secondary hover:bg-bg-surface transition-colors text-left truncate cursor-pointer"
-        >
-          {periodLabel}
-        </button>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleNextPeriod}
-          className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"
-          aria-label={t("dateNav.nextAria")}
-        >
-          <ChevronRight className="w-4 h-4" />
-        </motion.button>
-      </div>
-      {pickerOpen && (
-        <div className="absolute left-0 top-full mt-1 w-56 max-h-48 overflow-y-auto rounded-xl bg-bg-surface border border-border-default shadow-xl z-10 py-1">
-          {pickerOptions.map((opt) => (
-            <button
-              key={opt.period}
-              type="button"
-              onClick={() => handleSelectPeriod(opt.period)}
-              className={`w-full px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
-                opt.period === period
-                  ? "bg-accent-primary/20 text-accent-hover"
-                  : "text-text-secondary hover:bg-bg-surface"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <PeriodSelector
+      periodLabel={periodLabel}
+      options={pickerOptions}
+      currentPeriod={period}
+      pickerOpen={pickerOpen}
+      onTogglePicker={() => setPickerOpen((o) => !o)}
+      onClosePicker={() => setPickerOpen(false)}
+      onPrev={handlePrevPeriod}
+      onNext={handleNextPeriod}
+      onSelectPeriod={handleSelectPeriod}
+    />
   );
 
   return (

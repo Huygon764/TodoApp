@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useState } from "react";
+import { useRef, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { DayPicker } from "react-day-picker";
@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DAY_PICKER_CLASS_NAMES } from "@/constants/dayPickerStyles";
+import { useModalClose } from "@/hooks/useModalClose";
 
 interface CalendarPopoverProps {
   isOpen: boolean;
@@ -49,16 +50,7 @@ export function CalendarPopover({
     };
   }, [isOpen, anchorRef]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      if (anchorRef.current?.contains(e.target as Node)) return;
-      onClose();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen, onClose, anchorRef]);
+  useModalClose(isOpen, onClose, contentRef, [anchorRef]);
 
   const selectedDateObj = selectedDate
     ? new Date(selectedDate + "T12:00:00")

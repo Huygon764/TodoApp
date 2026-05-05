@@ -1,13 +1,21 @@
 import { body, param, query } from "express-validator";
-
-const MAX_TITLE_LENGTH = 500;
-const MAX_NAME_LENGTH = 200;
-const MIN_DAY_OF_WEEK = 1;
-const MAX_DAY_OF_WEEK = 7;
-const MIN_DAY_OF_MONTH = 1;
-const MAX_DAY_OF_MONTH = 31;
-const MIN_MONTH = 1;
-const MAX_MONTH = 12;
+import {
+  MAX_TITLE_LENGTH,
+  MAX_NAME_LENGTH,
+  periodWeekRegex,
+  periodMonthRegex,
+} from "../constants/validation.js";
+import {
+  requiredTitle,
+  optionalTitle,
+  optionalOrder,
+  itemsArrayValidators,
+  subTasksValidators,
+  daysOfWeekValidators,
+  daysOfMonthValidators,
+  datesOfYearValidators,
+  validatePeriodFormat,
+} from "./validators/builders.js";
 
 export const validateLogin = [
   body("username").trim().notEmpty().withMessage("Username is required"),
@@ -21,73 +29,27 @@ export const validateDateParam = [
 ];
 
 export const validateDefaultItemBody = [
-  body("title")
-    .trim()
-    .notEmpty()
-    .withMessage("Title is required")
-    .isLength({ max: MAX_TITLE_LENGTH })
-    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
-  body("order")
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage("Order must be a non-negative integer"),
-  body("subTasks")
-    .optional()
-    .isArray()
-    .withMessage("subTasks must be an array"),
-  body("subTasks.*.title").optional().trim().isString(),
+  requiredTitle(),
+  optionalOrder(),
+  ...subTasksValidators(),
 ];
 
-export const validatePatchDayBody = [
-  body("items")
-    .optional()
-    .isArray()
-    .withMessage("items must be an array"),
-  body("items.*.title").optional().trim().isString(),
-  body("items.*.completed").optional().isBoolean(),
-  body("items.*.order").optional().isInt({ min: 0 }),
-];
+export const validatePatchDayBody = itemsArrayValidators();
 
-export const validatePatchFreetimeTodoBody = [
-  body("items")
-    .optional()
-    .isArray()
-    .withMessage("items must be an array"),
-  body("items.*.title").optional().trim().isString(),
-  body("items.*.completed").optional().isBoolean(),
-  body("items.*.order").optional().isInt({ min: 0 }),
-  body("items.*.subTasks")
-    .optional()
-    .isArray()
-    .withMessage("subTasks must be an array"),
-  body("items.*.subTasks.*.title").optional().trim().isString(),
-  body("items.*.subTasks.*.completed").optional().isBoolean(),
-];
+export const validatePatchFreetimeTodoBody = itemsArrayValidators({
+  withSubTasks: true,
+  subTaskCompleted: true,
+});
 
 export const validatePatchDefaultBody = [
-  body("title")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Title cannot be empty")
-    .isLength({ max: MAX_TITLE_LENGTH })
-    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
-  body("order").optional().isInt({ min: 0 }),
-  body("subTasks")
-    .optional()
-    .isArray()
-    .withMessage("subTasks must be an array"),
-  body("subTasks.*.title").optional().trim().isString(),
+  optionalTitle(),
+  optionalOrder(),
+  ...subTasksValidators(),
 ];
 
 export const validateMongoIdParam = [
   param("id").isMongoId().withMessage("Invalid ID format"),
 ];
-
-// Week: YYYY-W01..W53, Month: YYYY-MM, Year: YYYY
-const periodWeekRegex = /^\d{4}-W(0[1-9]|[1-4][0-9]|5[0-3])$/;
-const periodMonthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
-const periodYearRegex = /^\d{4}$/;
 
 export const validateGetGoalsQuery = [
   query("type")
@@ -96,19 +58,7 @@ export const validateGetGoalsQuery = [
   query("period")
     .notEmpty()
     .withMessage("period is required")
-    .custom((value, { req }) => {
-      const type = req.query?.type as string;
-      if (type === "week" && !periodWeekRegex.test(value)) {
-        throw new Error("period for week must be YYYY-Wnn (e.g. 2024-W03)");
-      }
-      if (type === "month" && !periodMonthRegex.test(value)) {
-        throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
-      }
-      if (type === "year" && !periodYearRegex.test(value)) {
-        throw new Error("period for year must be YYYY (e.g. 2024)");
-      }
-      return true;
-    }),
+    .custom(validatePeriodFormat((req) => req.query?.type)),
 ];
 
 export const validatePostGoalBody = [
@@ -118,37 +68,11 @@ export const validatePostGoalBody = [
   body("period")
     .notEmpty()
     .withMessage("period is required")
-    .custom((value, { req }) => {
-      const type = req.body?.type;
-      if (type === "week" && !periodWeekRegex.test(value)) {
-        throw new Error("period for week must be YYYY-Wnn (e.g. 2024-W03)");
-      }
-      if (type === "month" && !periodMonthRegex.test(value)) {
-        throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
-      }
-      if (type === "year" && !periodYearRegex.test(value)) {
-        throw new Error("period for year must be YYYY (e.g. 2024)");
-      }
-      return true;
-    }),
-  body("items")
-    .optional()
-    .isArray()
-    .withMessage("items must be an array"),
-  body("items.*.title").optional().trim().isString(),
-  body("items.*.completed").optional().isBoolean(),
-  body("items.*.order").optional().isInt({ min: 0 }),
+    .custom(validatePeriodFormat((req) => req.body?.type)),
+  ...itemsArrayValidators(),
 ];
 
-export const validatePatchGoalBody = [
-  body("items")
-    .optional()
-    .isArray()
-    .withMessage("items must be an array"),
-  body("items.*.title").optional().trim().isString(),
-  body("items.*.completed").optional().isBoolean(),
-  body("items.*.order").optional().isInt({ min: 0 }),
-];
+export const validatePatchGoalBody = itemsArrayValidators();
 
 export const validateGoalItemIndexParam = [
   param("idx")
@@ -166,46 +90,12 @@ export const validatePostRecurringTemplateBody = [
   body("type")
     .isIn(["week", "month", "year"])
     .withMessage("type must be week, month or year"),
-  body("title")
-    .trim()
-    .notEmpty()
-    .withMessage("Title is required")
-    .isLength({ max: MAX_TITLE_LENGTH })
-    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
-  body("order").optional().isInt({ min: 0 }),
-  body("daysOfWeek")
-    .optional()
-    .isArray()
-    .withMessage("daysOfWeek must be an array"),
-  body("daysOfWeek.*")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_WEEK, max: MAX_DAY_OF_WEEK })
-    .withMessage(`daysOfWeek values must be between ${MIN_DAY_OF_WEEK} and ${MAX_DAY_OF_WEEK}`),
-  body("daysOfMonth")
-    .optional()
-    .isArray()
-    .withMessage("daysOfMonth must be an array"),
-  body("daysOfMonth.*")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
-    .withMessage(`daysOfMonth values must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
-  body("datesOfYear")
-    .optional()
-    .isArray()
-    .withMessage("datesOfYear must be an array"),
-  body("datesOfYear.*.month")
-    .optional()
-    .isInt({ min: MIN_MONTH, max: MAX_MONTH })
-    .withMessage(`datesOfYear.month must be between ${MIN_MONTH} and ${MAX_MONTH}`),
-  body("datesOfYear.*.day")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
-    .withMessage(`datesOfYear.day must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
-  body("subTasks")
-    .optional()
-    .isArray()
-    .withMessage("subTasks must be an array"),
-  body("subTasks.*.title").optional().trim().isString(),
+  requiredTitle(),
+  optionalOrder(),
+  ...daysOfWeekValidators(),
+  ...daysOfMonthValidators(),
+  ...datesOfYearValidators(),
+  ...subTasksValidators(),
 ];
 
 export const validateRecurringTemplateTypeParam = [
@@ -215,46 +105,11 @@ export const validateRecurringTemplateTypeParam = [
 ];
 
 export const validatePatchRecurringTemplateItemBody = [
-  body("title")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Title cannot be empty")
-    .isLength({ max: MAX_TITLE_LENGTH })
-    .withMessage(`Title cannot exceed ${MAX_TITLE_LENGTH} characters`),
-  body("daysOfWeek")
-    .optional()
-    .isArray()
-    .withMessage("daysOfWeek must be an array"),
-  body("daysOfWeek.*")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_WEEK, max: MAX_DAY_OF_WEEK })
-    .withMessage(`daysOfWeek values must be between ${MIN_DAY_OF_WEEK} and ${MAX_DAY_OF_WEEK}`),
-  body("daysOfMonth")
-    .optional()
-    .isArray()
-    .withMessage("daysOfMonth must be an array"),
-  body("daysOfMonth.*")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
-    .withMessage(`daysOfMonth values must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
-  body("datesOfYear")
-    .optional()
-    .isArray()
-    .withMessage("datesOfYear must be an array"),
-  body("datesOfYear.*.month")
-    .optional()
-    .isInt({ min: MIN_MONTH, max: MAX_MONTH })
-    .withMessage(`datesOfYear.month must be between ${MIN_MONTH} and ${MAX_MONTH}`),
-  body("datesOfYear.*.day")
-    .optional()
-    .isInt({ min: MIN_DAY_OF_MONTH, max: MAX_DAY_OF_MONTH })
-    .withMessage(`datesOfYear.day must be between ${MIN_DAY_OF_MONTH} and ${MAX_DAY_OF_MONTH}`),
-  body("subTasks")
-    .optional()
-    .isArray()
-    .withMessage("subTasks must be an array"),
-  body("subTasks.*.title").optional().trim().isString(),
+  optionalTitle(),
+  ...daysOfWeekValidators(),
+  ...daysOfMonthValidators(),
+  ...datesOfYearValidators(),
+  ...subTasksValidators(),
 ];
 
 export const validateGetReviewsQuery = [
@@ -311,9 +166,7 @@ export const validateAnalyzeReviewsBody = [
 ];
 
 export const validatePatchDateTemplateBody = [
-  body("items")
-    .isArray()
-    .withMessage("items must be an array"),
+  body("items").isArray().withMessage("items must be an array"),
   body("items.*.title")
     .trim()
     .notEmpty()
@@ -342,10 +195,7 @@ export const validatePersonNoteBody = [
     .isArray()
     .withMessage("notes must be an array"),
   body("notes.*").optional().trim().isString(),
-  body("order")
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage("Order must be a non-negative integer"),
+  optionalOrder(),
 ];
 
 export const validatePatchPersonNoteBody = [
@@ -361,10 +211,7 @@ export const validatePatchPersonNoteBody = [
     .isArray()
     .withMessage("notes must be an array"),
   body("notes.*").optional().trim().isString(),
-  body("order")
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage("Order must be a non-negative integer"),
+  optionalOrder(),
 ];
 
 export const validatePatchReviewBody = [

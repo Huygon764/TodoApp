@@ -8,6 +8,7 @@ import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
@@ -48,15 +49,7 @@ export function DefaultListModal({
     if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
   }, [isOpen, items]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (e: PointerEvent) => {
-      if (contentRef.current?.contains(e.target as Node)) return;
-      handleCloseRef.current();
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen]);
+  useModalClose(isOpen, () => handleCloseRef.current(), contentRef);
 
   const handleClose = () => {
     if (onReorder && localItems.length > 0) {

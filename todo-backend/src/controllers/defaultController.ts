@@ -1,6 +1,11 @@
 import type { Request, Response } from "express";
 import { DefaultItem } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
+import {
+  catchAsync,
+  sendSuccess,
+  notFound,
+  normalizeSubTaskTitles,
+} from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 
 export const getDefaultList = catchAsync(async (req: Request, res: Response) => {
@@ -23,9 +28,7 @@ export const createDefaultItem = catchAsync(
       userId,
       title: title.trim(),
       order: typeof order === "number" ? order : count,
-      subTasks: Array.isArray(subTasks)
-        ? subTasks.map((st) => ({ title: (st.title ?? "").trim() })).filter((st) => st.title)
-        : undefined,
+      subTasks: normalizeSubTaskTitles(subTasks),
     });
     sendSuccess(res, 201, { item });
   }
@@ -49,10 +52,7 @@ export const patchDefaultItem = catchAsync(
     if (title !== undefined) item.title = title.trim();
     if (typeof order === "number") item.order = order;
     if (Array.isArray(subTasks)) {
-      const cleaned = subTasks
-        .map((st) => ({ title: (st.title ?? "").trim() }))
-        .filter((st) => st.title);
-      item.subTasks = cleaned.length > 0 ? cleaned : undefined;
+      item.subTasks = normalizeSubTaskTitles(subTasks);
     }
     await item.save();
 
@@ -69,6 +69,6 @@ export const deleteDefaultItem = catchAsync(
     if (!item) {
       throw notFound(MESSAGES.DEFAULT.NOT_FOUND);
     }
-    sendSuccess(res, 200, undefined, "Đã xóa");
+    sendSuccess(res, 200, undefined, MESSAGES.COMMON.DELETED);
   }
 );

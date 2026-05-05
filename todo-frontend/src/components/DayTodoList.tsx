@@ -1,33 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Trash2, Check, Circle, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Circle, TrendingUp } from "lucide-react";
 import type { DayTodo, DayTodoItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { generateId } from "@/lib/generateId";
+import { addClientIds, removeClientIds } from "@/lib/itemIds";
+import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
 import { ReorderItem } from "@/components/shared/ReorderItem";
-import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { DayTodoItem as DayTodoItemRow } from "@/components/DayTodoItem";
+import type { DayTodoItemView as DayTodoItemWithId } from "@/components/DayTodoItem";
 
-// Extend DayTodoItem với unique ID
-interface DayTodoItemWithId extends DayTodoItem {
-  id: string;
-}
+const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] =>
+  addClientIds(items, "item") as DayTodoItemWithId[];
 
-
-// Add ID to items if not exists; normalize subTasks array
-const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] => {
-  return items.map((item, index) => ({
-    ...item,
-    id: `item-${index}-${item.title.slice(0, 10)}`,
-    subTasks: item.subTasks ?? [],
-  }));
-};
-
-// Remove ID before sending to API
-const removeIdsFromItems = (items: DayTodoItemWithId[]): DayTodoItem[] => {
-  return items.map(({ id, ...rest }) => rest);
-};
+const removeIdsFromItems = (items: DayTodoItemWithId[]): DayTodoItem[] =>
+  removeClientIds(items);
 
 interface DayTodoListProps {
   dayTodo: DayTodo | null;
@@ -54,27 +44,14 @@ export function DayTodoList({
   // Sync items from props
   useEffect(() => {
     const rawItems = dayTodo?.items ?? [];
-    const itemsWithIds = addIdsToItems(rawItems);
-    
-    // Sort: incomplete first, completed last
-    const sorted = [...itemsWithIds].sort((a, b) => {
-      if (a.completed === b.completed) {
-        return a.order - b.order;
-      }
-      return a.completed ? 1 : -1;
-    });
-    
-    setItems(sorted);
+    setItems(sortItemsByCompletion(addIdsToItems(rawItems)));
   }, [dayTodo]);
 
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const controlHover = isMobile ? undefined : { scale: 1.1 };
-  const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
   const addButtonHover = isMobile ? undefined : { scale: 1.02 };
   const addButtonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
-  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
 
   const handleAdd = () => {
     const t = newTitle.trim();
@@ -114,60 +91,26 @@ export function DayTodoList({
     setItems(toggled);
 
     setTimeout(() => {
-      const incomplete = toggled.filter((it) => !it.completed);
-      const completed = toggled.filter((it) => it.completed);
-      const reordered = [
-        ...incomplete.map((it, idx) => ({ ...it, order: idx })),
-        ...completed.map((it, idx) => ({ ...it, order: incomplete.length + idx })),
-      ];
+      const reordered = regroupByCompletion(toggled);
       setItems(reordered);
       onUpdateItems(removeIdsFromItems(reordered));
       setPendingToggle(null);
     }, 400);
   };
 
+  const handleSubTasksChange = (next: DayTodoItemWithId[]) => {
+    setItems(next);
+    onUpdateItems(removeIdsFromItems(next));
+  };
+
+  const subTaskManager = useSubTaskManager(items, handleSubTasksChange);
+
   const addSubTask = (itemId: string, title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = item.subTasks ?? [];
-      return {
-        ...item,
-        subTasks: [...subTasks, { title: trimmed, completed: false }],
-      };
-    });
-    setItems(updated);
-    onUpdateItems(removeIdsFromItems(updated));
+    subTaskManager.addSubTask(itemId, title);
     setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
   };
-
-  const toggleSubTask = (itemId: string, subIndex: number) => {
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).map((st, i) =>
-        i === subIndex ? { ...st, completed: !st.completed } : st
-      );
-      const allCompleted = subTasks.length > 0 && subTasks.every((st) => st.completed);
-      return {
-        ...item,
-        subTasks,
-        completed: allCompleted ? true : item.completed,
-      };
-    });
-    setItems(updated);
-    onUpdateItems(removeIdsFromItems(updated));
-  };
-
-  const deleteSubTask = (itemId: string, subIndex: number) => {
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
-      return { ...item, subTasks };
-    });
-    setItems(updated);
-    onUpdateItems(removeIdsFromItems(updated));
-  };
+  const toggleSubTask = subTaskManager.toggleSubTask;
+  const deleteSubTask = subTaskManager.deleteSubTask;
 
   const handleDelete = (id: string) => {
     const filtered = items.filter(item => item.id !== id);
@@ -328,140 +271,34 @@ export function DayTodoList({
                 {items.map((item) => (
                   <ReorderItem key={item.id} item={item} isMobile={isMobile} layoutId={item.id}>
                     {(dragHandle) => (
-                      <>
-                    <motion.div 
-                      className={`flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 ${
-                        item.completed 
-                          ? 'bg-accent-primary/5 border-accent-primary/20'
-                          : 'bg-bg-surface border-border-subtle hover:bg-bg-surface/80 hover:border-border-strong'
-                      }`}
-                      animate={{
-                        scale: pendingToggle === item.id ? 0.98 : 1,
-                      }}
-                      transition={{
-                        duration: isMobile ? 0.1 : 0.15,
-                        ease: "easeOut",
-                      }}
-                    >
-                      {/* Checkbox */}
-                      <motion.button
-                        type="button"
-                        whileHover={checkboxHover}
-                        whileTap={controlTap}
-                        onClick={() => handleToggle(item.id)}
-                        disabled={pendingToggle !== null}
-                        className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                          item.completed
-                            ? 'bg-accent-primary border-accent-primary'
-                            : 'border-text-muted hover:border-accent-hover hover:bg-accent-primary/10'
-                        } disabled:cursor-not-allowed`}
-                      >
-                        <AnimatePresence mode="wait">
-                          {item.completed && (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -45 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 45 }}
-                              transition={
-                                isMobile
-                                  ? { duration: 0.12, ease: "easeOut" }
-                                  : {
-                                      type: "spring",
-                                      stiffness: 500,
-                                      damping: 15,
-                                    }
-                              }
-                            >
-                              <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.button>
-                      
-                      {/* Title - inline edit */}
-                      {editingId === item.id ? (
-                        <input
-                          ref={editInputRef}
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") saveTitle(item.id);
-                            if (e.key === "Escape") cancelEdit();
-                          }}
-                          onBlur={() => saveTitle(item.id)}
-                          className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
-                        />
-                      ) : (
-                        <motion.span
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => handleTitleClick(item.id)}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && handleTitleClick(item.id)
-                          }
-                          className={`flex-1 transition-all duration-300 cursor-text ${
-                            item.completed
-                              ? "line-through text-text-muted"
-                              : "text-text-secondary"
-                          }`}
-                          animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}
-                        >
-                          {item.title}
-                        </motion.span>
-                      )}
-                      
-                      {/* Expand / Sub-tasks */}
-                      <motion.button
-                        type="button"
-                        whileHover={controlHover}
-                        whileTap={controlTap}
-                        onClick={() =>
-                          setExpandedId((prev) => (prev === item.id ? null : item.id))
+                      <DayTodoItemRow
+                        item={item}
+                        isMobile={isMobile}
+                        pendingToggle={pendingToggle}
+                        expanded={expandedId === item.id}
+                        editing={editingId === item.id}
+                        editValue={editValue}
+                        editInputRef={editInputRef}
+                        newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
+                        dragHandle={dragHandle}
+                        onToggle={handleToggle}
+                        onTitleClick={handleTitleClick}
+                        onTitleChange={setEditValue}
+                        onTitleSave={saveTitle}
+                        onTitleCancel={cancelEdit}
+                        onToggleExpand={(id) =>
+                          setExpandedId((prev) => (prev === id ? null : id))
                         }
-                        className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-                        aria-label={
-                          expandedId === item.id ? "Collapse" : "Expand sub-tasks"
+                        onDelete={handleDelete}
+                        onSubTaskAdd={(id) =>
+                          addSubTask(id, newSubTaskTitle[id] ?? "")
                         }
-                      >
-                        {expandedId === item.id ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                      </motion.button>
-                      {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
-                        <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-                      )}
-                      {dragHandle}
-                      {/* Delete Button - always visible */}
-                      <motion.button
-                        type="button"
-                        whileHover={controlHover}
-                        whileTap={controlTap}
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 cursor-pointer"
-                        aria-label={t("dayTodo.deleteAria")}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </motion.button>
-                    </motion.div>
-                    {expandedId === item.id && (
-                      <div className="pl-12 mt-1">
-                        <SubTaskSection
-                          subTasks={item.subTasks ?? []}
-                          showCheckbox={true}
-                          onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
-                          onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
-                          newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
-                          onNewSubTaskTitleChange={(val) =>
-                            setNewSubTaskTitle((prev) => ({ ...prev, [item.id]: val }))
-                          }
-                          onAddSubTask={() => addSubTask(item.id, newSubTaskTitle[item.id] ?? "")}
-                        />
-                      </div>
-                    )}
-                      </>
+                        onSubTaskToggle={toggleSubTask}
+                        onSubTaskDelete={deleteSubTask}
+                        onNewSubTaskTitleChange={(id, val) =>
+                          setNewSubTaskTitle((prev) => ({ ...prev, [id]: val }))
+                        }
+                      />
                     )}
                   </ReorderItem>
                 ))}

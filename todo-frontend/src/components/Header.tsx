@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useModalClose } from "@/hooks/useModalClose";
 
 interface HeaderMenuItemProps {
   icon: LucideIcon;
@@ -78,15 +79,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
     if (typeof localStorage !== "undefined") localStorage.setItem("lang", next);
   };
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current?.contains(event.target as Node)) return;
-      setMenuOpen(false);
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [menuOpen]);
+  useModalClose(menuOpen, () => setMenuOpen(false), menuRef);
 
   useEffect(() => {
     if (!isMobile) setMenuOpen(false);

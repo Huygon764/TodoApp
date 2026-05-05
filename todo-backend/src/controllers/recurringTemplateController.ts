@@ -1,52 +1,17 @@
 import type { Request, Response } from "express";
 import { RecurringTemplate } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound, getOrCreate, removeAndReorder } from "../utils/index.js";
+import {
+  catchAsync,
+  sendSuccess,
+  notFound,
+  getOrCreate,
+  removeAndReorder,
+  normalizeUniqueSortedInts,
+  normalizeDatesOfYear,
+  normalizeSubTaskTitles,
+} from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IRecurringTemplateItem } from "../types/index.js";
-
-function normalizeUniqueSortedInts(
-  values: unknown,
-  min: number,
-  max: number
-): number[] | undefined {
-  if (!Array.isArray(values)) return undefined;
-  const cleaned = Array.from(
-    new Set(
-      values
-        .map((val) => Number(val))
-        .filter((num) => Number.isInteger(num) && num >= min && num <= max)
-    )
-  ).sort((a, b) => a - b);
-  return cleaned.length > 0 ? cleaned : undefined;
-}
-
-function normalizeDatesOfYear(
-  values: unknown
-): IRecurringTemplateItem["datesOfYear"] | undefined {
-  if (!Array.isArray(values)) return undefined;
-  const uniqueKey = (month: number, day: number) => `${month}-${day}`;
-  const seen = new Set<string>();
-  const cleaned: { month: number; day: number }[] = [];
-  for (const entry of values) {
-    const month = Number((entry as any)?.month);
-    const day = Number((entry as any)?.day);
-    if (
-      Number.isInteger(month) &&
-      month >= 1 &&
-      month <= 12 &&
-      Number.isInteger(day) &&
-      day >= 1 &&
-      day <= 31
-    ) {
-      const key = uniqueKey(month, day);
-      if (!seen.has(key)) {
-        seen.add(key);
-        cleaned.push({ month, day });
-      }
-    }
-  }
-  return cleaned.length > 0 ? cleaned : undefined;
-}
 
 /**
  * GET /api/recurring-templates?type=week|month|year
@@ -107,12 +72,8 @@ export const addRecurringTemplateItem = catchAsync(
     if (normalizedDatesOfYear) {
       itemBase.datesOfYear = normalizedDatesOfYear;
     }
-    if (Array.isArray(subTasks)) {
-      const cleaned = subTasks
-        .map((st) => ({ title: (st.title ?? "").trim() }))
-        .filter((st) => st.title);
-      if (cleaned.length > 0) itemBase.subTasks = cleaned;
-    }
+    const normalizedSubTasks = normalizeSubTaskTitles(subTasks);
+    if (normalizedSubTasks) itemBase.subTasks = normalizedSubTasks;
 
     template.items.push(itemBase);
     template.items.sort((a, b) => a.order - b.order);
@@ -183,10 +144,7 @@ export const patchRecurringTemplateItem = catchAsync(
       item.datesOfYear = normalizedDatesOfYear;
     }
     if (Array.isArray(subTasks)) {
-      const cleaned = subTasks
-        .map((st) => ({ title: (st.title ?? "").trim() }))
-        .filter((st) => st.title);
-      item.subTasks = cleaned.length > 0 ? cleaned : undefined;
+      item.subTasks = normalizeSubTaskTitles(subTasks);
     }
     await template.save();
 

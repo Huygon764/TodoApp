@@ -1,19 +1,8 @@
 import { Schema, model } from "mongoose";
 import type { IFreetimeTodoDocument, IFreetimeTodoItem } from "../types/index.js";
-import { subTaskSchema } from "./schemas/subTask.js";
+import { createTodoItemSchema } from "./schemas/todoItem.js";
 
-const freetimeTodoItemSchema = new Schema<IFreetimeTodoItem>(
-  {
-    title: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-    order: { type: Number, required: true, default: 0 },
-    subTasks: {
-      type: [subTaskSchema],
-      default: undefined,
-    },
-  },
-  { _id: false }
-);
+const freetimeTodoItemSchema = createTodoItemSchema<IFreetimeTodoItem>();
 
 const freetimeTodoSchema = new Schema<IFreetimeTodoDocument>(
   {

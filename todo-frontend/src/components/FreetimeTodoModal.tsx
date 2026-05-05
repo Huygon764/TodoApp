@@ -7,9 +7,12 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
 import { generateId } from "@/lib/generateId";
+import { addClientIds, removeClientIds } from "@/lib/itemIds";
+import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
+import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
@@ -28,14 +31,10 @@ interface FreetimeTodoItemWithId extends FreetimeTodoItem {
 
 
 const addIdsToItems = (items: FreetimeTodoItem[]): FreetimeTodoItemWithId[] =>
-  items.map((item, index) => ({
-    ...item,
-    id: `freetime-${index}-${item.title.slice(0, 10)}`,
-    subTasks: item.subTasks ?? [],
-  }));
+  addClientIds(items, "freetime") as FreetimeTodoItemWithId[];
 
 const removeIdsFromItems = (items: FreetimeTodoItemWithId[]): FreetimeTodoItem[] =>
-  items.map(({ id, ...rest }) => rest);
+  removeClientIds(items);
 
 export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const { t } = useTranslation();
@@ -70,12 +69,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   useEffect(() => {
     if (!isOpen) return;
     const rawItems = data?.items ?? [];
-    const withIds = addIdsToItems(rawItems);
-    const sorted = [...withIds].sort((a, b) => {
-      if (a.completed === b.completed) return a.order - b.order;
-      return a.completed ? 1 : -1;
-    });
-    setItems(sorted);
+    setItems(sortItemsByCompletion(addIdsToItems(rawItems)));
   }, [isOpen, data]);
 
   const patchMutation = useMutation({
@@ -138,14 +132,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
       }
       return { ...item, completed: nextCompleted };
     });
-    // keep order grouping incomplete/completed
-    const incomplete = toggled.filter((it) => !it.completed);
-    const completed = toggled.filter((it) => it.completed);
-    const reordered = [
-      ...incomplete.map((it, idx) => ({ ...it, order: idx })),
-      ...completed.map((it, idx) => ({ ...it, order: incomplete.length + idx })),
-    ];
-    syncItems(reordered);
+    syncItems(regroupByCompletion(toggled));
   };
 
   const handleDelete = (id: string) => {
@@ -168,44 +155,14 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     syncItems(updated);
   };
 
+  const subTaskManager = useSubTaskManager(items, (next) => syncItems(next));
+
   const addSubTask = (itemId: string, title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      return {
-        ...item,
-        subTasks: [...(item.subTasks ?? []), { title: trimmed, completed: false }],
-      };
-    });
-    syncItems(updated);
+    subTaskManager.addSubTask(itemId, title);
     setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
   };
-
-  const toggleSubTask = (itemId: string, subIndex: number) => {
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).map((st, i) =>
-        i === subIndex ? { ...st, completed: !st.completed } : st
-      );
-      const allCompleted = subTasks.length > 0 && subTasks.every((st) => st.completed);
-      return {
-        ...item,
-        subTasks,
-        completed: allCompleted ? true : item.completed,
-      };
-    });
-    syncItems(updated);
-  };
-
-  const deleteSubTask = (itemId: string, subIndex: number) => {
-    const updated = items.map((item) => {
-      if (item.id !== itemId) return item;
-      const subTasks = (item.subTasks ?? []).filter((_, i) => i !== subIndex);
-      return { ...item, subTasks };
-    });
-    syncItems(updated);
-  };
+  const toggleSubTask = subTaskManager.toggleSubTask;
+  const deleteSubTask = subTaskManager.deleteSubTask;
 
   const handleReorder = (newOrder: FreetimeTodoItemWithId[]) => {
     const reordered = newOrder.map((it, idx) => ({ ...it, order: idx }));

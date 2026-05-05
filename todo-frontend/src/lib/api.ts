@@ -3,21 +3,50 @@ const getBaseUrl = () => {
   return import.meta.env.VITE_API_BASE_URL ?? "";
 };
 
+export class ApiError extends Error {
+  status: number;
+  data?: unknown;
+  constructor(status: number, message: string, data?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+
+  get isAuth() {
+    return this.status === 401 || this.status === 403;
+  }
+  get isNotFound() {
+    return this.status === 404;
+  }
+  get isNetwork() {
+    return this.status === 0;
+  }
+  get isServer() {
+    return this.status >= 500;
+  }
+}
+
 export async function api<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<{ data?: T; message?: string; success: boolean }> {
-  const res = await fetch(getBaseUrl() + path, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(getBaseUrl() + path, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  } catch (cause) {
+    throw new ApiError(0, "Network request failed", cause);
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(json.message ?? "Request failed");
+    throw new ApiError(res.status, json.message ?? "Request failed", json);
   }
   return json;
 }

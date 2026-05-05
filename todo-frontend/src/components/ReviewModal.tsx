@@ -9,11 +9,8 @@ import {
   getWeekPeriod,
   getMonthPeriod,
   formatWeekPeriodLabel,
-  getPrevWeekPeriod,
-  getNextWeekPeriod,
-  getPrevMonthPeriod,
-  getNextMonthPeriod,
 } from "@/lib/datePeriod";
+import { stepPeriod } from "@/lib/periodStep";
 import type { Review } from "@/types";
 import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
@@ -202,11 +199,7 @@ export function ReviewModal({
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() =>
-                                setSlotPeriod(
-                                  activeTab === "week"
-                                    ? getPrevWeekPeriod(period)
-                                    : getPrevMonthPeriod(period)
-                                )
+                                setSlotPeriod(stepPeriod(activeTab, period, "prev"))
                               }
                               className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
                               title={t("dateNav.prevAria", "Previous period")}
@@ -219,11 +212,7 @@ export function ReviewModal({
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() =>
-                                setSlotPeriod(
-                                  activeTab === "week"
-                                    ? getNextWeekPeriod(period)
-                                    : getNextMonthPeriod(period)
-                                )
+                                setSlotPeriod(stepPeriod(activeTab, period, "next"))
                               }
                               className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
                               title={t("dateNav.nextAria", "Next period")}

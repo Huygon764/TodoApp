@@ -68,6 +68,6 @@ export const deletePersonNote = catchAsync(
     if (!item) {
       throw notFound(MESSAGES.PERSON_NOTE.NOT_FOUND);
     }
-    sendSuccess(res, 200, undefined, "Đã xóa");
+    sendSuccess(res, 200, undefined, MESSAGES.COMMON.DELETED);
   }
 );

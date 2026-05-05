@@ -4,6 +4,7 @@ export const MESSAGES = {
     NOT_FOUND: "Không tìm thấy tài nguyên",
     VALIDATION_ERROR: "Dữ liệu không hợp lệ",
     INVALID_ID: "ID không hợp lệ",
+    DELETED: "Deleted successfully",
   },
 
   AUTH: {

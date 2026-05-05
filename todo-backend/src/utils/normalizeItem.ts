@@ -35,3 +35,21 @@ export function normalizeItem(
 export function normalizeItems(items: RawTodoItem[]): NormalizedTodoItem[] {
   return items.map(normalizeItem);
 }
+
+export interface RawSubTaskTitle {
+  title?: string;
+}
+
+/**
+ * Normalize subtasks that only carry a title (no completed flag).
+ * Returns undefined when nothing remains, so callers can drop the field.
+ */
+export function normalizeSubTaskTitles(
+  subTasks: unknown
+): { title: string }[] | undefined {
+  if (!Array.isArray(subTasks)) return undefined;
+  const cleaned = (subTasks as RawSubTaskTitle[])
+    .map((st) => ({ title: (st.title ?? "").trim() }))
+    .filter((st) => st.title.length > 0);
+  return cleaned.length > 0 ? cleaned : undefined;
+}

@@ -9,10 +9,15 @@ export interface User {
   updatedAt: string;
 }
 
-export interface DayTodoSubTask {
+export interface BaseSubTask {
   title: string;
+}
+
+export interface CheckableSubTask extends BaseSubTask {
   completed: boolean;
 }
+
+export type DayTodoSubTask = CheckableSubTask;
 
 export interface DayTodoItem {
   title: string;
@@ -30,9 +35,7 @@ export interface DayTodo {
   updatedAt: string;
 }
 
-export interface DefaultItemSubTask {
-  title: string;
-}
+export type DefaultItemSubTask = BaseSubTask;
 
 export interface DefaultItem {
   _id: string;
@@ -44,10 +47,7 @@ export interface DefaultItem {
   updatedAt: string;
 }
 
-export interface GoalSubTask {
-  title: string;
-  completed: boolean;
-}
+export type GoalSubTask = CheckableSubTask;
 
 export interface GoalItem {
   title: string;
@@ -66,9 +66,7 @@ export interface Goal {
   updatedAt: string;
 }
 
-export interface RecurringTemplateSubTask {
-  title: string;
-}
+export type RecurringTemplateSubTask = BaseSubTask;
 
 export interface RecurringTemplateItem {
   title: string;
@@ -91,9 +89,7 @@ export interface RecurringTemplate {
   updatedAt: string;
 }
 
-export interface DateTemplateSubTask {
-  title: string;
-}
+export type DateTemplateSubTask = BaseSubTask;
 
 export interface DateTemplateItem {
   title: string;
@@ -132,10 +128,7 @@ export interface PersonNote {
   updatedAt: string;
 }
 
-export interface FreetimeSubTask {
-  title: string;
-  completed: boolean;
-}
+export type FreetimeSubTask = CheckableSubTask;
 
 export interface FreetimeTodoItem {
   title: string;

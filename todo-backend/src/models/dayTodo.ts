@@ -1,19 +1,8 @@
 import { Schema, model } from "mongoose";
 import type { IDayTodoDocument, IDayTodoItem } from "../types/index.js";
-import { subTaskSchema } from "./schemas/subTask.js";
+import { createTodoItemSchema } from "./schemas/todoItem.js";
 
-const dayTodoItemSchema = new Schema<IDayTodoItem>(
-  {
-    title: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-    order: { type: Number, required: true, default: 0 },
-    subTasks: {
-      type: [subTaskSchema],
-      default: undefined,
-    },
-  },
-  { _id: false }
-);
+const dayTodoItemSchema = createTodoItemSchema<IDayTodoItem>();
 
 const dayTodoSchema = new Schema<IDayTodoDocument>(
   {

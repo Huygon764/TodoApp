@@ -1,19 +1,8 @@
 import { Schema, model } from "mongoose";
 import type { IGoalDocument, IGoalItem } from "../types/index.js";
-import { subTaskSchema } from "./schemas/subTask.js";
+import { createTodoItemSchema } from "./schemas/todoItem.js";
 
-const goalItemSchema = new Schema<IGoalItem>(
-  {
-    title: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-    order: { type: Number, required: true, default: 0 },
-    subTasks: {
-      type: [subTaskSchema],
-      default: undefined,
-    },
-  },
-  { _id: false }
-);
+const goalItemSchema = createTodoItemSchema<IGoalItem>();
 
 const goalSchema = new Schema<IGoalDocument>(
   {

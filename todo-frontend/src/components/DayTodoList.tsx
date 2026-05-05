@@ -112,6 +112,7 @@ export function DayTodoList({
   const toggleSubTask = subTaskManager.toggleSubTask;
   const deleteSubTask = subTaskManager.deleteSubTask;
   const editSubTask = subTaskManager.editSubTask;
+  const moveSubTask = subTaskManager.moveSubTask;
 
   const handleDelete = (id: string) => {
     const filtered = items.filter(item => item.id !== id);
@@ -297,6 +298,7 @@ export function DayTodoList({
                         onSubTaskToggle={toggleSubTask}
                         onSubTaskDelete={deleteSubTask}
                         onSubTaskEdit={editSubTask}
+                        onSubTaskMove={moveSubTask}
                         onNewSubTaskTitleChange={(id, val) =>
                           setNewSubTaskTitle((prev) => ({ ...prev, [id]: val }))
                         }

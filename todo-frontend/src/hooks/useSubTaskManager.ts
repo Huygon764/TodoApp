@@ -82,5 +82,29 @@ export function useSubTaskManager<T extends ManagedItem>(
     [items, onItemsChange],
   );
 
-  return { addSubTask, toggleSubTask, deleteSubTask, editSubTask };
+  const moveSubTask = useCallback(
+    (itemId: string, subIndex: number, direction: "up" | "down") => {
+      const next = items.map((item) => {
+        if (item.id !== itemId) return item;
+        const subTasks = [...(item.subTasks ?? [])];
+        const target = direction === "up" ? subIndex - 1 : subIndex + 1;
+        if (target < 0 || target >= subTasks.length) return item;
+        [subTasks[subIndex], subTasks[target]] = [
+          subTasks[target]!,
+          subTasks[subIndex]!,
+        ];
+        return { ...item, subTasks } as T;
+      });
+      onItemsChange(next);
+    },
+    [items, onItemsChange],
+  );
+
+  return {
+    addSubTask,
+    toggleSubTask,
+    deleteSubTask,
+    editSubTask,
+    moveSubTask,
+  };
 }

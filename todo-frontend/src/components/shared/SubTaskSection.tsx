@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 
@@ -16,6 +16,8 @@ interface SubTaskSectionProps {
   onDelete: (subIndex: number) => void;
   /** Called when subtask title is edited. If omitted, titles are read-only. */
   onEditTitle?: (subIndex: number, newTitle: string) => void;
+  /** Called to move a subtask up/down. If omitted, reorder buttons are hidden. */
+  onMove?: (subIndex: number, direction: "up" | "down") => void;
   newSubTaskTitle: string;
   onNewSubTaskTitleChange: (value: string) => void;
   onAddSubTask: () => void;
@@ -27,6 +29,7 @@ export function SubTaskSection({
   onToggle,
   onDelete,
   onEditTitle,
+  onMove,
   newSubTaskTitle,
   onNewSubTaskTitleChange,
   onAddSubTask,
@@ -104,6 +107,32 @@ export function SubTaskSection({
             >
               {st.title}
             </span>
+          )}
+          {onMove && (
+            <div className="flex items-center">
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => onMove(subIdx, "up")}
+                disabled={subIdx === 0}
+                className="p-1 rounded text-text-muted hover:text-accent-hover hover:bg-bg-surface disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                aria-label={t("common.moveUpAria", "Move up")}
+              >
+                <ChevronUp className="w-3.5 h-3.5" />
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => onMove(subIdx, "down")}
+                disabled={subIdx === subTasks.length - 1}
+                className="p-1 rounded text-text-muted hover:text-accent-hover hover:bg-bg-surface disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                aria-label={t("common.moveDownAria", "Move down")}
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+              </motion.button>
+            </div>
           )}
           <motion.button
             type="button"

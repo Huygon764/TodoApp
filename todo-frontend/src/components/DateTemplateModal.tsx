@@ -150,6 +150,25 @@ export function DateTemplateModal({
     setItems(next);
   };
 
+  const moveSubTask = (
+    index: number,
+    subIndex: number,
+    direction: "up" | "down",
+  ) => {
+    const next = items.map((it, i) => {
+      if (i !== index) return it;
+      const subTasks = [...(it.subTasks ?? [])];
+      const target = direction === "up" ? subIndex - 1 : subIndex + 1;
+      if (target < 0 || target >= subTasks.length) return it;
+      [subTasks[subIndex], subTasks[target]] = [
+        subTasks[target]!,
+        subTasks[subIndex]!,
+      ];
+      return { ...it, subTasks };
+    });
+    setItems(next);
+  };
+
   const handleSave = () => {
     const normalized = items
       .map((it, i) => ({
@@ -320,6 +339,9 @@ export function DateTemplateModal({
                                 onDelete={(subIdx) => deleteSubTask(index, subIdx)}
                                 onEditTitle={(subIdx, val) =>
                                   editSubTask(index, subIdx, val)
+                                }
+                                onMove={(subIdx, dir) =>
+                                  moveSubTask(index, subIdx, dir)
                                 }
                                 newSubTaskTitle={newSubTaskTitle[index] ?? ""}
                                 onNewSubTaskTitleChange={(val) =>

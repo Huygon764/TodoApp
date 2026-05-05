@@ -164,6 +164,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const toggleSubTask = subTaskManager.toggleSubTask;
   const deleteSubTask = subTaskManager.deleteSubTask;
   const editSubTask = subTaskManager.editSubTask;
+  const moveSubTask = subTaskManager.moveSubTask;
 
   const handleReorder = (newOrder: FreetimeTodoItemWithId[]) => {
     const reordered = newOrder.map((it, idx) => ({ ...it, order: idx }));
@@ -360,6 +361,9 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
                                   onEditTitle={(subIdx, val) =>
                                     editSubTask(item.id, subIdx, val)
+                                  }
+                                  onMove={(subIdx, dir) =>
+                                    moveSubTask(item.id, subIdx, dir)
                                   }
                                   newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
                                   onNewSubTaskTitleChange={(val) =>

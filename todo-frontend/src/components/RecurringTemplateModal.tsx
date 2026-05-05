@@ -168,6 +168,23 @@ export function RecurringTemplateModal({
     patchItemMutation.mutate({ idx, subTasks });
   };
 
+  const moveSubTask = (
+    idx: number,
+    subIndex: number,
+    direction: "up" | "down",
+  ) => {
+    const item = items[idx];
+    if (!item) return;
+    const subTasks = [...(item.subTasks ?? [])];
+    const target = direction === "up" ? subIndex - 1 : subIndex + 1;
+    if (target < 0 || target >= subTasks.length) return;
+    [subTasks[subIndex], subTasks[target]] = [
+      subTasks[target]!,
+      subTasks[subIndex]!,
+    ];
+    patchItemMutation.mutate({ idx, subTasks });
+  };
+
   useModalClose(isOpen, onClose, contentRef);
 
   useEffect(() => {
@@ -406,6 +423,9 @@ export function RecurringTemplateModal({
                                   onDelete={(subIdx) => deleteSubTask(idx, subIdx)}
                                   onEditTitle={(subIdx, val) =>
                                     editSubTask(idx, subIdx, val)
+                                  }
+                                  onMove={(subIdx, dir) =>
+                                    moveSubTask(idx, subIdx, dir)
                                   }
                                   newSubTaskTitle={newSubTaskTitle[idx] ?? ""}
                                   onNewSubTaskTitleChange={(val) =>

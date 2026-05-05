@@ -31,6 +31,7 @@ interface DayTodoItemProps {
   onSubTaskToggle: (id: string, subIndex: number) => void;
   onSubTaskDelete: (id: string, subIndex: number) => void;
   onSubTaskEdit: (id: string, subIndex: number, newTitle: string) => void;
+  onSubTaskMove: (id: string, subIndex: number, direction: "up" | "down") => void;
   onNewSubTaskTitleChange: (id: string, value: string) => void;
 }
 
@@ -55,6 +56,7 @@ export function DayTodoItem({
   onSubTaskToggle,
   onSubTaskDelete,
   onSubTaskEdit,
+  onSubTaskMove,
   onNewSubTaskTitleChange,
 }: DayTodoItemProps) {
   const { t } = useTranslation();
@@ -177,6 +179,7 @@ export function DayTodoItem({
             onToggle={(subIdx) => onSubTaskToggle(item.id, subIdx)}
             onDelete={(subIdx) => onSubTaskDelete(item.id, subIdx)}
             onEditTitle={(subIdx, val) => onSubTaskEdit(item.id, subIdx, val)}
+            onMove={(subIdx, dir) => onSubTaskMove(item.id, subIdx, dir)}
             newSubTaskTitle={newSubTaskTitle}
             onNewSubTaskTitleChange={(val) =>
               onNewSubTaskTitleChange(item.id, val)

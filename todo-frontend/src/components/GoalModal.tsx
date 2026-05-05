@@ -228,6 +228,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const toggleSubTask = subTaskManager.toggleSubTask;
   const deleteSubTask = subTaskManager.deleteSubTask;
   const editSubTask = subTaskManager.editSubTask;
+  const moveSubTask = subTaskManager.moveSubTask;
 
   const handleDelete = (clientId: string) => {
     const filtered = sortedItems.filter((it) => it.id !== clientId);
@@ -405,6 +406,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
           onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
           onEditTitle={(subIdx, val) => editSubTask(item.id, subIdx, val)}
+          onMove={(subIdx, dir) => moveSubTask(item.id, subIdx, dir)}
           newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
           onNewSubTaskTitleChange={(v) =>
             setNewSubTaskTitle((prev) => ({ ...prev, [item.id]: v }))

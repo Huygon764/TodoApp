@@ -392,17 +392,26 @@ class TelegramBot {
     }
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
+        // Connectivity/token check so the retry loop still works.
+        // Telegraf v4 bot.launch() (polling) only resolves when the bot
+        // STOPS, so command registration and handlers must run before it.
+        await this.bot.telegram.getMe();
+        await this.registerBotCommands();
+        process.once("SIGINT", () => this.bot?.stop("SIGINT"));
+        process.once("SIGTERM", () => this.bot?.stop("SIGTERM"));
+
         if (env.telegramWebhookDomain) {
           const webhookUrl = `${env.telegramWebhookDomain}/webhook/telegram`;
           await this.bot.telegram.setWebhook(webhookUrl);
           console.log(`Telegram bot started (webhook: ${webhookUrl})`);
         } else {
-          await this.bot.launch();
+          // Do not await: in polling mode this resolves only on stop.
+          this.bot.launch().catch((err) => {
+            const msg = err instanceof Error ? err.message : "Unknown";
+            console.error("Telegram bot polling error:", msg);
+          });
           console.log("Telegram bot started (polling)");
         }
-        await this.registerBotCommands();
-        process.once("SIGINT", () => this.bot?.stop("SIGINT"));
-        process.once("SIGTERM", () => this.bot?.stop("SIGTERM"));
         return;
       } catch (error) {
         const errorMessage =

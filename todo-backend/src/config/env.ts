@@ -29,13 +29,32 @@ function optionalEnv(key: string): string | null {
   return process.env[key] || null;
 }
 
+const nodeEnv: Env["nodeEnv"] =
+  (process.env.NODE_ENV as Env["nodeEnv"]) || "development";
+
+/**
+ * Required in production, falls back to a dev default otherwise.
+ * Prevents silent misconfiguration (e.g. invite links pointing at
+ * localhost because FRONTEND_URL was never set on the server).
+ */
+function requireInProd(key: string, devDefault: string): string {
+  const value = process.env[key];
+  if (value) return value;
+  if (nodeEnv === "production") {
+    throw new Error(
+      `Missing required environment variable in production: ${key}`
+    );
+  }
+  return devDefault;
+}
+
 export const env: Env = {
   port: parseInt(process.env.PORT || "5000", 10),
-  nodeEnv: (process.env.NODE_ENV as Env["nodeEnv"]) || "development",
+  nodeEnv,
   mongodbUri: requireEnv("MONGODB_URI"),
   jwtSecret: requireEnv("JWT_SECRET"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "30d",
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+  frontendUrl: requireInProd("FRONTEND_URL", "http://localhost:5173"),
   bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || "12", 10),
   telegramBotToken: optionalEnv("TELEGRAM_BOT_TOKEN"),
   telegramChatId: optionalEnv("TELEGRAM_CHAT_ID"),

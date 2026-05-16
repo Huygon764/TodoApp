@@ -63,3 +63,15 @@ export const TELEGRAM_MESSAGES = {
   REVOKE_ALREADY_REVOKED: "That invite is already revoked.",
   REVOKE_ERROR: "An error occurred while revoking the invite.",
 } as const;
+
+/** Registered with Telegram so typing "/" shows the command menu */
+export const TELEGRAM_BOT_COMMANDS = [
+  { command: "register", description: "Create a new user" },
+  { command: "invite", description: "Create a one-time signup link" },
+  { command: "invites", description: "List invite codes" },
+  { command: "revoke", description: "Revoke a pending invite" },
+  { command: "remove", description: "Remove a user" },
+  { command: "list", description: "Show user list" },
+  { command: "backup", description: "Back up MongoDB now" },
+  { command: "help", description: "Show help" },
+] as const;

@@ -10,7 +10,10 @@ import {
   revokeInviteCode,
   inviteStatus,
 } from "./inviteService.js";
-import { TELEGRAM_MESSAGES as MESSAGES } from "./telegram/messages.js";
+import {
+  TELEGRAM_MESSAGES as MESSAGES,
+  TELEGRAM_BOT_COMMANDS,
+} from "./telegram/messages.js";
 import type { RequestHandler } from "express";
 
 const MAX_RETRIES = 5;
@@ -367,6 +370,21 @@ class TelegramBot {
     return this.bot.webhookCallback("/webhook/telegram") as RequestHandler;
   }
 
+  private async registerBotCommands(): Promise<void> {
+    if (!this.bot) return;
+    try {
+      await this.bot.telegram.setMyCommands(
+        TELEGRAM_BOT_COMMANDS.map((c) => ({
+          command: c.command,
+          description: c.description,
+        }))
+      );
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown";
+      console.warn("Failed to register Telegram bot commands:", msg);
+    }
+  }
+
   async launch(): Promise<void> {
     if (!this.bot) {
       console.log("Telegram bot not configured. Skipping...");
@@ -382,6 +400,7 @@ class TelegramBot {
           await this.bot.launch();
           console.log("Telegram bot started (polling)");
         }
+        await this.registerBotCommands();
         process.once("SIGINT", () => this.bot?.stop("SIGINT"));
         process.once("SIGTERM", () => this.bot?.stop("SIGTERM"));
         return;

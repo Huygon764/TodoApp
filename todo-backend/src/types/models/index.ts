@@ -7,3 +7,4 @@ export * from "./freetimeTodo.model.js";
 export * from "./dateTemplate.model.js";
 export * from "./review.model.js";
 export * from "./personNote.model.js";
+export * from "./inviteCode.model.js";

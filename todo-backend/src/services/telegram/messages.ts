@@ -3,6 +3,9 @@ export const TELEGRAM_MESSAGES = {
   HELP_HEADER: "Help:\n\n",
   COMMAND_LIST:
     "/register <username> <password> - Create a new user\n" +
+    "/invite <name> - Create a one-time signup link\n" +
+    "/invites - List invite codes\n" +
+    "/revoke <code> - Revoke a pending invite\n" +
     "/remove <username> - Remove a user\n" +
     "/list - Show user list\n" +
     "/backup - Back up MongoDB now",
@@ -36,4 +39,27 @@ export const TELEGRAM_MESSAGES = {
     `Backup successful! File size: ${sizeMb} MB`,
   BACKUP_FAILED: (msg: string) => `Backup failed: ${msg}`,
   BACKUP_NOT_CONFIGURED: "Telegram bot is not configured.",
+  INVITE_USAGE: "Usage: /invite <name of the person>",
+  INVITE_SUCCESS: (name: string, link: string, expiresStr: string) =>
+    `Invite created for "${name}".\n\nLink (one-time, valid until ${expiresStr}):\n${link}`,
+  INVITE_ERROR: "An error occurred while creating the invite.",
+  INVITES_EMPTY: "No invite codes yet.",
+  INVITES_HEADER: (count: number) => `Invite codes (${count}):\n\n`,
+  INVITE_LINE: (
+    index: number,
+    name: string,
+    status: string,
+    detail: string
+  ) => `${index}. ${name} - ${status}\n   ${detail}`,
+  INVITE_DETAIL_PENDING: (expiresStr: string) => `expires ${expiresStr}`,
+  INVITE_DETAIL_USED: (by: string) => `used by ${by}`,
+  INVITE_DETAIL_EXPIRED: "expired",
+  INVITE_DETAIL_REVOKED: "revoked",
+  INVITES_ERROR: "An error occurred while fetching invite codes.",
+  REVOKE_USAGE: "Usage: /revoke <code>",
+  REVOKE_SUCCESS: (code: string) => `Invite "${code}" revoked.`,
+  REVOKE_NOT_FOUND: "Invite code not found.",
+  REVOKE_ALREADY_USED: "That invite has already been used.",
+  REVOKE_ALREADY_REVOKED: "That invite is already revoked.",
+  REVOKE_ERROR: "An error occurred while revoking the invite.",
 } as const;

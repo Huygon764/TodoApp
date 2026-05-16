@@ -14,11 +14,19 @@ export const MESSAGES = {
     TOKEN_INVALID: "Invalid token",
     USER_INACTIVE: "Tài khoản đã bị vô hiệu hóa",
     CREDENTIALS_REQUIRED: "Vui lòng nhập đầy đủ thông tin đăng nhập",
+    REGISTER_SUCCESS: "Tạo tài khoản thành công",
   },
 
   USER: {
     USERNAME_EXISTS: "Tên đăng nhập đã tồn tại",
     NOT_FOUND: "Không tìm thấy người dùng",
+  },
+
+  INVITE: {
+    NOT_FOUND: "Mã mời không hợp lệ",
+    EXPIRED: "Mã mời đã hết hạn",
+    USED: "Mã mời đã được sử dụng",
+    REVOKED: "Mã mời đã bị thu hồi",
   },
 
   DAY: {

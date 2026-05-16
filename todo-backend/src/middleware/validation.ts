@@ -22,6 +22,22 @@ export const validateLogin = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
+export const validateRegister = [
+  body("code").trim().notEmpty().withMessage("Invite code is required"),
+  body("username")
+    .trim()
+    .isLength({ min: 3, max: 30 })
+    .withMessage("Username must be 3-30 characters")
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage(
+      "Username can only contain letters, numbers, and underscores"
+    ),
+  body("password")
+    .isString()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+];
+
 export const validateDateParam = [
   param("date")
     .matches(/^\d{4}-\d{2}-\d{2}$/)

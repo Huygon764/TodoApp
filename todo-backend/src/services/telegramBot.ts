@@ -4,6 +4,12 @@ import { env } from "../config/index.js";
 import { User, BackupRequest } from "../models/index.js";
 import { formatDate } from "../utils/index.js";
 import { runBackupForRequest } from "./backupService.js";
+import {
+  createInvite,
+  listInvites,
+  revokeInviteCode,
+  inviteStatus,
+} from "./inviteService.js";
 import { TELEGRAM_MESSAGES as MESSAGES } from "./telegram/messages.js";
 import type { RequestHandler } from "express";
 
@@ -132,12 +138,106 @@ class TelegramBot {
     }
   }
 
+  private async handleInvite(
+    ctx: Context & { message: { text: string } }
+  ): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const name = ctx.message.text.split(" ").slice(1).join(" ").trim();
+      if (!name) {
+        ctx.reply(MESSAGES.INVITE_USAGE);
+        return;
+      }
+      const invite = await createInvite(name);
+      const link = `${env.frontendUrl}/register?code=${invite.code}`;
+      ctx.reply(
+        MESSAGES.INVITE_SUCCESS(
+          invite.name,
+          link,
+          formatDate(invite.expiresAt)
+        )
+      );
+    } catch (error) {
+      console.error("Error creating invite:", error);
+      ctx.reply(MESSAGES.INVITE_ERROR);
+    }
+  }
+
+  private async handleInvites(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const invites = await listInvites();
+      if (invites.length === 0) {
+        ctx.reply(MESSAGES.INVITES_EMPTY);
+        return;
+      }
+      const lines = invites
+        .map((invite, index) => {
+          const status = inviteStatus(invite);
+          let detail = "";
+          if (status === "pending") {
+            detail = MESSAGES.INVITE_DETAIL_PENDING(
+              formatDate(invite.expiresAt)
+            );
+          } else if (status === "used") {
+            detail = MESSAGES.INVITE_DETAIL_USED(
+              invite.usedByUsername ?? "?"
+            );
+          } else if (status === "expired") {
+            detail = MESSAGES.INVITE_DETAIL_EXPIRED;
+          } else {
+            detail = MESSAGES.INVITE_DETAIL_REVOKED;
+          }
+          return MESSAGES.INVITE_LINE(
+            index + 1,
+            invite.name,
+            status,
+            detail
+          );
+        })
+        .join("\n\n");
+      ctx.reply(MESSAGES.INVITES_HEADER(invites.length) + lines);
+    } catch (error) {
+      console.error("Error listing invites:", error);
+      ctx.reply(MESSAGES.INVITES_ERROR);
+    }
+  }
+
+  private async handleRevoke(
+    ctx: Context & { message: { text: string } }
+  ): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const code = ctx.message.text.split(" ").slice(1)[0]?.trim();
+      if (!code) {
+        ctx.reply(MESSAGES.REVOKE_USAGE);
+        return;
+      }
+      const result = await revokeInviteCode(code);
+      if (result === "revoked") {
+        ctx.reply(MESSAGES.REVOKE_SUCCESS(code));
+      } else if (result === "not_found") {
+        ctx.reply(MESSAGES.REVOKE_NOT_FOUND);
+      } else if (result === "already_used") {
+        ctx.reply(MESSAGES.REVOKE_ALREADY_USED);
+      } else {
+        ctx.reply(MESSAGES.REVOKE_ALREADY_REVOKED);
+      }
+    } catch (error) {
+      console.error("Error revoking invite:", error);
+      ctx.reply(MESSAGES.REVOKE_ERROR);
+    }
+  }
+
   private setupCommands(): void {
     if (!this.bot) return;
 
     this.bot.start((ctx) => this.handleStart(ctx));
     this.bot.help((ctx) => this.handleHelp(ctx));
     this.bot.command("register", (ctx) => this.handleRegister(ctx));
+    this.bot.command("invite", (ctx) => this.handleInvite(ctx));
+    this.bot.command("invites", (ctx) => this.handleInvites(ctx));
+    this.bot.command("revoke", (ctx) => this.handleRevoke(ctx));
     this.bot.command("remove", (ctx) => this.handleRemove(ctx));
     this.bot.command("list", (ctx) => this.handleList(ctx));
     this.bot.command("backup", (ctx) => this.handleBackupCommand(ctx));

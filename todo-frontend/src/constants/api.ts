@@ -2,6 +2,9 @@ export const API_PATHS = {
   AUTH_ME: "/api/auth/me",
   AUTH_LOGIN: "/api/auth/login",
   AUTH_LOGOUT: "/api/auth/logout",
+  AUTH_REGISTER: "/api/auth/register",
+  AUTH_REGISTER_CHECK: (code: string) =>
+    `/api/auth/register/check?code=${encodeURIComponent(code)}`,
   DAY: (date: string) => `/api/days/${date}`,
   DEFAULT: "/api/default",
   DEFAULT_BY_ID: (id: string) => `/api/default/${id}`,

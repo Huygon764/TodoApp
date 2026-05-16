@@ -22,5 +22,9 @@ export const forbidden = (message: string = "Forbidden"): AppError =>
 export const notFound = (message: string = "Not found"): AppError =>
   new AppError(404, message);
 
+export const tooManyRequests = (
+  message: string = "Too many requests"
+): AppError => new AppError(429, message);
+
 export const internal = (message: string = "Internal server error"): AppError =>
   new AppError(500, message);

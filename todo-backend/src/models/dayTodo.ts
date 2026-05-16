@@ -29,6 +29,11 @@ const dayTodoSchema = new Schema<IDayTodoDocument>(
       type: [dayTodoItemSchema],
       default: [],
     },
+    reflection: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   { timestamps: true }
 );

@@ -69,6 +69,33 @@ export function getWeekDateRange(periodStr: string): { start: Date; end: Date } 
   return { start, end };
 }
 
+/** Format a Date as local YYYY-MM-DD (matches how DayTodo.date is stored) */
+function toDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Inclusive YYYY-MM-DD day range covered by a week/month review period */
+export function getPeriodDayRange(
+  type: "week" | "month",
+  period: string
+): { start: string; end: string } | null {
+  if (type === "week") {
+    if (!/^\d{4}-W\d{2}$/.test(period)) return null;
+    const { start, end } = getWeekDateRange(period);
+    return { start: toDateStr(start), end: toDateStr(end) };
+  }
+  const match = period.match(/^(\d{4})-(\d{2})$/);
+  if (!match) return null;
+  const year = parseInt(match[1]!, 10);
+  const month = parseInt(match[2]!, 10);
+  const first = new Date(year, month - 1, 1);
+  const last = new Date(year, month, 0);
+  return { start: toDateStr(first), end: toDateStr(last) };
+}
+
 /** List week period strings from from to to (inclusive). */
 export function getWeekPeriodsInRange(fromWeek: string, toWeek: string): string[] {
   const { start } = getWeekDateRange(fromWeek);

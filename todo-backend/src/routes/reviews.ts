@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../middleware/auth.js";
 import {
   validateGetReviewsQuery,
+  validateReviewDraftQuery,
   validatePostReviewBody,
   validatePatchReviewBody,
   validateAnalyzeReviewsBody,
@@ -10,6 +11,7 @@ import {
 import { validateRequest } from "../middleware/validateRequest.js";
 import {
   getReviews,
+  getReviewDraft,
   createReview,
   patchReview,
   analyzeReviews,
@@ -24,6 +26,13 @@ router.get(
   validateGetReviewsQuery,
   validateRequest,
   getReviews
+);
+
+router.get(
+  "/draft",
+  validateReviewDraftQuery,
+  validateRequest,
+  getReviewDraft
 );
 
 router.post(

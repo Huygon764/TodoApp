@@ -34,7 +34,15 @@ export const validateDefaultItemBody = [
   ...subTasksValidators(),
 ];
 
-export const validatePatchDayBody = itemsArrayValidators();
+export const validatePatchDayBody = [
+  ...itemsArrayValidators(),
+  body("reflection")
+    .optional()
+    .isString()
+    .withMessage("reflection must be a string")
+    .isLength({ max: 500 })
+    .withMessage("reflection is too long"),
+];
 
 export const validatePatchFreetimeTodoBody = itemsArrayValidators({
   withSubTasks: true,
@@ -135,6 +143,13 @@ export const validateGetReviewsQuery = [
     .optional()
     .matches(periodMonthRegex)
     .withMessage("toMonth must be YYYY-MM"),
+];
+
+export const validateReviewDraftQuery = [
+  query("type")
+    .isIn(["week", "month"])
+    .withMessage("type must be week or month"),
+  query("period").notEmpty().trim().withMessage("period is required"),
 ];
 
 export const validatePostReviewBody = [

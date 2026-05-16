@@ -35,6 +35,8 @@ export interface DayTodo {
   userId: string;
   date: string;
   items: DayTodoItem[];
+  /** One-line end-of-day reflection (breadcrumb for assisted review) */
+  reflection?: string;
   createdAt: string;
   updatedAt: string;
 }

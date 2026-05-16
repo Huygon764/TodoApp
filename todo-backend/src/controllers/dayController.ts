@@ -59,15 +59,26 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
 export const patchDay = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const date = req.params.date;
-  const { items } = req.body as { items?: IDayTodoItem[] };
+  const { items, reflection } = req.body as {
+    items?: IDayTodoItem[];
+    reflection?: string;
+  };
 
   const dayTodo = await DayTodo.findOne({ userId, date });
   if (!dayTodo) {
     throw notFound(MESSAGES.DAY.NOT_FOUND);
   }
 
+  let modified = false;
   if (Array.isArray(items)) {
     dayTodo.items = normalizeItems(items);
+    modified = true;
+  }
+  if (typeof reflection === "string") {
+    dayTodo.reflection = reflection.trim();
+    modified = true;
+  }
+  if (modified) {
     await dayTodo.save();
   }
 

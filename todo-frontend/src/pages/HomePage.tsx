@@ -95,6 +95,14 @@ export function HomePage() {
     },
   });
 
+  const patchReflectionMutation = useMutation({
+    mutationFn: (reflection: string) =>
+      apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate), { reflection }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
+    },
+  });
+
   const addDefaultMutation = useMutation({
     mutationFn: (title: string) =>
       apiPost<{ item: DefaultItem }>(API_PATHS.DEFAULT, {
@@ -152,6 +160,9 @@ export function HomePage() {
             dayTodo={dayTodo}
             isLoading={dayLoading}
             onUpdateItems={(items) => patchDayMutation.mutate(items)}
+            onUpdateReflection={(reflection) =>
+              patchReflectionMutation.mutate(reflection)
+            }
           />
         </motion.section>
 

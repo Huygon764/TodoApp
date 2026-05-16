@@ -38,6 +38,8 @@ export const API_PATHS = {
     return `/api/reviews?${sp.toString()}`;
   },
   REVIEW: (id: string) => `/api/reviews/${id}`,
+  REVIEW_DRAFT: (type: "week" | "month", period: string) =>
+    `/api/reviews/draft?type=${type}&period=${encodeURIComponent(period)}`,
   REVIEWS_ANALYZE: "/api/reviews/analyze",
   PEOPLE_NOTES: "/api/people-notes",
   PEOPLE_NOTE_BY_ID: (id: string) => `/api/people-notes/${id}`,

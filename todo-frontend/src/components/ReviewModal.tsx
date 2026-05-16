@@ -110,6 +110,7 @@ export function ReviewModal({
   const [badThings, setBadThings] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [savedMessage, setSavedMessage] = useState(false);
+  const [draftDismissed, setDraftDismissed] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -149,6 +150,61 @@ export function ReviewModal({
       setNotes("");
     }
   }, [isOpen, existing?._id]);
+
+  type ReviewDraft = {
+    breadcrumbs: { date: string; reflection: string }[];
+    stats: { totalTasks: number; completedTasks: number };
+    mostPostponed: { title: string; count: number } | null;
+  };
+
+  const { data: draft } = useQuery({
+    queryKey: ["reviewDraft", activeTab, period],
+    queryFn: async () => {
+      const res = await apiGet<{ draft: ReviewDraft }>(
+        API_PATHS.REVIEW_DRAFT(activeTab, period)
+      );
+      return res.data?.draft ?? null;
+    },
+    enabled: isOpen && !existing,
+  });
+
+  useEffect(() => {
+    setDraftDismissed(false);
+  }, [isOpen, activeTab, period]);
+
+  const draftNoteCount = draft?.breadcrumbs.length ?? 0;
+  const hasDraftContent =
+    !!draft &&
+    (draft.breadcrumbs.length > 0 ||
+      (!!draft.mostPostponed && draft.mostPostponed.count >= 2));
+  const showDraftHint =
+    isOpen && !existing && hasDraftContent && !draftDismissed;
+
+  const formatDraftDate = (d: string) => {
+    const p = d.split("-");
+    return p.length === 3 ? `${p[2]}/${p[1]}` : d;
+  };
+
+  const applyDraft = () => {
+    if (!draft) return;
+    setGoodThings([]);
+    const bad: string[] = [];
+    if (draft.mostPostponed && draft.mostPostponed.count >= 2) {
+      bad.push(
+        t("reviewModal.draftPostponed", {
+          title: draft.mostPostponed.title,
+          count: draft.mostPostponed.count,
+        })
+      );
+    }
+    setBadThings(bad);
+    setNotes(
+      draft.breadcrumbs
+        .map((b) => `${formatDraftDate(b.date)} — ${b.reflection}`)
+        .join("\n")
+    );
+    setDraftDismissed(true);
+  };
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -258,6 +314,29 @@ export function ReviewModal({
                   )}
 
                   <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                    {showDraftHint && (
+                      <div className="rounded-xl border border-accent-primary/30 bg-accent-primary/5 p-3 flex items-center justify-between gap-3">
+                        <span className="text-sm text-text-secondary">
+                          {t("reviewModal.draftHint", { count: draftNoteCount })}
+                        </span>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={applyDraft}
+                            className="px-3 py-1.5 rounded-lg bg-accent-primary hover:bg-accent-hover text-white text-sm font-medium transition-colors"
+                          >
+                            {t("reviewModal.draftApply")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDraftDismissed(true)}
+                            className="px-3 py-1.5 rounded-lg text-text-muted hover:text-text-secondary text-sm transition-colors"
+                          >
+                            {t("reviewModal.draftSkip")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-text-tertiary mb-2">
                         {t("reviewModal.goodLabel")}

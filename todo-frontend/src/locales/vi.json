@@ -11,7 +11,15 @@
     "reviewMyself": "Review myself",
     "view": "Xem",
     "carriedBadge": "hoãn {{count}} lần · từ {{date}}",
-    "carriedTooltip": "Được chuyển từ ngày trước vì chưa hoàn thành"
+    "carriedTooltip": "Được chuyển từ ngày trước vì chưa hoàn thành",
+    "reflectionPlaceholder": "Một dòng, không bắt buộc...",
+    "reflectionQuestions": [
+      "Điều đáng nhớ hôm nay?",
+      "Cái gì làm bạn mất sức hôm nay?",
+      "Thắng lợi nhỏ hôm nay là gì?",
+      "Hôm nay bạn học được gì?",
+      "Ngày mai bạn sẽ làm khác đi điều gì?"
+    ]
   },
   "defaultModal": {
     "title": "Template mặc định",
@@ -105,7 +113,11 @@
     "notesLabel": "Ghi chú / Nhật ký",
     "notesPlaceholder": "Ghi chú thêm...",
     "save": "Lưu",
-    "saving": "Đang lưu..."
+    "saving": "Đang lưu...",
+    "draftHint": "Có {{count}} ghi chú trong kỳ này — tự điền từ chúng?",
+    "draftApply": "Soạn nháp tự động",
+    "draftSkip": "Bắt đầu trống",
+    "draftPostponed": "Hay hoãn: {{title}} ({{count}} lần)"
   },
   "reviewHistory": {
     "title": "Lịch sử review",

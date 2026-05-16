@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { Review } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
+import { Review, DayTodo } from "../models/index.js";
+import { catchAsync, sendSuccess, notFound, badRequest } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import { generateAnalysis } from "../services/geminiService.js";
 import type { IReviewDocument } from "../types/index.js";
@@ -8,6 +8,7 @@ import {
   getWeekRangeForMonth,
   getWeekPeriodsInRange,
   getMonthsInRange,
+  getPeriodDayRange,
 } from "../utils/datePeriod.js";
 
 /**
@@ -198,4 +199,60 @@ Use bullet points and optional emoji for clarity. Keep each section concise. Wri
     }
     throw e;
   }
+});
+
+/**
+ * GET /api/reviews/draft?type=week|month&period=...
+ * Builds a non-persisted review draft from the period's daily reflections
+ * (breadcrumbs) and task stats, so the user can start a review from a
+ * pre-filled summary instead of a blank page.
+ */
+export const getReviewDraft = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { type, period } = req.query as { type?: string; period?: string };
+
+  if (type !== "week" && type !== "month") {
+    throw badRequest("type must be week or month");
+  }
+  if (!period) {
+    throw badRequest("period is required");
+  }
+
+  const range = getPeriodDayRange(type, period);
+  if (!range) {
+    throw badRequest("Invalid period format");
+  }
+
+  const days = await DayTodo.find({
+    userId,
+    date: { $gte: range.start, $lte: range.end },
+  }).sort({ date: 1 });
+
+  const breadcrumbs: { date: string; reflection: string }[] = [];
+  let totalTasks = 0;
+  let completedTasks = 0;
+  let mostPostponed: { title: string; count: number } | null = null;
+
+  for (const day of days) {
+    const reflection = (day.reflection ?? "").trim();
+    if (reflection) {
+      breadcrumbs.push({ date: day.date, reflection });
+    }
+    for (const item of day.items ?? []) {
+      totalTasks += 1;
+      if (item.completed) completedTasks += 1;
+      const count = item.postponeCount ?? 0;
+      if (count > 0 && (!mostPostponed || count > mostPostponed.count)) {
+        mostPostponed = { title: item.title, count };
+      }
+    }
+  }
+
+  sendSuccess(res, 200, {
+    draft: {
+      breadcrumbs,
+      stats: { totalTasks, completedTasks },
+      mostPostponed,
+    },
+  });
 });

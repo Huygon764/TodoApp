@@ -20,6 +20,8 @@ export interface IDayTodo {
   userId: Types.ObjectId;
   date: string; // YYYY-MM-DD
   items: IDayTodoItem[];
+  /** One-line end-of-day reflection (breadcrumb for assisted review) */
+  reflection?: string;
   createdAt: Date;
   updatedAt: Date;
 }

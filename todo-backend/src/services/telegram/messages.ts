@@ -8,7 +8,8 @@ export const TELEGRAM_MESSAGES = {
     "/revoke <code> - Revoke a pending invite\n" +
     "/remove <username> - Remove a user\n" +
     "/list - Show user list\n" +
-    "/backup - Back up MongoDB now",
+    "/backup - Back up MongoDB now\n" +
+    "/synccommands - Re-sync the bot command menu",
   REGISTER_USAGE: "Usage: /register <username> <password>",
   USERNAME_LENGTH: "Username must be 3-30 characters.",
   USERNAME_CHARS: "Username may only contain letters, digits, and underscores.",
@@ -62,6 +63,11 @@ export const TELEGRAM_MESSAGES = {
   REVOKE_ALREADY_USED: "That invite has already been used.",
   REVOKE_ALREADY_REVOKED: "That invite is already revoked.",
   REVOKE_ERROR: "An error occurred while revoking the invite.",
+  SYNC_COMMANDS_OK: (count: number, list: string) =>
+    `Synced ${count} commands with Telegram:\n${list}\n\n` +
+    `If typing "/" still shows nothing, fully close and reopen your ` +
+    `Telegram app to clear its client-side cache.`,
+  SYNC_COMMANDS_ERROR: (msg: string) => `Failed to sync commands: ${msg}`,
 } as const;
 
 /** Registered with Telegram so typing "/" shows the command menu */
@@ -73,5 +79,6 @@ export const TELEGRAM_BOT_COMMANDS = [
   { command: "remove", description: "Remove a user" },
   { command: "list", description: "Show user list" },
   { command: "backup", description: "Back up MongoDB now" },
+  { command: "synccommands", description: "Re-sync the bot command menu" },
   { command: "help", description: "Show help" },
 ] as const;

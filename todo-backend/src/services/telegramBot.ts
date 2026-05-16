@@ -244,6 +244,7 @@ class TelegramBot {
     this.bot.command("remove", (ctx) => this.handleRemove(ctx));
     this.bot.command("list", (ctx) => this.handleList(ctx));
     this.bot.command("backup", (ctx) => this.handleBackupCommand(ctx));
+    this.bot.command("synccommands", (ctx) => this.handleSyncCommands(ctx));
     this.bot.action(/^backup:yes:([a-f0-9]+)$/i, (ctx) =>
       this.handleBackupYes(ctx)
     );
@@ -379,9 +380,31 @@ class TelegramBot {
           description: c.description,
         }))
       );
+      console.log(
+        `Telegram bot commands registered (${TELEGRAM_BOT_COMMANDS.length})`
+      );
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown";
       console.warn("Failed to register Telegram bot commands:", msg);
+    }
+  }
+
+  private async handleSyncCommands(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    if (!this.bot) return;
+    try {
+      await this.bot.telegram.setMyCommands(
+        TELEGRAM_BOT_COMMANDS.map((c) => ({
+          command: c.command,
+          description: c.description,
+        }))
+      );
+      const current = await this.bot.telegram.getMyCommands();
+      const list = current.map((c) => `/${c.command}`).join(", ");
+      ctx.reply(MESSAGES.SYNC_COMMANDS_OK(current.length, list));
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown";
+      ctx.reply(MESSAGES.SYNC_COMMANDS_ERROR(msg));
     }
   }
 

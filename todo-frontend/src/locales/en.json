@@ -9,7 +9,9 @@
     "emptySub": "Add a task to get started",
     "deleteAria": "Delete",
     "reviewMyself": "Review myself",
-    "view": "View"
+    "view": "View",
+    "carriedBadge": "postponed {{count}}x · from {{date}}",
+    "carriedTooltip": "Carried over from a previous day because it was not completed"
   },
   "defaultModal": {
     "title": "Default template",

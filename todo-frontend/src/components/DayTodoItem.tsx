@@ -10,6 +10,14 @@ export interface DayTodoItemView extends DayTodoItemType {
   subTasks: DayTodoSubTask[];
 }
 
+/** Format a "YYYY-MM-DD" carry-over origin date as "DD/MM" */
+function formatCarriedFrom(date?: string): string {
+  if (!date) return "";
+  const parts = date.split("-");
+  if (parts.length !== 3) return date;
+  return `${parts[2]}/${parts[1]}`;
+}
+
 interface DayTodoItemProps {
   item: DayTodoItemView;
   isMobile: boolean;
@@ -138,6 +146,18 @@ export function DayTodoItem({
           >
             {item.title}
           </motion.span>
+        )}
+
+        {!editing && !!item.postponeCount && (
+          <span
+            className="flex-shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap"
+            title={t("dayTodo.carriedTooltip")}
+          >
+            {t("dayTodo.carriedBadge", {
+              count: item.postponeCount,
+              date: formatCarriedFrom(item.carriedFrom),
+            })}
+          </span>
         )}
 
         <motion.button

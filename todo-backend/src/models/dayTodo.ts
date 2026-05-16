@@ -4,6 +4,13 @@ import { createTodoItemSchema } from "./schemas/todoItem.js";
 
 const dayTodoItemSchema = createTodoItemSchema<IDayTodoItem>();
 
+// Carry-over metadata. Added only to dayTodo items so the shared item
+// factory (also used by goal/freetimeTodo) stays unaffected.
+dayTodoItemSchema.add({
+  carriedFrom: { type: String },
+  postponeCount: { type: Number },
+});
+
 const dayTodoSchema = new Schema<IDayTodoDocument>(
   {
     userId: {

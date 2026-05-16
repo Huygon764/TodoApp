@@ -10,6 +10,7 @@ import {
   toWeekdayIndexMondayFirst,
   initializeDayItems,
   mergeNewItemsIntoExistingDay,
+  mergeCarryOverItems,
 } from "../services/dayService.js";
 
 /**
@@ -34,14 +35,16 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
     const items = await initializeDayItems(
       userId, date, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
     );
-    dayTodo = await DayTodo.create({ userId, date, items });
+    const carry = await mergeCarryOverItems(items, userId, date);
+    dayTodo = await DayTodo.create({ userId, date, items: carry.items });
   } else {
     const result = await mergeNewItemsIntoExistingDay(
       dayTodo.items, userId, date,
       weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
     );
-    if (result.modified) {
-      dayTodo.items = result.items;
+    const carry = await mergeCarryOverItems(result.items, userId, date);
+    if (result.modified || carry.modified) {
+      dayTodo.items = carry.items;
       await dayTodo.save();
     }
   }

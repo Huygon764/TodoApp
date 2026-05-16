@@ -6,6 +6,8 @@ export interface RawTodoItem {
   completed?: boolean;
   order?: number;
   subTasks?: { title?: string; completed?: boolean }[];
+  carriedFrom?: string;
+  postponeCount?: number;
 }
 
 export interface NormalizedTodoItem {
@@ -13,13 +15,15 @@ export interface NormalizedTodoItem {
   completed: boolean;
   order: number;
   subTasks?: { title: string; completed: boolean }[];
+  carriedFrom?: string;
+  postponeCount?: number;
 }
 
 export function normalizeItem(
   item: RawTodoItem,
   index: number
 ): NormalizedTodoItem {
-  return {
+  const normalized: NormalizedTodoItem = {
     title: (item.title ?? "").trim(),
     completed: Boolean(item.completed),
     order: typeof item.order === "number" ? item.order : index,
@@ -30,6 +34,18 @@ export function normalizeItem(
         }))
       : undefined,
   };
+
+  // Preserve carry-over metadata so toggling/editing a carried task via
+  // PATCH does not strip it. Only dayTodo items send these fields; goal
+  // and freetimeTodo never do, so their normalized output is unchanged.
+  if (typeof item.carriedFrom === "string" && item.carriedFrom.trim()) {
+    normalized.carriedFrom = item.carriedFrom;
+  }
+  if (typeof item.postponeCount === "number" && item.postponeCount > 0) {
+    normalized.postponeCount = item.postponeCount;
+  }
+
+  return normalized;
 }
 
 export function normalizeItems(items: RawTodoItem[]): NormalizedTodoItem[] {

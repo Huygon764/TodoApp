@@ -1,4 +1,4 @@
-import { DefaultItem, RecurringTemplate, DateTemplate } from "../models/index.js";
+import { DefaultItem, RecurringTemplate, DateTemplate, DayTodo } from "../models/index.js";
 import type { IDayTodoItem, IRecurringTemplateItem } from "../types/index.js";
 
 /** Parse YYYY-MM-DD to Date at noon UTC for weekday/monthday checks */
@@ -184,4 +184,56 @@ export async function mergeNewItemsIntoExistingDay(
   }
 
   return { items, modified };
+}
+
+/**
+ * Carry incomplete tasks forward from the most recent prior day.
+ * - Looks at the latest DayTodo with date < target, so skipped days still
+ *   pull from the last day the user actually used.
+ * - Dedups by trimmed title: a title already present today (from any source
+ *   or a previous GET) is left untouched. This keeps the operation
+ *   idempotent, so refreshing the same day never inflates postponeCount.
+ * - Each carried item keeps the earliest known carriedFrom and bumps
+ *   postponeCount by 1. Completed tasks are not carried.
+ */
+export async function mergeCarryOverItems(
+  currentItems: IDayTodoItem[],
+  userId: string,
+  date: string
+): Promise<{ items: IDayTodoItem[]; modified: boolean }> {
+  const prevDay = await DayTodo.findOne({
+    userId,
+    date: { $lt: date },
+  }).sort({ date: -1 });
+
+  if (!prevDay || !prevDay.items?.length) {
+    return { items: currentItems, modified: false };
+  }
+
+  const existingTitles = new Set(
+    currentItems.map((it) => (it.title ?? "").trim())
+  );
+
+  const toAppend: IDayTodoItem[] = [];
+  for (const prevItem of prevDay.items) {
+    if (prevItem.completed) continue;
+    const trimmedTitle = (prevItem.title ?? "").trim();
+    if (!trimmedTitle || existingTitles.has(trimmedTitle)) continue;
+    existingTitles.add(trimmedTitle);
+    toAppend.push({
+      title: prevItem.title,
+      completed: false,
+      order: currentItems.length + toAppend.length,
+      subTasks: Array.isArray(prevItem.subTasks)
+        ? prevItem.subTasks.map((st) => ({ title: st.title, completed: false }))
+        : undefined,
+      carriedFrom: prevItem.carriedFrom ?? prevDay.date,
+      postponeCount: (prevItem.postponeCount ?? 0) + 1,
+    });
+  }
+
+  if (toAppend.length === 0) {
+    return { items: currentItems, modified: false };
+  }
+  return { items: [...currentItems, ...toAppend], modified: true };
 }

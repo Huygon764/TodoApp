@@ -24,6 +24,10 @@ export interface DayTodoItem {
   completed: boolean;
   order: number;
   subTasks?: DayTodoSubTask[];
+  /** Original date (YYYY-MM-DD) this task was first postponed from */
+  carriedFrom?: string;
+  /** Number of times this task has been carried over to a later day */
+  postponeCount?: number;
 }
 
 export interface DayTodo {

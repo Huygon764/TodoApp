@@ -9,7 +9,9 @@
     "emptySub": "Thêm công việc mới để bắt đầu",
     "deleteAria": "Xóa",
     "reviewMyself": "Review myself",
-    "view": "Xem"
+    "view": "Xem",
+    "carriedBadge": "hoãn {{count}} lần · từ {{date}}",
+    "carriedTooltip": "Được chuyển từ ngày trước vì chưa hoàn thành"
   },
   "defaultModal": {
     "title": "Template mặc định",

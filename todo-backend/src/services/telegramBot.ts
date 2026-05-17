@@ -401,7 +401,9 @@ class TelegramBot {
     if (!this.bot) {
       return (_req, res) => res.status(200).send("Bot not configured");
     }
-    return this.bot.webhookCallback("/webhook/telegram") as RequestHandler;
+    return this.bot.webhookCallback("/webhook/telegram", {
+      secretToken: env.telegramWebhookSecret ?? undefined,
+    }) as RequestHandler;
   }
 
   private async registerBotCommands(): Promise<void> {
@@ -458,7 +460,12 @@ class TelegramBot {
 
         if (env.telegramWebhookDomain) {
           const webhookUrl = `${env.telegramWebhookDomain}/webhook/telegram`;
-          await this.bot.telegram.setWebhook(webhookUrl);
+          await this.bot.telegram.setWebhook(
+            webhookUrl,
+            env.telegramWebhookSecret
+              ? { secret_token: env.telegramWebhookSecret }
+              : undefined
+          );
           console.log(`Telegram bot started (webhook: ${webhookUrl})`);
         } else {
           // Do not await: in polling mode this resolves only on stop.

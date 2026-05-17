@@ -86,8 +86,8 @@ jobs:
             --platform=managed \
             --port=3000 \
             --service-account=${{ vars.GCP_SERVICE_ACCOUNT_NAME }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com \
-            --set-secrets=MONGODB_URI=MONGODB_URI:latest,JWT_SECRET=JWT_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,CRON_SECRET=CRON_SECRET:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest \
-            --set-env-vars=FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            --set-secrets=MONGODB_URI=MONGODB_URI:latest,JWT_SECRET=JWT_SECRET:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,CRON_SECRET=CRON_SECRET:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,TELEGRAM_WEBHOOK_SECRET=TELEGRAM_WEBHOOK_SECRET:latest \
+            --set-env-vars=FRONTEND_URL=${{ vars.FRONTEND_URL }},TELEGRAM_WEBHOOK_DOMAIN=${{ vars.TELEGRAM_WEBHOOK_DOMAIN }} \
             --allow-unauthenticated \
             --min-instances=0 \
             --max-instances=3 \

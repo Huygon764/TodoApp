@@ -26,8 +26,10 @@ app.use(cookieParser());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Telegram webhook must receive raw body - mount before body parsing is already done; Telegraf works with parsed body for webhook too in many setups. Keep webhook after json/urlencoded so Telegram can send updates.
-app.use("/webhook/telegram", telegramBot.webhookCallback());
+// Telegram webhook. Mounted at the app root (no path prefix) so Express
+// does not strip the prefix; Telegraf matches the /webhook/telegram path
+// itself and verifies the secret token.
+app.use(telegramBot.webhookCallback());
 
 if (env.nodeEnv === "development") {
   app.use((req, res, next) => {

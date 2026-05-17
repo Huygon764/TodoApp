@@ -107,10 +107,11 @@ export const checkInvite = catchAsync(async (req: Request, res: Response) => {
     return sendSuccess(res, 200, { valid: false, reason: "not_found" });
   }
   const result = await validateInviteCode(code);
-  if (result.valid) {
+  if (result.valid && (result.invite.kind ?? "signup") === "signup") {
     return sendSuccess(res, 200, { valid: true, name: result.invite.name });
   }
-  sendSuccess(res, 200, { valid: false, reason: result.reason });
+  const reason = result.valid ? "not_found" : result.reason;
+  sendSuccess(res, 200, { valid: false, reason });
 });
 
 /**
@@ -134,6 +135,9 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   const check = await validateInviteCode(code);
   if (!check.valid) {
     throw badRequest(INVITE_REASON_MESSAGE[check.reason]);
+  }
+  if ((check.invite.kind ?? "signup") !== "signup") {
+    throw badRequest(MESSAGES.INVITE.NOT_FOUND);
   }
 
   const existingUser = await User.findByUsername(username);
@@ -171,3 +175,77 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   issueAuthCookie(res, user);
   sendSuccess(res, 201, { user }, MESSAGES.AUTH.REGISTER_SUCCESS);
 });
+
+/**
+ * GET /api/auth/reset/check?code=...
+ * Non-consuming validity check for a password-reset code.
+ */
+export const checkReset = catchAsync(async (req: Request, res: Response) => {
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  if (!code) {
+    return sendSuccess(res, 200, { valid: false, reason: "not_found" });
+  }
+  const result = await validateInviteCode(code);
+  if (result.valid && result.invite.kind === "reset") {
+    return sendSuccess(res, 200, {
+      valid: true,
+      username: result.invite.targetUsername,
+    });
+  }
+  const reason = result.valid ? "not_found" : result.reason;
+  sendSuccess(res, 200, { valid: false, reason });
+});
+
+/**
+ * POST /api/auth/reset
+ * Resets the target user's password using a reset code, then logs
+ * them in. The code is consumed only on success (released otherwise).
+ */
+export const resetPassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const { code, password } = req.body as {
+      code?: string;
+      password?: string;
+    };
+
+    if (!code || !password) {
+      throw badRequest(MESSAGES.AUTH.CREDENTIALS_REQUIRED);
+    }
+
+    const check = await validateInviteCode(code);
+    if (!check.valid) {
+      throw badRequest(INVITE_REASON_MESSAGE[check.reason]);
+    }
+    if (check.invite.kind !== "reset" || !check.invite.targetUsername) {
+      throw badRequest(MESSAGES.INVITE.NOT_FOUND);
+    }
+
+    const targetUsername = check.invite.targetUsername;
+
+    const consumed = await consumeInviteCode(code, targetUsername);
+    if (!consumed) {
+      throw badRequest(MESSAGES.INVITE.USED);
+    }
+
+    const user = await User.findByUsername(targetUsername);
+    if (!user) {
+      // Target user was removed after the link was created
+      await releaseInviteCode(code);
+      throw badRequest(MESSAGES.USER.NOT_FOUND);
+    }
+
+    try {
+      user.password = password;
+      await user.save();
+    } catch (e) {
+      await releaseInviteCode(code);
+      throw e;
+    }
+
+    await user.updateLastLogin();
+    (user as { password?: string }).password = undefined;
+
+    issueAuthCookie(res, user);
+    sendSuccess(res, 200, { user }, MESSAGES.AUTH.RESET_SUCCESS);
+  }
+);

@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { HomePage } from "@/pages/HomePage";
 
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ function App() {
         <Routes>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+          <Route path={ROUTES.RESET} element={<ResetPasswordPage />} />
           <Route
             path={ROUTES.HOME}
             element={

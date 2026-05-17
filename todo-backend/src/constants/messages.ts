@@ -15,6 +15,7 @@ export const MESSAGES = {
     USER_INACTIVE: "Tài khoản đã bị vô hiệu hóa",
     CREDENTIALS_REQUIRED: "Vui lòng nhập đầy đủ thông tin đăng nhập",
     REGISTER_SUCCESS: "Tạo tài khoản thành công",
+    RESET_SUCCESS: "Đặt lại mật khẩu thành công",
   },
 
   USER: {

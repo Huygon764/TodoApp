@@ -38,6 +38,14 @@ export const validateRegister = [
     .withMessage("Password must be at least 6 characters"),
 ];
 
+export const validateResetPassword = [
+  body("code").trim().notEmpty().withMessage("Reset code is required"),
+  body("password")
+    .isString()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+];
+
 export const validateDateParam = [
   param("date")
     .matches(/^\d{4}-\d{2}-\d{2}$/)

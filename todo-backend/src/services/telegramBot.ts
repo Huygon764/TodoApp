@@ -6,6 +6,7 @@ import { formatDate } from "../utils/index.js";
 import { runBackupForRequest } from "./backupService.js";
 import {
   createInvite,
+  createResetCode,
   listInvites,
   revokeInviteCode,
   inviteStatus,
@@ -166,6 +167,36 @@ class TelegramBot {
     }
   }
 
+  private async handleResetLink(
+    ctx: Context & { message: { text: string } }
+  ): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    try {
+      const username = ctx.message.text.split(" ").slice(1)[0]?.trim();
+      if (!username) {
+        ctx.reply(MESSAGES.RESETLINK_USAGE);
+        return;
+      }
+      const user = await User.findByUsername(username);
+      if (!user) {
+        ctx.reply(MESSAGES.RESETLINK_USER_NOT_FOUND(username));
+        return;
+      }
+      const invite = await createResetCode(username);
+      const link = `${env.frontendUrl}/reset?code=${invite.code}`;
+      ctx.reply(
+        MESSAGES.RESETLINK_SUCCESS(
+          username,
+          link,
+          formatDate(invite.expiresAt)
+        )
+      );
+    } catch (error) {
+      console.error("Error creating reset link:", error);
+      ctx.reply(MESSAGES.RESETLINK_ERROR);
+    }
+  }
+
   private async handleInvites(ctx: Context): Promise<void> {
     if (!this.requireAdmin(ctx)) return;
     try {
@@ -193,6 +224,7 @@ class TelegramBot {
           }
           return MESSAGES.INVITE_LINE(
             index + 1,
+            invite.kind ?? "signup",
             invite.name,
             status,
             detail
@@ -239,6 +271,7 @@ class TelegramBot {
     this.bot.help((ctx) => this.handleHelp(ctx));
     this.bot.command("register", (ctx) => this.handleRegister(ctx));
     this.bot.command("invite", (ctx) => this.handleInvite(ctx));
+    this.bot.command("resetlink", (ctx) => this.handleResetLink(ctx));
     this.bot.command("invites", (ctx) => this.handleInvites(ctx));
     this.bot.command("revoke", (ctx) => this.handleRevoke(ctx));
     this.bot.command("remove", (ctx) => this.handleRemove(ctx));

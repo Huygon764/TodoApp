@@ -9,6 +9,15 @@ const inviteCodeSchema = new Schema<IInviteCodeDocument>(
       unique: true,
       index: true,
     },
+    kind: {
+      type: String,
+      enum: ["signup", "reset"],
+      default: "signup",
+    },
+    targetUsername: {
+      type: String,
+      default: null,
+    },
     name: {
       type: String,
       required: true,

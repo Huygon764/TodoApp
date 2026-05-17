@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { validateLogin, validateRegister } from "../middleware/validation.js";
+import {
+  validateLogin,
+  validateRegister,
+  validateResetPassword,
+} from "../middleware/validation.js";
 import { validateRequest } from "../middleware/validateRequest.js";
 import { authenticate } from "../middleware/auth.js";
 import { createRateLimit } from "../middleware/rateLimit.js";
@@ -9,6 +13,8 @@ import {
   me,
   register,
   checkInvite,
+  checkReset,
+  resetPassword,
 } from "../controllers/authController.js";
 
 const router = Router();
@@ -32,6 +38,14 @@ router.post(
   validateRegister,
   validateRequest,
   register
+);
+router.get("/reset/check", checkInviteLimiter, checkReset);
+router.post(
+  "/reset",
+  registerLimiter,
+  validateResetPassword,
+  validateRequest,
+  resetPassword
 );
 
 export default router;

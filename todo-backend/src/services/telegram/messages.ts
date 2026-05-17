@@ -4,6 +4,7 @@ export const TELEGRAM_MESSAGES = {
   COMMAND_LIST:
     "/register <username> <password> - Create a new user\n" +
     "/invite <name> - Create a one-time signup link\n" +
+    "/resetlink <username> - Create a password reset link\n" +
     "/invites - List invite codes\n" +
     "/revoke <code> - Revoke a pending invite\n" +
     "/remove <username> - Remove a user\n" +
@@ -48,10 +49,11 @@ export const TELEGRAM_MESSAGES = {
   INVITES_HEADER: (count: number) => `Invite codes (${count}):\n\n`,
   INVITE_LINE: (
     index: number,
+    kind: string,
     name: string,
     status: string,
     detail: string
-  ) => `${index}. ${name} - ${status}\n   ${detail}`,
+  ) => `${index}. [${kind}] ${name} - ${status}\n   ${detail}`,
   INVITE_DETAIL_PENDING: (expiresStr: string) => `expires ${expiresStr}`,
   INVITE_DETAIL_USED: (by: string) => `used by ${by}`,
   INVITE_DETAIL_EXPIRED: "expired",
@@ -68,12 +70,19 @@ export const TELEGRAM_MESSAGES = {
     `If typing "/" still shows nothing, fully close and reopen your ` +
     `Telegram app to clear its client-side cache.`,
   SYNC_COMMANDS_ERROR: (msg: string) => `Failed to sync commands: ${msg}`,
+  RESETLINK_USAGE: "Usage: /resetlink <username>",
+  RESETLINK_USER_NOT_FOUND: (name: string) => `User "${name}" not found.`,
+  RESETLINK_SUCCESS: (name: string, link: string, expiresStr: string) =>
+    `Password reset link for "${name}".\n\n` +
+    `Link (one-time, valid until ${expiresStr}):\n${link}`,
+  RESETLINK_ERROR: "An error occurred while creating the reset link.",
 } as const;
 
 /** Registered with Telegram so typing "/" shows the command menu */
 export const TELEGRAM_BOT_COMMANDS = [
   { command: "register", description: "Create a new user" },
   { command: "invite", description: "Create a one-time signup link" },
+  { command: "resetlink", description: "Create a password reset link" },
   { command: "invites", description: "List invite codes" },
   { command: "revoke", description: "Revoke a pending invite" },
   { command: "remove", description: "Remove a user" },

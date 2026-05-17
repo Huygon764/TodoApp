@@ -2,8 +2,11 @@ import crypto from "crypto";
 import { InviteCode } from "../models/index.js";
 import type { IInviteCodeDocument } from "../types/index.js";
 
-/** Invite codes are valid for 24 hours and single-use */
+/** Signup invites are valid for 24 hours and single-use */
 export const INVITE_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** Password reset codes are shorter-lived (more sensitive) */
+export const RESET_TTL_MS = 60 * 60 * 1000;
 
 export type InviteInvalidReason =
   | "not_found"
@@ -25,8 +28,24 @@ export async function createInvite(
 ): Promise<IInviteCodeDocument> {
   const invite = new InviteCode({
     code: generateInviteCode(),
+    kind: "signup",
+    targetUsername: null,
     name: name.trim(),
     expiresAt: new Date(Date.now() + INVITE_TTL_MS),
+  });
+  await invite.save();
+  return invite;
+}
+
+export async function createResetCode(
+  username: string
+): Promise<IInviteCodeDocument> {
+  const invite = new InviteCode({
+    code: generateInviteCode(),
+    kind: "reset",
+    targetUsername: username,
+    name: username,
+    expiresAt: new Date(Date.now() + RESET_TTL_MS),
   });
   await invite.save();
   return invite;

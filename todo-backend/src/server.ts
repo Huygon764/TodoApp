@@ -12,8 +12,6 @@ import { telegramBot } from "./services/telegramBot.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-connectDb();
-
 app.use(
   cors({
     origin: env.frontendUrl,
@@ -56,10 +54,19 @@ app.use((_req, res) => {
 
 app.use(errorHandler);
 
-app.listen(env.port, () => {
-  console.log(`🚀 Todo API running on http://localhost:${env.port}`);
-  telegramBot.launch();
-});
+// Connect to MongoDB before listening so the server never accepts a
+// request (e.g. a Telegram webhook on a cold-started instance) before
+// the DB connection exists - otherwise Mongoose buffers the query and
+// throws "buffering timed out after 10000ms".
+const start = async (): Promise<void> => {
+  await connectDb();
+  app.listen(env.port, () => {
+    console.log(`🚀 Todo API running on http://localhost:${env.port}`);
+    telegramBot.launch();
+  });
+};
+
+start();
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM received. Shutting down.");

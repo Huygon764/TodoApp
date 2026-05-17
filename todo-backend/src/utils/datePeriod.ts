@@ -69,6 +69,24 @@ export function getWeekDateRange(periodStr: string): { start: Date; end: Date } 
   return { start, end };
 }
 
+/**
+ * Today's date as YYYY-MM-DD in the given IANA timezone. Falls back to
+ * Asia/Ho_Chi_Minh (the app default) if the timezone is missing/invalid.
+ */
+export function getTodayInTimeZone(tz?: string | null): string {
+  const zone = tz || "Asia/Ho_Chi_Minh";
+  try {
+    // en-CA formats as YYYY-MM-DD
+    return new Intl.DateTimeFormat("en-CA", { timeZone: zone }).format(
+      new Date()
+    );
+  } catch {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+    }).format(new Date());
+  }
+}
+
 /** Format a Date as local YYYY-MM-DD (matches how DayTodo.date is stored) */
 function toDateStr(d: Date): string {
   const y = d.getFullYear();

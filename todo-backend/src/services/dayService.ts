@@ -195,12 +195,20 @@ export async function mergeNewItemsIntoExistingDay(
  *   idempotent, so refreshing the same day never inflates postponeCount.
  * - Each carried item keeps the earliest known carriedFrom and bumps
  *   postponeCount by 1. Completed tasks are not carried.
+ * - Only runs for the user's today or a past day. Viewing a future day
+ *   must not prematurely materialize today's unfinished tasks there
+ *   (the source day is not over yet).
  */
 export async function mergeCarryOverItems(
   currentItems: IDayTodoItem[],
   userId: string,
-  date: string
+  date: string,
+  today: string
 ): Promise<{ items: IDayTodoItem[]; modified: boolean }> {
+  if (date > today) {
+    return { items: currentItems, modified: false };
+  }
+
   const prevDay = await DayTodo.findOne({
     userId,
     date: { $lt: date },

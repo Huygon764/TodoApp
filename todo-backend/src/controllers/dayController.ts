@@ -3,7 +3,11 @@ import { DayTodo } from "../models/index.js";
 import { catchAsync, sendSuccess, notFound } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IDayTodoItem } from "../types/index.js";
-import { isFirstDayOfWeek, isFirstDayOfMonth } from "../utils/datePeriod.js";
+import {
+  isFirstDayOfWeek,
+  isFirstDayOfMonth,
+  getTodayInTimeZone,
+} from "../utils/datePeriod.js";
 import { normalizeItems } from "../utils/normalizeItem.js";
 import {
   parseDateString,
@@ -22,6 +26,7 @@ import {
 export const getDay = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const date = req.params.date;
+  const today = getTodayInTimeZone(req.userDoc?.timezone);
   const dateObj = parseDateString(date);
   const isMonday = isFirstDayOfWeek(dateObj);
   const isFirstOfMonth = isFirstDayOfMonth(dateObj);
@@ -35,14 +40,14 @@ export const getDay = catchAsync(async (req: Request, res: Response) => {
     const items = await initializeDayItems(
       userId, date, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
     );
-    const carry = await mergeCarryOverItems(items, userId, date);
+    const carry = await mergeCarryOverItems(items, userId, date, today);
     dayTodo = await DayTodo.create({ userId, date, items: carry.items });
   } else {
     const result = await mergeNewItemsIntoExistingDay(
       dayTodo.items, userId, date,
       weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
     );
-    const carry = await mergeCarryOverItems(result.items, userId, date);
+    const carry = await mergeCarryOverItems(result.items, userId, date, today);
     if (result.modified || carry.modified) {
       dayTodo.items = carry.items;
       await dayTodo.save();

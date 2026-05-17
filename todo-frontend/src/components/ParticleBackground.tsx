@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import type { ISourceOptions } from "@tsparticles/engine";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
-export function ParticleBackground() {
+function ParticleBackgroundComponent() {
   const [init, setInit] = useState(false);
   const isMobile = useIsMobile();
 
@@ -53,3 +53,10 @@ export function ParticleBackground() {
     </div>
   );
 }
+
+/**
+ * Memoized: the component takes no props, so this prevents the
+ * expensive particles canvas from re-rendering/reinitializing every
+ * time a parent re-renders (e.g. typing in a form, toggling a task).
+ */
+export const ParticleBackground = memo(ParticleBackgroundComponent);

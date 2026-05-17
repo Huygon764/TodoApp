@@ -118,49 +118,35 @@ export function DayTodoItem({
           </AnimatePresence>
         </motion.button>
 
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          {editing ? (
-            <input
-              ref={editInputRef}
-              type="text"
-              value={editValue}
-              onChange={(e) => onTitleChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onTitleSave(item.id);
-                if (e.key === "Escape") onTitleCancel();
-              }}
-              onBlur={() => onTitleSave(item.id)}
-              className="w-full min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
-            />
-          ) : (
-            <motion.span
-              role="button"
-              tabIndex={0}
-              onClick={() => onTitleClick(item.id)}
-              onKeyDown={(e) => e.key === "Enter" && onTitleClick(item.id)}
-              className={`min-w-0 break-words transition-all duration-300 cursor-text ${
-                item.completed
-                  ? "line-through text-text-muted"
-                  : "text-text-secondary"
-              }`}
-              animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}
-            >
-              {item.title}
-            </motion.span>
-          )}
-
-          {!editing && !!item.postponeCount && (
-            <span
-              className="self-start text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap"
-              title={t("dayTodo.carriedTooltip")}
-            >
-              {t("dayTodo.carriedBadge", {
-                count: item.postponeCount,
-                date: formatCarriedFrom(item.carriedFrom),
-              })}
-            </span>
-          )}
-        </div>
+        {editing ? (
+          <input
+            ref={editInputRef}
+            type="text"
+            value={editValue}
+            onChange={(e) => onTitleChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onTitleSave(item.id);
+              if (e.key === "Escape") onTitleCancel();
+            }}
+            onBlur={() => onTitleSave(item.id)}
+            className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
+          />
+        ) : (
+          <motion.span
+            role="button"
+            tabIndex={0}
+            onClick={() => onTitleClick(item.id)}
+            onKeyDown={(e) => e.key === "Enter" && onTitleClick(item.id)}
+            className={`flex-1 min-w-0 break-words transition-all duration-300 cursor-text ${
+              item.completed
+                ? "line-through text-text-muted"
+                : "text-text-secondary"
+            }`}
+            animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}
+          >
+            {item.title}
+          </motion.span>
+        )}
 
         <motion.button
           type="button"
@@ -193,6 +179,19 @@ export function DayTodoItem({
           <Trash2 className="w-4 h-4" />
         </motion.button>
       </motion.div>
+      {!editing && !!item.postponeCount && (
+        <div className="pl-12 mt-1">
+          <span
+            className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20"
+            title={t("dayTodo.carriedTooltip")}
+          >
+            {t("dayTodo.carriedBadge", {
+              count: item.postponeCount,
+              date: formatCarriedFrom(item.carriedFrom),
+            })}
+          </span>
+        </div>
+      )}
       {expanded && (
         <div className="pl-12 mt-1">
           <SubTaskSection

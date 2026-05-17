@@ -15,7 +15,11 @@ import {
   releaseInviteCode,
   type InviteInvalidReason,
 } from "../services/inviteService.js";
-import type { IUserDocument } from "../types/index.js";
+import type {
+  IUserDocument,
+  IInviteCodeDocument,
+  InviteKind,
+} from "../types/index.js";
 
 const INVITE_REASON_MESSAGE: Record<InviteInvalidReason, string> = {
   not_found: MESSAGES.INVITE.NOT_FOUND,
@@ -23,6 +27,34 @@ const INVITE_REASON_MESSAGE: Record<InviteInvalidReason, string> = {
   used: MESSAGES.INVITE.USED,
   revoked: MESSAGES.INVITE.REVOKED,
 };
+
+/**
+ * Shared non-consuming code check for the register/reset pages.
+ * Returns { valid:true, ...extra } only when the code is valid AND of
+ * the expected kind; otherwise { valid:false, reason }.
+ */
+async function respondCodeCheck(
+  req: Request,
+  res: Response,
+  expectedKind: InviteKind,
+  buildExtra: (invite: IInviteCodeDocument) => Record<string, unknown>
+): Promise<void> {
+  const code = typeof req.query.code === "string" ? req.query.code : "";
+  if (!code) {
+    sendSuccess(res, 200, { valid: false, reason: "not_found" });
+    return;
+  }
+  const result = await validateInviteCode(code);
+  if (result.valid && (result.invite.kind ?? "signup") === expectedKind) {
+    sendSuccess(res, 200, {
+      valid: true,
+      ...buildExtra(result.invite),
+    });
+    return;
+  }
+  const reason = result.valid ? "not_found" : result.reason;
+  sendSuccess(res, 200, { valid: false, reason });
+}
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -101,18 +133,9 @@ export const me = catchAsync(async (req: Request, res: Response) => {
  * Lightweight, non-consuming validity check so the register page can
  * show an error instead of a form when the invite is bad.
  */
-export const checkInvite = catchAsync(async (req: Request, res: Response) => {
-  const code = typeof req.query.code === "string" ? req.query.code : "";
-  if (!code) {
-    return sendSuccess(res, 200, { valid: false, reason: "not_found" });
-  }
-  const result = await validateInviteCode(code);
-  if (result.valid && (result.invite.kind ?? "signup") === "signup") {
-    return sendSuccess(res, 200, { valid: true, name: result.invite.name });
-  }
-  const reason = result.valid ? "not_found" : result.reason;
-  sendSuccess(res, 200, { valid: false, reason });
-});
+export const checkInvite = catchAsync((req: Request, res: Response) =>
+  respondCodeCheck(req, res, "signup", (invite) => ({ name: invite.name }))
+);
 
 /**
  * POST /api/auth/register
@@ -180,21 +203,11 @@ export const register = catchAsync(async (req: Request, res: Response) => {
  * GET /api/auth/reset/check?code=...
  * Non-consuming validity check for a password-reset code.
  */
-export const checkReset = catchAsync(async (req: Request, res: Response) => {
-  const code = typeof req.query.code === "string" ? req.query.code : "";
-  if (!code) {
-    return sendSuccess(res, 200, { valid: false, reason: "not_found" });
-  }
-  const result = await validateInviteCode(code);
-  if (result.valid && result.invite.kind === "reset") {
-    return sendSuccess(res, 200, {
-      valid: true,
-      username: result.invite.targetUsername,
-    });
-  }
-  const reason = result.valid ? "not_found" : result.reason;
-  sendSuccess(res, 200, { valid: false, reason });
-});
+export const checkReset = catchAsync((req: Request, res: Response) =>
+  respondCodeCheck(req, res, "reset", (invite) => ({
+    username: invite.targetUsername,
+  }))
+);
 
 /**
  * POST /api/auth/reset

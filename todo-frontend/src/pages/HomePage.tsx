@@ -87,20 +87,44 @@ export function HomePage() {
   });
 
   // Mutations
+  // PATCH already returns the updated day, so write it straight into the
+  // cache instead of invalidating (which would trigger a redundant full
+  // refetch on every toggle / keystroke). Fall back to invalidate if the
+  // response is unexpectedly empty.
+  const applyDayResponse = (
+    res: { data?: { dayTodo?: DayTodo } },
+    date: string
+  ) => {
+    const updated = res.data?.dayTodo;
+    if (updated) {
+      queryClient.setQueryData(["day", date], updated);
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["day", date] });
+    }
+  };
+
   const patchDayMutation = useMutation({
-    mutationFn: (items: DayTodoItem[]) =>
-      apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate), { items }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
+    mutationFn: async (items: DayTodoItem[]) => {
+      // Pin the date at call time so a later date switch cannot make
+      // onSuccess write this response into the wrong day's cache.
+      const date = selectedDate;
+      const res = await apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(date), {
+        items,
+      });
+      return { res, date };
     },
+    onSuccess: ({ res, date }) => applyDayResponse(res, date),
   });
 
   const patchReflectionMutation = useMutation({
-    mutationFn: (reflection: string) =>
-      apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate), { reflection }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
+    mutationFn: async (reflection: string) => {
+      const date = selectedDate;
+      const res = await apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(date), {
+        reflection,
+      });
+      return { res, date };
     },
+    onSuccess: ({ res, date }) => applyDayResponse(res, date),
   });
 
   const addDefaultMutation = useMutation({

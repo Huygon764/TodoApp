@@ -73,6 +73,9 @@
     "addPlaceholder": "Thêm item...",
     "add": "Thêm",
     "empty": "Chưa có item nào",
+    "legacyBadgeWeek": "Cũ — chưa có lịch, chỉ áp dụng thứ Hai",
+    "legacyBadgeMonth": "Cũ — chưa có lịch, chỉ áp dụng ngày 1",
+    "legacyBadgeYear": "Cũ — chưa có lịch, chỉ áp dụng 1/1",
     "footerTip": "Các item được tự động thêm vào todo của ngày theo lịch lặp bạn đã chọn khi mở ngày đó. Không liên quan mục tiêu.",
     "deleteAria": "Xóa"
   },

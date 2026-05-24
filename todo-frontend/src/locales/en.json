@@ -73,6 +73,9 @@
     "addPlaceholder": "Add item...",
     "add": "Add",
     "empty": "No items yet",
+    "legacyBadgeWeek": "Legacy — no schedule set, applies on Monday only",
+    "legacyBadgeMonth": "Legacy — no schedule set, applies on the 1st only",
+    "legacyBadgeYear": "Legacy — no schedule set, applies on Jan 1 only",
     "footerTip": "Items are automatically added to the day's todo list on the selected recurring days when you open that day. Not related to goals.",
     "deleteAria": "Delete"
   },

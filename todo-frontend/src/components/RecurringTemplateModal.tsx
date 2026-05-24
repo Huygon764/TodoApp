@@ -12,6 +12,12 @@ import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import {
+  isLegacyRecurringItem,
+  isMonthItemVisible,
+  isWeekItemVisible,
+  isYearItemVisible,
+} from "@/lib/recurringSchedule";
 
 /** Recurring template: week/month/year; items are added to day todo based on schedule */
 type RecurringTab = "week" | "month" | "year";
@@ -60,23 +66,19 @@ export function RecurringTemplateModal({
   const template = data ?? null;
   const items = template?.items ?? [];
 
-  // Derive visible items for current context, but keep original index for API ops
+  // Derive visible items for current context, but keep original index for API ops.
+  // Include legacy items (no schedule) on their default day — mirrors backend merge rules.
   const visibleItems = items
     .map((item, idx) => ({ item, idx }))
     .filter(({ item }) => {
       if (activeTab === "week") {
-        return Array.isArray(item.daysOfWeek) && item.daysOfWeek.includes(weeklyContextDay);
+        return isWeekItemVisible(item, weeklyContextDay);
       }
       if (activeTab === "month") {
-        return Array.isArray(item.daysOfMonth) && item.daysOfMonth.includes(monthlyContextDay);
+        return isMonthItemVisible(item, monthlyContextDay);
       }
       if (activeTab === "year") {
-        return (
-          Array.isArray(item.datesOfYear) &&
-          item.datesOfYear.some(
-            (d) => d.month === yearlyContext.month && d.day === yearlyContext.day
-          )
-        );
+        return isYearItemVisible(item, yearlyContext);
       }
       return false;
     });
@@ -351,6 +353,7 @@ export function RecurringTemplateModal({
                     <ul className="space-y-2">
                       <AnimatePresence mode="popLayout">
                         {visibleItems.map(({ item, idx }) => {
+                          const isLegacy = isLegacyRecurringItem(activeTab, item);
                           return (
                             <motion.li
                               key={`${item.title}-${idx}`}
@@ -375,17 +378,28 @@ export function RecurringTemplateModal({
                                     className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary focus:ring-0"
                                   />
                                 ) : (
-                                  <span
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => handleTitleClick(idx)}
-                                    onKeyDown={(e) =>
-                                      e.key === "Enter" && handleTitleClick(idx)
-                                    }
-                                    className="flex-1 text-text-secondary cursor-text"
-                                  >
-                                    {item.title}
-                                  </span>
+                                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                    <span
+                                      role="button"
+                                      tabIndex={0}
+                                      onClick={() => handleTitleClick(idx)}
+                                      onKeyDown={(e) =>
+                                        e.key === "Enter" && handleTitleClick(idx)
+                                      }
+                                      className="text-text-secondary cursor-text"
+                                    >
+                                      {item.title}
+                                    </span>
+                                    {isLegacy && (
+                                      <span className="text-[11px] text-text-muted leading-tight">
+                                        {activeTab === "week"
+                                          ? t("recurringModal.legacyBadgeWeek")
+                                          : activeTab === "month"
+                                            ? t("recurringModal.legacyBadgeMonth")
+                                            : t("recurringModal.legacyBadgeYear")}
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
                                 <motion.button
                                   type="button"

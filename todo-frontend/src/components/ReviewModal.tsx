@@ -9,6 +9,8 @@ import {
   getWeekPeriod,
   getMonthPeriod,
   formatWeekPeriodLabel,
+  formatDraftBreadcrumbDate,
+  localeFromLanguage,
 } from "@/lib/datePeriod";
 import { stepPeriod } from "@/lib/periodStep";
 import type { Review } from "@/types";
@@ -100,7 +102,8 @@ export function ReviewModal({
   period: periodProp,
   onOpenHistory,
 }: ReviewModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = localeFromLanguage(i18n.language);
   const [activeTab, setActiveTab] = useState<"week" | "month">(typeProp ?? "week");
   const [slotPeriod, setSlotPeriod] = useState<string | null>(null);
   const period = typeProp
@@ -180,11 +183,6 @@ export function ReviewModal({
   const showDraftHint =
     isOpen && !existing && hasDraftContent && !draftDismissed;
 
-  const formatDraftDate = (d: string) => {
-    const p = d.split("-");
-    return p.length === 3 ? `${p[2]}/${p[1]}` : d;
-  };
-
   const applyDraft = () => {
     if (!draft) return;
     setGoodThings([]);
@@ -200,7 +198,10 @@ export function ReviewModal({
     setBadThings(bad);
     setNotes(
       draft.breadcrumbs
-        .map((b) => `${formatDraftDate(b.date)} — ${b.reflection}`)
+        .map(
+          (b) =>
+            `${formatDraftBreadcrumbDate(b.date, dateLocale)} — ${b.reflection}`,
+        )
         .join("\n")
     );
     setDraftDismissed(true);

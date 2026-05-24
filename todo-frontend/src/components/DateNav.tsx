@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { CalendarPopover } from "@/components/CalendarPopover";
-import { getTodayInTimezone } from "@/lib/datePeriod";
+import { getTodayInTimezone, localeFromLanguage } from "@/lib/datePeriod";
 
 interface DateNavProps {
   date: string;
@@ -15,10 +15,6 @@ function addDays(dateStr: string, delta: number): string {
   const d = new Date(dateStr + "T12:00:00");
   d.setDate(d.getDate() + delta);
   return d.toISOString().slice(0, 10);
-}
-
-function localeFromLanguage(lang: string): string {
-  return lang === "vi" ? "vi-VN" : "en-US";
 }
 
 function getYesterdayTomorrowInTz(todayStr: string, tz?: string): { yesterday: string; tomorrow: string } {

@@ -1,6 +1,20 @@
 /**
  * Returns today's date as YYYY-MM-DD in the given timezone, or local browser date if no tz.
  */
+export function localeFromLanguage(lang: string): string {
+  return lang === "vi" ? "vi-VN" : "en-US";
+}
+
+/** YYYY-MM-DD → e.g. "Monday, 24 May" / "Thứ Hai, 24 tháng 5" */
+export function formatDraftBreadcrumbDate(dateStr: string, locale: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 export function getTodayInTimezone(tz?: string): string {
   const d = new Date();
   if (tz?.trim()) {

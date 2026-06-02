@@ -35,3 +35,14 @@ body {
   min-height: 100vh;
   font-family: system-ui, -apple-system, sans-serif;
 }
+
+@layer base {
+  /* Interactive elements show a pointer cursor by default (per DESIGN.md).
+     Explicit cursor-* utilities (cursor-grab, cursor-text,
+     cursor-not-allowed, ...) still win since they live in the utilities
+     layer, so drag handles, inputs and disabled buttons are unaffected. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}

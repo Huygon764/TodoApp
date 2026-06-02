@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +8,7 @@ import { apiGet, apiPatch } from "@/lib/api";
 import { getWeekPeriod, getMonthPeriod } from "@/lib/datePeriod";
 import { sortItemsByCompletion } from "@/lib/sortItems";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 
 type GoalType = "week" | "month";
 
@@ -21,7 +21,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = usePersistentBoolean("focusPanel.expanded", true);
 
   // Parse as local midnight so the week/month period matches the calendar day.
   const d = new Date(date + "T00:00:00");

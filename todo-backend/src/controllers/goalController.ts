@@ -1,20 +1,22 @@
 import type { Request, Response } from "express";
 import { Goal } from "../models/index.js";
-import { catchAsync, sendSuccess, notFound, getOrCreate, removeAndReorder } from "../utils/index.js";
+import { catchAsync, sendSuccess, notFound, removeAndReorder } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IGoalItem } from "../types/index.js";
 import { normalizeItems } from "../utils/normalizeItem.js";
 
 /**
  * GET /api/goals?type=week|month|year&period=...
- * Returns one goal doc. Creates with empty items if not found (user adds items manually).
+ * Returns the goal doc for the period, or null if none exists yet. Read-only:
+ * the doc is created lazily on first POST/PATCH, so merely viewing a day does
+ * not litter the DB with empty goals.
  */
 export const getGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const type = req.query.type as "week" | "month" | "year";
   const period = req.query.period as string;
 
-  const goal = await getOrCreate(Goal, { userId, type, period }, { items: [] });
+  const goal = await Goal.findOne({ userId, type, period });
 
   sendSuccess(res, 200, { goal });
 });

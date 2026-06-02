@@ -128,9 +128,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     onMutate: async (items: GoalItem[]) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData(queryKey);
-      queryClient.setQueryData(queryKey, {
-        goal: goal ? { ...goal, items } : null,
-      });
+      // The query stores the Goal (or null) directly; keep that shape so other
+      // readers of this key (e.g. DayGoalsPanel) don't get a wrapped object.
+      queryClient.setQueryData(queryKey, goal ? { ...goal, items } : null);
       return { previous };
     },
     onError: (_err, _items, context) => {

@@ -132,7 +132,7 @@
     "notesPlaceholder": "Additional notes...",
     "save": "Save",
     "saving": "Saving...",
-    "draftHint": "{{count}} daily note(s) this period — auto-fill from them?",
+    "draftHint": "{{count}} new daily note(s) to add — pull them in?",
     "draftApply": "Auto-draft",
     "draftSkip": "Start blank",
     "draftPostponed": "Often postponed: {{title}} ({{count}}x)"

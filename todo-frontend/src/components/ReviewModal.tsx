@@ -168,42 +168,57 @@ export function ReviewModal({
       );
       return res.data?.draft ?? null;
     },
-    enabled: isOpen && !existing,
+    enabled: isOpen,
   });
 
   useEffect(() => {
     setDraftDismissed(false);
   }, [isOpen, activeTab, period]);
 
-  const draftNoteCount = draft?.breadcrumbs.length ?? 0;
-  const hasDraftContent =
-    !!draft &&
-    (draft.breadcrumbs.length > 0 ||
-      (!!draft.mostPostponed && draft.mostPostponed.count >= 2));
-  const showDraftHint =
-    isOpen && !existing && hasDraftContent && !draftDismissed;
-
-  const applyDraft = () => {
-    if (!draft) return;
-    setGoodThings([]);
-    const bad: string[] = [];
-    if (draft.mostPostponed && draft.mostPostponed.count >= 2) {
-      bad.push(
-        t("reviewModal.draftPostponed", {
+  const draftEntries = (draft?.breadcrumbs ?? []).map((b) => {
+    const prefix = `${formatDraftBreadcrumbDate(b.date, dateLocale)} — `;
+    // Collapse newlines so each day stays one line (line-based upsert below).
+    const text = b.reflection.replace(/\s*\n\s*/g, " ").trim();
+    return { prefix, line: `${prefix}${text}` };
+  });
+  const notesLines = notes.split("\n");
+  // A day is pending if its line is missing OR changed. Matched by date prefix
+  // so editing a day updates its line instead of duplicating it.
+  const pendingEntries = draftEntries.filter((e) => {
+    const current = notesLines.find((l) => l.startsWith(e.prefix));
+    return current !== e.line;
+  });
+  const postponedLine =
+    draft?.mostPostponed && draft.mostPostponed.count >= 2
+      ? t("reviewModal.draftPostponed", {
           title: draft.mostPostponed.title,
           count: draft.mostPostponed.count,
         })
-      );
+      : null;
+  const postponedIsNew =
+    postponedLine != null && !badThings.includes(postponedLine);
+
+  const draftNoteCount = pendingEntries.length;
+  const hasDraftContent = pendingEntries.length > 0 || postponedIsNew;
+  const showDraftHint = isOpen && hasDraftContent && !draftDismissed;
+
+  // Upsert by date prefix: new days are appended, edited days replace their
+  // existing line. Freeform lines (without a date prefix) are left untouched.
+  const applyDraft = () => {
+    if (postponedLine && postponedIsNew) {
+      setBadThings((prev) => [...prev, postponedLine]);
     }
-    setBadThings(bad);
-    setNotes(
-      draft.breadcrumbs
-        .map(
-          (b) =>
-            `${formatDraftBreadcrumbDate(b.date, dateLocale)} — ${b.reflection}`,
-        )
-        .join("\n")
-    );
+    if (pendingEntries.length > 0) {
+      setNotes((prev) => {
+        const lines = prev.trim() ? prev.split("\n") : [];
+        for (const e of pendingEntries) {
+          const idx = lines.findIndex((l) => l.startsWith(e.prefix));
+          if (idx >= 0) lines[idx] = e.line;
+          else lines.push(e.line);
+        }
+        return lines.join("\n");
+      });
+    }
     setDraftDismissed(true);
   };
 

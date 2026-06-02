@@ -132,7 +132,7 @@
     "notesPlaceholder": "Ghi chú thêm...",
     "save": "Lưu",
     "saving": "Đang lưu...",
-    "draftHint": "Có {{count}} ghi chú trong kỳ này — tự điền từ chúng?",
+    "draftHint": "Có {{count}} ghi chú ngày mới — kéo vào?",
     "draftApply": "Soạn nháp tự động",
     "draftSkip": "Bắt đầu trống",
     "draftPostponed": "Hay hoãn: {{title}} ({{count}} lần)"

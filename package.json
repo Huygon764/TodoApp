@@ -1,0 +1,12 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily todo app — runs the backend and frontend dev servers together",
+  "scripts": {
+    "dev": "(cd todo-backend && bun run dev) & (cd todo-frontend && bun run dev) & wait",
+    "dev:back": "cd todo-backend && bun run dev",
+    "dev:front": "cd todo-frontend && bun run dev",
+    "install:all": "cd todo-backend && bun install && cd ../todo-frontend && bun install"
+  }
+}

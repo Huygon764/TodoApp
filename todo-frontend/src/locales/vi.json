@@ -31,6 +31,11 @@
     "flashbackMonthAgo": "1 tháng trước",
     "flashbackYearAgo": "1 năm trước"
   },
+  "dayGoals": {
+    "title": "Tiêu điểm",
+    "weekLabel": "Tuần này",
+    "monthLabel": "Tháng này"
+  },
   "defaultModal": {
     "title": "Template mặc định",
     "subtitle": "Tự động copy sang mỗi ngày mới",
@@ -175,6 +180,8 @@
     "logout": "Đăng xuất"
   },
   "common": {
-    "deleteAria": "Xóa"
+    "deleteAria": "Xóa",
+    "errorTitle": "Có lỗi xảy ra ở đây.",
+    "reload": "Tải lại"
   }
 }

@@ -8,7 +8,9 @@ import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
+import { DayGoalsPanel } from "@/components/DayGoalsPanel";
 import { DayTodoList } from "@/components/DayTodoList";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
 import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
 import { GoalModal } from "@/components/GoalModal";
@@ -177,14 +179,34 @@ export function HomePage() {
           />
         </motion.section>
 
-        <motion.section {...getSectionMotion(0.05)} className="flex-1">
-          <DayTodoList
-            dayTodo={dayTodo}
-            isLoading={dayLoading}
-            onUpdateItems={(items) => patchDayMutation.mutate(items)}
-            onUpdateMeta={(meta) => patchDayMetaMutation.mutate(meta)}
-          />
-        </motion.section>
+        <ErrorBoundary
+          key={selectedDate}
+          fallback={
+            <div className="rounded-3xl bg-bg-card border border-danger-border p-6 text-center space-y-3">
+              <p className="text-text-secondary">{t("common.errorTitle")}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 rounded-lg bg-accent-primary/20 text-accent-hover text-sm font-medium hover:bg-accent-primary/30 cursor-pointer"
+              >
+                {t("common.reload")}
+              </button>
+            </div>
+          }
+        >
+          <motion.section {...getSectionMotion(0.05)}>
+            <DayGoalsPanel date={selectedDate} />
+          </motion.section>
+
+          <motion.section {...getSectionMotion(0.08)} className="flex-1">
+            <DayTodoList
+              dayTodo={dayTodo}
+              isLoading={dayLoading}
+              onUpdateItems={(items) => patchDayMutation.mutate(items)}
+              onUpdateMeta={(meta) => patchDayMetaMutation.mutate(meta)}
+            />
+          </motion.section>
+        </ErrorBoundary>
 
         <motion.section {...getSectionMotion(0.1)}>
           <SectionCard

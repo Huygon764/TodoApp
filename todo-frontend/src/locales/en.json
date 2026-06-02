@@ -31,6 +31,11 @@
     "flashbackMonthAgo": "1 month ago",
     "flashbackYearAgo": "1 year ago"
   },
+  "dayGoals": {
+    "title": "Focus",
+    "weekLabel": "This week",
+    "monthLabel": "This month"
+  },
   "defaultModal": {
     "title": "Default template",
     "subtitle": "Auto-copied to each new day",
@@ -175,6 +180,8 @@
     "logout": "Log out"
   },
   "common": {
-    "deleteAria": "Delete"
+    "deleteAria": "Delete",
+    "errorTitle": "Something went wrong here.",
+    "reload": "Reload"
   }
 }

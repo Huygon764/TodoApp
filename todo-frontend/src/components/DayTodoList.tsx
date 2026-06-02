@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Circle, TrendingUp, Pencil } from "lucide-react";
-import type { DayTodo, DayTodoItem } from "@/types";
+import { Plus, Circle, TrendingUp } from "lucide-react";
+import type { DayTodo, DayTodoItem, DayReflectionMeta } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useSubTaskManager } from "@/hooks/useSubTaskManager";
@@ -12,6 +12,7 @@ import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { DayTodoItem as DayTodoItemRow } from "@/components/DayTodoItem";
 import type { DayTodoItemView as DayTodoItemWithId } from "@/components/DayTodoItem";
+import { DayReflectionPanel } from "@/components/DayReflectionPanel";
 
 const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] =>
   addClientIds(items, "item") as DayTodoItemWithId[];
@@ -23,14 +24,14 @@ interface DayTodoListProps {
   dayTodo: DayTodo | null;
   isLoading: boolean;
   onUpdateItems: (items: DayTodoItem[]) => void;
-  onUpdateReflection: (reflection: string) => void;
+  onUpdateMeta: (meta: DayReflectionMeta) => void;
 }
 
 export function DayTodoList({
   dayTodo,
   isLoading,
   onUpdateItems,
-  onUpdateReflection,
+  onUpdateMeta,
 }: DayTodoListProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -42,38 +43,12 @@ export function DayTodoList({
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const REORDER_DEBOUNCE_MS = 600;
-  const [reflection, setReflection] = useState("");
 
   // Sync items from props
   useEffect(() => {
     const rawItems = dayTodo?.items ?? [];
     setItems(sortItemsByCompletion(addIdsToItems(rawItems)));
   }, [dayTodo]);
-
-  // Sync reflection from props (per loaded day)
-  useEffect(() => {
-    setReflection(dayTodo?.reflection ?? "");
-  }, [dayTodo]);
-
-  // Stable rotating question per date so it does not flicker on re-render
-  const reflectionQuestions = t("dayTodo.reflectionQuestions", {
-    returnObjects: true,
-  }) as string[];
-  const reflectionQuestion = (() => {
-    const date = dayTodo?.date ?? "";
-    if (!Array.isArray(reflectionQuestions) || reflectionQuestions.length === 0) {
-      return "";
-    }
-    let sum = 0;
-    for (let i = 0; i < date.length; i++) sum += date.charCodeAt(i);
-    return reflectionQuestions[sum % reflectionQuestions.length];
-  })();
-
-  const handleReflectionBlur = () => {
-    const next = reflection.trim();
-    if (next === (dayTodo?.reflection ?? "")) return;
-    onUpdateReflection(next);
-  };
 
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
@@ -339,28 +314,9 @@ export function DayTodoList({
           )}
         </div>
 
-        {/* End-of-day reflection (breadcrumb for assisted review) */}
+        {/* Daily reflection: journal, mood/energy, gratitude, "on this day" */}
         {dayTodo && (
-          <div className="p-4 border-t border-border-subtle">
-            <label className="flex items-center gap-2 text-sm text-text-muted mb-2">
-              <Pencil className="w-4 h-4" />
-              {reflectionQuestion}
-            </label>
-            <input
-              type="text"
-              value={reflection}
-              maxLength={500}
-              onChange={(e) => setReflection(e.target.value)}
-              onBlur={handleReflectionBlur}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") e.currentTarget.blur();
-              }}
-              placeholder={t("dayTodo.reflectionPlaceholder")}
-              className="w-full px-4 py-3 rounded-xl bg-bg-surface border border-border-subtle text-slate-100 placeholder-text-muted
-                focus:outline-none focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary/50
-                hover:border-border-strong transition-all duration-200"
-            />
-          </div>
+          <DayReflectionPanel dayTodo={dayTodo} onUpdateMeta={onUpdateMeta} />
         )}
       </div>
     </div>

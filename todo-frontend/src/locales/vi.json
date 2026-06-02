@@ -19,7 +19,17 @@
       "Thắng lợi nhỏ hôm nay là gì?",
       "Hôm nay bạn học được gì?",
       "Ngày mai bạn sẽ làm khác đi điều gì?"
-    ]
+    ],
+    "reflectionTitle": "Nhìn lại ngày",
+    "moodLabel": "Hôm nay bạn thấy thế nào?",
+    "moodLevels": ["Tệ", "Không vui", "Bình thường", "Tốt", "Tuyệt"],
+    "energyLabel": "Mức năng lượng",
+    "energyAria": "Năng lượng mức {{level}}/5",
+    "gratitudePrompt": "Hôm nay bạn biết ơn điều gì?",
+    "gratitudePlaceholder": "Một điều, nhỏ hay lớn...",
+    "onThisDay": "Ngày này...",
+    "flashbackMonthAgo": "1 tháng trước",
+    "flashbackYearAgo": "1 năm trước"
   },
   "defaultModal": {
     "title": "Template mặc định",

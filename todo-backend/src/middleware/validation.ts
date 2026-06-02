@@ -66,6 +66,21 @@ export const validatePatchDayBody = [
     .withMessage("reflection must be a string")
     .isLength({ max: 500 })
     .withMessage("reflection is too long"),
+  // null is allowed so the client can clear a previously set mood/energy.
+  body("mood")
+    .optional({ nullable: true })
+    .isInt({ min: 1, max: 5 })
+    .withMessage("mood must be an integer between 1 and 5"),
+  body("energy")
+    .optional({ nullable: true })
+    .isInt({ min: 1, max: 5 })
+    .withMessage("energy must be an integer between 1 and 5"),
+  body("gratitude")
+    .optional()
+    .isString()
+    .withMessage("gratitude must be a string")
+    .isLength({ max: 280 })
+    .withMessage("gratitude is too long"),
 ];
 
 export const validatePatchFreetimeTodoBody = itemsArrayValidators({

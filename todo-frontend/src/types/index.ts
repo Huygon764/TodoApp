@@ -37,8 +37,32 @@ export interface DayTodo {
   items: DayTodoItem[];
   /** One-line end-of-day reflection (breadcrumb for assisted review) */
   reflection?: string;
+  /** Self-reported mood for the day, 1 (low) to 5 (high) */
+  mood?: number;
+  /** Self-reported energy for the day, 1 (low) to 5 (high) */
+  energy?: number;
+  /** One line of gratitude for the day */
+  gratitude?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Editable reflection fields of a day. null clears mood/energy. */
+export interface DayReflectionMeta {
+  reflection?: string;
+  mood?: number | null;
+  energy?: number | null;
+  gratitude?: string;
+}
+
+/** A past day resurfaced in the "on this day" section. */
+export interface DayFlashback {
+  key: "monthAgo" | "yearAgo";
+  date: string;
+  mood: number | null;
+  energy: number | null;
+  reflection: string;
+  gratitude: string;
 }
 
 export type DefaultItemSubTask = BaseSubTask;

@@ -34,6 +34,22 @@ const dayTodoSchema = new Schema<IDayTodoDocument>(
       default: "",
       trim: true,
     },
+    mood: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    energy: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    gratitude: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 280,
+    },
   },
   { timestamps: true }
 );

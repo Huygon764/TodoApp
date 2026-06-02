@@ -9,6 +9,7 @@ export const API_PATHS = {
   AUTH_RESET_CHECK: (code: string) =>
     `/api/auth/reset/check?code=${encodeURIComponent(code)}`,
   DAY: (date: string) => `/api/days/${date}`,
+  DAY_FLASHBACK: (date: string) => `/api/days/${date}/flashback`,
   DEFAULT: "/api/default",
   DEFAULT_BY_ID: (id: string) => `/api/default/${id}`,
   GOALS: "/api/goals",

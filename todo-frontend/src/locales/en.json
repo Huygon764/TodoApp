@@ -19,7 +19,17 @@
       "What was today's small win?",
       "What did you learn today?",
       "What would you do differently tomorrow?"
-    ]
+    ],
+    "reflectionTitle": "Reflection",
+    "moodLabel": "How are you feeling?",
+    "moodLevels": ["Awful", "Bad", "Okay", "Good", "Great"],
+    "energyLabel": "Energy level",
+    "energyAria": "Energy level {{level}} of 5",
+    "gratitudePrompt": "What are you grateful for today?",
+    "gratitudePlaceholder": "One thing, big or small...",
+    "onThisDay": "On this day",
+    "flashbackMonthAgo": "1 month ago",
+    "flashbackYearAgo": "1 year ago"
   },
   "defaultModal": {
     "title": "Default template",

@@ -22,6 +22,12 @@ export interface IDayTodo {
   items: IDayTodoItem[];
   /** One-line end-of-day reflection (breadcrumb for assisted review) */
   reflection?: string;
+  /** Self-reported mood for the day, 1 (low) to 5 (high). */
+  mood?: number;
+  /** Self-reported energy for the day, 1 (low) to 5 (high). */
+  energy?: number;
+  /** One line of gratitude for the day. */
+  gratitude?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ListTodo, CalendarRange, Calendar, Circle } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import type { DayTodo, DayTodoItem, DefaultItem, User } from "@/types";
+import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayTodoList } from "@/components/DayTodoList";
@@ -116,12 +116,10 @@ export function HomePage() {
     onSuccess: ({ res, date }) => applyDayResponse(res, date),
   });
 
-  const patchReflectionMutation = useMutation({
-    mutationFn: async (reflection: string) => {
+  const patchDayMetaMutation = useMutation({
+    mutationFn: async (meta: DayReflectionMeta) => {
       const date = selectedDate;
-      const res = await apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(date), {
-        reflection,
-      });
+      const res = await apiPatch<{ dayTodo: DayTodo }>(API_PATHS.DAY(date), meta);
       return { res, date };
     },
     onSuccess: ({ res, date }) => applyDayResponse(res, date),
@@ -184,9 +182,7 @@ export function HomePage() {
             dayTodo={dayTodo}
             isLoading={dayLoading}
             onUpdateItems={(items) => patchDayMutation.mutate(items)}
-            onUpdateReflection={(reflection) =>
-              patchReflectionMutation.mutate(reflection)
-            }
+            onUpdateMeta={(meta) => patchDayMetaMutation.mutate(meta)}
           />
         </motion.section>
 

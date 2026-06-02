@@ -14,10 +14,11 @@ export const getPersonNotes = catchAsync(
 export const createPersonNote = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { name, notes, order } = req.body as {
+    const { name, notes, order, category } = req.body as {
       name: string;
       notes?: string[];
       order?: number;
+      category?: "person" | "object";
     };
 
     const count = await PersonNote.countDocuments({ userId });
@@ -28,6 +29,7 @@ export const createPersonNote = catchAsync(
         ? notes.map((n) => n.trim()).filter((n) => n.length > 0)
         : [],
       order: typeof order === "number" ? order : count,
+      category: category === "object" ? "object" : "person",
     });
     sendSuccess(res, 201, { item });
   }

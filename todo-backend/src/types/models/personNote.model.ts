@@ -5,6 +5,8 @@ export interface IPersonNote {
   name: string;
   notes: string[];
   order: number;
+  /** "person" for people, "object" for things to remember (movies, apps...). */
+  category: "person" | "object";
   createdAt: Date;
   updatedAt: Date;
 }

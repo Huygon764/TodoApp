@@ -24,6 +24,11 @@ const personNoteSchema = new Schema<IPersonNoteDocument>(
       required: true,
       default: 0,
     },
+    category: {
+      type: String,
+      enum: ["person", "object"],
+      default: "person",
+    },
   },
   { timestamps: true }
 );

@@ -249,6 +249,10 @@ export const validatePersonNoteBody = [
     .isArray()
     .withMessage("notes must be an array"),
   body("notes.*").optional().trim().isString(),
+  body("category")
+    .optional()
+    .isIn(["person", "object"])
+    .withMessage("category must be 'person' or 'object'"),
   optionalOrder(),
 ];
 

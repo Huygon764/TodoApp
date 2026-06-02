@@ -149,11 +149,15 @@
     "badLabel": "To improve"
   },
   "peopleNotesModal": {
-    "title": "People notes",
-    "subtitle": "Save important info about people",
+    "title": "Notes",
+    "subtitle": "People and things to remember",
+    "tabPeople": "People",
+    "tabThings": "Things",
     "addPersonPlaceholder": "Person name...",
+    "addThingPlaceholder": "Thing name...",
     "addPerson": "Add",
     "empty": "No people yet",
+    "emptyThings": "No things yet",
     "addNotePlaceholder": "Add a note...",
     "addNote": "Add",
     "deletePersonAria": "Delete person",

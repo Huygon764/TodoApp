@@ -154,6 +154,8 @@ export interface PersonNote {
   name: string;
   notes: string[];
   order: number;
+  /** "person" for people, "object" for things to remember. Legacy notes omit it. */
+  category?: "person" | "object";
   createdAt: string;
   updatedAt: string;
 }

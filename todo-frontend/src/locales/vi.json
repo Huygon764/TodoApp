@@ -149,11 +149,15 @@
     "badLabel": "Cần cải thiện"
   },
   "peopleNotesModal": {
-    "title": "Ghi chú về người thân",
-    "subtitle": "Lưu thông tin quan trọng về mọi người",
+    "title": "Ghi chú",
+    "subtitle": "Người và những thứ cần nhớ",
+    "tabPeople": "Người",
+    "tabThings": "Đồ vật",
     "addPersonPlaceholder": "Tên người...",
+    "addThingPlaceholder": "Tên thứ cần nhớ...",
     "addPerson": "Thêm",
     "empty": "Chưa có ai",
+    "emptyThings": "Chưa có gì",
     "addNotePlaceholder": "Thêm ghi chú...",
     "addNote": "Thêm",
     "deletePersonAria": "Xóa người",

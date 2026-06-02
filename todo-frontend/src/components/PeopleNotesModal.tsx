@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Users, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Users, Package, ChevronDown, ChevronRight } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
 import type { PersonNote } from "@/types";
@@ -23,6 +23,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const [newName, setNewName] = useState("");
+  const [activeTab, setActiveTab] = useState<"person" | "object">("person");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newNoteText, setNewNoteText] = useState<Record<string, string>>({});
   const {
@@ -47,11 +48,14 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   });
 
   const people = data ?? [];
+  // Legacy notes have no category; treat them as people.
+  const visible = people.filter((p) => (p.category ?? "person") === activeTab);
 
   const createMutation = useMutation({
     mutationFn: (name: string) =>
       apiPost<{ item: PersonNote }>(API_PATHS.PEOPLE_NOTES, {
         name,
+        category: activeTab,
         order: people.length,
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
@@ -70,7 +74,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
 
   useModalClose(isOpen, onClose, contentRef);
 
-  const addPerson = () => {
+  const addEntry = () => {
     const trimmed = newName.trim();
     if (!trimmed) return;
     createMutation.mutate(trimmed);
@@ -109,26 +113,66 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                   onClose={onClose}
                 />
 
+                {/* Category tabs: People vs Things */}
+                <div className="flex gap-2 px-4 pt-4">
+                  {(["person", "object"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(tab);
+                        setExpandedId(null);
+                      }}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                        activeTab === tab
+                          ? "bg-accent-primary/20 text-accent-hover"
+                          : "text-text-muted hover:text-text-secondary"
+                      }`}
+                    >
+                      {tab === "person" ? (
+                        <Users className="w-4 h-4" />
+                      ) : (
+                        <Package className="w-4 h-4" />
+                      )}
+                      {tab === "person"
+                        ? t("peopleNotesModal.tabPeople")
+                        : t("peopleNotesModal.tabThings")}
+                    </button>
+                  ))}
+                </div>
+
                 <ItemAddInput
                   value={newName}
                   onChange={setNewName}
-                  onAdd={addPerson}
-                  placeholder={t("peopleNotesModal.addPersonPlaceholder")}
+                  onAdd={addEntry}
+                  placeholder={
+                    activeTab === "person"
+                      ? t("peopleNotesModal.addPersonPlaceholder")
+                      : t("peopleNotesModal.addThingPlaceholder")
+                  }
                   addLabel={t("peopleNotesModal.addPerson")}
                   disabled={!newName.trim() || createMutation.isPending}
                 />
 
                 {/* People List */}
                 <div className="p-4 max-h-[400px] overflow-y-auto">
-                  {people.length === 0 ? (
+                  {visible.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
-                      <Users className="w-10 h-10 mb-2 opacity-30" />
-                      <p>{t("peopleNotesModal.empty")}</p>
+                      {activeTab === "person" ? (
+                        <Users className="w-10 h-10 mb-2 opacity-30" />
+                      ) : (
+                        <Package className="w-10 h-10 mb-2 opacity-30" />
+                      )}
+                      <p>
+                        {activeTab === "person"
+                          ? t("peopleNotesModal.empty")
+                          : t("peopleNotesModal.emptyThings")}
+                      </p>
                     </div>
                   ) : (
                     <ul className="space-y-2">
                       <AnimatePresence mode="popLayout">
-                        {people.map((person) => (
+                        {visible.map((person) => (
                           <motion.li
                             key={person._id}
                             layout

@@ -7,7 +7,7 @@ import {
   Target,
   Languages,
   FileText,
-  Users,
+  StickyNote,
   Menu,
   X,
 } from "lucide-react";
@@ -127,7 +127,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("peopleNotesModal.title")}
             >
-              <Users className="w-5 h-5" />
+              <StickyNote className="w-5 h-5" />
             </motion.button>
             <motion.button
               type="button"
@@ -186,7 +186,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                     onClick={() => menuAction(() => onOpenModal("goal"))}
                   />
                   <HeaderMenuItem
-                    icon={Users}
+                    icon={StickyNote}
                     label={t("peopleNotesModal.title")}
                     onClick={() => menuAction(() => onOpenModal("peopleNotes"))}
                   />

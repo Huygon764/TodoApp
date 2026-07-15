@@ -6,8 +6,9 @@ export const subTaskSchema = new Schema(
     completed: { type: Boolean, default: false },
     // Optional repetition counter. When `target` is set the sub-task is a
     // counter (e.g. "pull up" x20); `count` tracks progress toward it.
+    // No default: `count` exists only alongside `target`, set explicitly.
     target: { type: Number, min: 2, max: 999 },
-    count: { type: Number, min: 0, default: 0 },
+    count: { type: Number, min: 0 },
   },
   { _id: false }
 );

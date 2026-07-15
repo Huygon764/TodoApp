@@ -52,6 +52,9 @@ export const counterConsistency: CustomValidator = (items) => {
   const checkCount = (holder: { target?: unknown; count?: unknown }, label: string) => {
     if (typeof holder.count !== "number") return;
     if (typeof holder.target !== "number") {
+      // A lone count of 0 is harmless noise (e.g. legacy data); ignore it.
+      // Any positive count without a target is a real inconsistency.
+      if (holder.count === 0) return;
       throw new Error(`${label} count requires a target`);
     }
     if (holder.count < 0 || holder.count > holder.target) {

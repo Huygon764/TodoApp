@@ -31,10 +31,14 @@ test("rejects count greater than target", () => {
   );
 });
 
-test("rejects count without a target", () => {
+test("rejects a positive count without a target", () => {
   expect(() => check([{ title: "Pull up", count: 3 }])).toThrow(
     "count requires a target",
   );
+});
+
+test("allows a lone count of 0 without a target (legacy noise)", () => {
+  expect(check([{ title: "Read", completed: false, count: 0 }])).toBe(true);
 });
 
 test("rejects a sub-task count greater than its target", () => {

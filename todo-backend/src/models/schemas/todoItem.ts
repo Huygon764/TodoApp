@@ -12,8 +12,9 @@ export function createTodoItemSchema<T>(): Schema<T> {
       completed: { type: Boolean, default: false },
       order: { type: Number, required: true, default: 0 },
       // Optional repetition counter, mutually exclusive with subTasks.
+      // No default: `count` exists only alongside `target`, set explicitly.
       target: { type: Number, min: 2, max: 999 },
-      count: { type: Number, min: 0, default: 0 },
+      count: { type: Number, min: 0 },
       subTasks: {
         type: [subTaskSchema],
         default: undefined,

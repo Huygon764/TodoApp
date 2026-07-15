@@ -57,7 +57,9 @@ const dotClass = (state: HabitDayState, isToday: boolean) => {
   const ring = isToday ? " ring-2 ring-accent-primary/25" : "";
   if (state === "done") return `${base} bg-accent-primary border-accent-primary${ring}`;
   if (state === "missed") return `${base} bg-transparent border-danger/45${ring}`;
-  return `${base} bg-transparent border-transparent shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]${ring}`;
+  // "off" (not scheduled / before the habit existed) — a muted but visible dot
+  // so the 7-day row always reads as a row, not a lone dot floating at the end.
+  return `${base} bg-bg-elevated border-border-strong${ring}`;
 };
 
 export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {

@@ -2,7 +2,7 @@ import {
   DayTodo, Goal, DefaultItem, RecurringTemplate, DateTemplate,
   Review, FreetimeTodo, PersonNote, Habit, HabitLog,
 } from "../models/index.js";
-import type { Model } from "mongoose";
+import { Types, type Model } from "mongoose";
 
 export const EXPORT_VERSION = 1;
 
@@ -87,6 +87,14 @@ export function validateImportPayload(
   return { ok: true };
 }
 
+/** Copy a doc without its old identity so a fresh _id is assigned on insert. */
+function withoutId(doc: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...doc };
+  delete copy._id;
+  delete copy.__v;
+  return copy;
+}
+
 export async function applyImport(
   userId: string,
   payload: ExportDoc,
@@ -98,22 +106,53 @@ export async function applyImport(
   for (const c of COLLECTIONS) {
     await c.model.deleteMany({ userId });
   }
+
+  // New _ids are generated on import: the source account's documents may still
+  // exist in the same database, so re-using their _ids would collide. Habits are
+  // inserted first with fresh ids, and the old->new id map rewrites
+  // habitLog.habitId (the only cross-document reference).
+  const habitIdMap = new Map<string, Types.ObjectId>();
+  const habitsSpec = COLLECTIONS.find((c) => c.key === "habits")!;
+  const rawHabits = Array.isArray(data.habits)
+    ? (data.habits as Record<string, unknown>[])
+    : [];
+  const habitDocs = rawHabits.map((h) => {
+    const newId = new Types.ObjectId();
+    if (h._id != null) habitIdMap.set(String(h._id), newId);
+    return { ...withoutId(h), _id: newId, userId };
+  });
+  if (habitDocs.length > 0) await habitsSpec.model.insertMany(habitDocs);
+  counts.habits = habitDocs.length;
+
   for (const c of COLLECTIONS) {
+    if (c.key === "habits") continue;
     const value = data[c.key];
+
     if (c.kind === "one") {
       if (value && typeof value === "object" && !Array.isArray(value)) {
-        await c.model.create({ ...(value as object), userId });
+        await c.model.create({ ...withoutId(value as Record<string, unknown>), userId });
         counts[c.key] = 1;
       } else {
         counts[c.key] = 0;
       }
       continue;
     }
-    const arr = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
-    if (arr.length > 0) {
-      await c.model.insertMany(arr.map((d) => ({ ...d, userId })));
+
+    const raw = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+    let docs: Record<string, unknown>[];
+    if (c.key === "habitLogs") {
+      docs = raw
+        .map((log): Record<string, unknown> | null => {
+          const mapped = habitIdMap.get(String(log.habitId));
+          if (!mapped) return null; // orphan log (habit missing); skip
+          return { ...withoutId(log), habitId: mapped, userId };
+        })
+        .filter((d): d is Record<string, unknown> => d !== null);
+    } else {
+      docs = raw.map((d) => ({ ...withoutId(d), userId }));
     }
-    counts[c.key] = arr.length;
+    if (docs.length > 0) await c.model.insertMany(docs);
+    counts[c.key] = docs.length;
   }
   return counts;
 }

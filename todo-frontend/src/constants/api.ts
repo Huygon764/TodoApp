@@ -57,4 +57,5 @@ export const API_PATHS = {
   HABIT_STATS: (days: number) => `/api/habits/stats?days=${days}`,
   DATA_EXPORT: "/api/data/export",
   DATA_IMPORT: "/api/data/import",
+  AUTH_GOOGLE: "/api/auth/google",
 } as const;

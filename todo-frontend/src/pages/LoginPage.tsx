@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Loader2, AlertCircle, Clock } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiPost } from "@/lib/api";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Animated Background (solid Linear style; particles added in Phase 5)
@@ -49,6 +50,11 @@ const AppLogo = ({ isMobile }: { isMobile: boolean }) => (
 
 export function LoginPage() {
   const isMobile = useIsMobile();
+  const [tab, setTab] = useState<"google" | "password">("google");
+  // Persisted so a reload lands back on the "awaiting approval" screen.
+  const [pending, setPending] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem("authPending") === "1",
+  );
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -101,6 +107,39 @@ export function LoginPage() {
     loginMutation.mutate();
   };
 
+  const googleMutation = useMutation({
+    mutationFn: (idToken: string) =>
+      apiPost<{ pending?: boolean }>(API_PATHS.AUTH_GOOGLE, {
+        idToken,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
+    onSuccess: (res) => {
+      if (res.data?.pending) {
+        setPending(true);
+        localStorage.setItem("authPending", "1");
+        return;
+      }
+      localStorage.removeItem("authPending");
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
+      navigate(from, { replace: true });
+    },
+    onError: (err: Error) => setError(err.message),
+  });
+
+  const handleGoogleCredential = useCallback(
+    (idToken: string) => {
+      setError("");
+      googleMutation.mutate(idToken);
+    },
+    [googleMutation],
+  );
+
+  const exitPending = () => {
+    localStorage.removeItem("authPending");
+    setPending(false);
+    setError("");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <AnimatedBackground />
@@ -128,7 +167,82 @@ export function LoginPage() {
               </p>
             </motion.div>
 
-            {/* Form */}
+            {/* Auth method tabs (hidden while awaiting approval) */}
+            {!pending && (
+              <div className="flex gap-1 p-1 mb-6 rounded-xl bg-bg-elevated border border-border-subtle">
+                {(["google", "password"] as const).map((tk) => (
+                  <button
+                    key={tk}
+                    type="button"
+                    onClick={() => {
+                      setTab(tk);
+                      setError("");
+                    }}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                      tab === tk
+                        ? "bg-accent-primary text-white"
+                        : "text-text-tertiary hover:text-text-secondary"
+                    }`}
+                  >
+                    {tk === "google" ? "Google" : "Mật khẩu"}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {pending ? (
+              <div className="text-center py-4 space-y-4">
+                <div>
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-accent-primary/10 flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-accent-hover" />
+                  </div>
+                  <p className="text-white font-medium">Tài khoản đang chờ duyệt</p>
+                  <p className="text-text-tertiary text-sm mt-1">
+                    Admin sẽ duyệt tài khoản của bạn sớm. Sau khi được duyệt, bấm
+                    Google bên dưới để vào.
+                  </p>
+                </div>
+                <GoogleSignInButton onCredential={handleGoogleCredential} />
+                {googleMutation.isPending && (
+                  <p className="flex items-center justify-center gap-2 text-text-muted text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang kiểm tra...
+                  </p>
+                )}
+                {error && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-danger-bg border border-danger-border text-danger text-sm text-left">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={exitPending}
+                  className="text-sm text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer"
+                >
+                  Quay lại đăng nhập
+                </button>
+              </div>
+            ) : tab === "google" ? (
+              <div className="space-y-4 py-2">
+                <p className="text-center text-text-tertiary text-sm">
+                  Đăng nhập nhanh bằng Google
+                </p>
+                <GoogleSignInButton onCredential={handleGoogleCredential} />
+                {googleMutation.isPending && (
+                  <p className="flex items-center justify-center gap-2 text-text-muted text-sm">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Đang đăng nhập...
+                  </p>
+                )}
+                {error && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-danger-bg border border-danger-border text-danger text-sm">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Username Input */}
               <motion.div
@@ -233,6 +347,7 @@ export function LoginPage() {
                 </motion.button>
               </motion.div>
             </form>
+            )}
           </div>
         </div>
       </motion.div>

@@ -11,6 +11,9 @@ COPY todo-frontend/package.json todo-frontend/bun.lock* ./
 RUN bun install --frozen-lockfile
 
 COPY todo-frontend/ ./
+# Vite inlines VITE_* at build time, so the Google client id must be a build arg.
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN bun run build
 
 # =============================================================================

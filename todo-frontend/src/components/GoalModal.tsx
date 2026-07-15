@@ -3,13 +3,14 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Trash2, Check, Circle, Target, ChevronRight, ChevronDown } from "lucide-react";
+import { X, Trash2, Check, Circle, Target } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { PeriodSelector } from "@/components/shared/PeriodSelector";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
@@ -369,23 +370,12 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             {item.title}
           </span>
         )}
-        <motion.button
-          type="button"
-          whileHover={controlHover}
-          whileTap={controlTap}
+        <SubTaskToggle
+          count={(item.subTasks ?? []).length}
+          expanded={expandedId === item.id}
+          isMobile={isMobile}
           onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
-          className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all cursor-pointer"
-          aria-label={expandedId === item.id ? "Collapse" : "Expand sub-tasks"}
-        >
-          {expandedId === item.id ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </motion.button>
-        {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
-          <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-        )}
+        />
         {dragHandle}
         <motion.button
           type="button"

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
@@ -12,6 +12,7 @@ import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import {
   isLegacyRecurringItem,
   isMonthItemVisible,
@@ -401,24 +402,13 @@ export function RecurringTemplateModal({
                                     )}
                                   </div>
                                 )}
-                                <motion.button
-                                  type="button"
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
+                                <SubTaskToggle
+                                  count={(item.subTasks ?? []).length}
+                                  expanded={expandedIdx === idx}
                                   onClick={() =>
                                     setExpandedIdx((prev) => (prev === idx ? null : idx))
                                   }
-                                  className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-                                >
-                                  {expandedIdx === idx ? (
-                                    <ChevronDown className="w-4 h-4" />
-                                  ) : (
-                                    <ChevronRight className="w-4 h-4" />
-                                  )}
-                                </motion.button>
-                                {(item.subTasks ?? []).length > 0 && expandedIdx !== idx && (
-                                  <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-                                )}
+                                />
                                 <motion.button
                                   type="button"
                                   whileHover={{ scale: 1.1 }}

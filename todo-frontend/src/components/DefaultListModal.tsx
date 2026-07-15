@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Trash2, ListTodo, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, ListTodo } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
@@ -14,6 +14,7 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 
 export type DefaultOrderUpdate = { id: string; order: number };
 
@@ -225,24 +226,14 @@ export function DefaultListModal({
                                     {item.title}
                                   </span>
                                 )}
-                                <motion.button
-                                  type="button"
-                                  whileHover={controlHover}
-                                  whileTap={controlTap}
+                                <SubTaskToggle
+                                  count={(item.subTasks ?? []).length}
+                                  expanded={expandedId === item._id}
+                                  isMobile={isMobile}
                                   onClick={() =>
                                     setExpandedId((prev) => (prev === item._id ? null : item._id))
                                   }
-                                  className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-                                >
-                                  {expandedId === item._id ? (
-                                    <ChevronDown className="w-4 h-4" />
-                                  ) : (
-                                    <ChevronRight className="w-4 h-4" />
-                                  )}
-                                </motion.button>
-                                {(item.subTasks ?? []).length > 0 && expandedId !== item._id && (
-                                  <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-                                )}
+                                />
                                 {dragHandle}
                                 <motion.button
                                   type="button"

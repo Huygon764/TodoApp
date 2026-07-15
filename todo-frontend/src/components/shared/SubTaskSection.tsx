@@ -76,7 +76,7 @@ export function SubTaskSection({
               )}
             </motion.button>
           ) : (
-            <span className="text-text-muted shrink-0">-</span>
+            <span className="text-text-muted shrink-0">•</span>
           )}
           {editingIdx === subIdx && onEditTitle ? (
             <input
@@ -99,7 +99,7 @@ export function SubTaskSection({
               onKeyDown={(e) =>
                 e.key === "Enter" && handleTitleClick(subIdx, st.title)
               }
-              className={`flex-1 text-sm ${onEditTitle ? "cursor-text" : ""} ${
+              className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${onEditTitle ? "cursor-text" : ""} ${
                 showCheckbox && st.completed
                   ? "line-through text-text-muted"
                   : "text-text-secondary"

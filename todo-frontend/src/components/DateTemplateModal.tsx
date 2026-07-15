@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { DayPicker } from "react-day-picker";
-import { Trash2, Calendar, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Trash2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { enUS, vi } from "react-day-picker/locale";
 import { API_PATHS } from "@/constants/api";
 import { DAY_PICKER_CLASS_NAMES } from "@/constants/dayPickerStyles";
@@ -16,6 +16,7 @@ import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 
 interface DateTemplateModalProps {
   isOpen: boolean;
@@ -304,24 +305,13 @@ export function DateTemplateModal({
                                   {item.title}
                                 </span>
                               )}
-                              <motion.button
-                                type="button"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                              <SubTaskToggle
+                                count={(item.subTasks ?? []).length}
+                                expanded={expandedIdx === index}
                                 onClick={() =>
                                   setExpandedIdx((prev) => (prev === index ? null : index))
                                 }
-                                className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-                              >
-                                {expandedIdx === index ? (
-                                  <ChevronDown className="w-4 h-4" />
-                                ) : (
-                                  <ChevronRight className="w-4 h-4" />
-                                )}
-                              </motion.button>
-                              {(item.subTasks ?? []).length > 0 && expandedIdx !== index && (
-                                <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-                              )}
+                              />
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}

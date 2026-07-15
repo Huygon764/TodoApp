@@ -1,9 +1,10 @@
 import type { ReactNode, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Check, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Check } from "lucide-react";
 import type { DayTodoSubTask, DayTodoItem as DayTodoItemType } from "@/types";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 
 export interface DayTodoItemView extends DayTodoItemType {
   id: string;
@@ -71,11 +72,14 @@ export function DayTodoItem({
   const controlHover = isMobile ? undefined : { scale: 1.1 };
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
   const checkboxHover = isMobile ? undefined : { scale: 1.15 };
+  const subTaskCount = item.subTasks.length;
 
   return (
     <>
       <motion.div
-        className={`flex items-center gap-4 p-4 rounded-xl border transition-colors duration-200 ${
+        className={`flex items-center rounded-xl border transition-colors duration-200 ${
+          isMobile ? "gap-2 p-3" : "gap-4 p-4"
+        } ${
           item.completed
             ? "bg-accent-primary/5 border-accent-primary/20"
             : "bg-bg-surface border-border-subtle hover:bg-bg-surface/80 hover:border-border-strong"
@@ -137,7 +141,7 @@ export function DayTodoItem({
             tabIndex={0}
             onClick={() => onTitleClick(item.id)}
             onKeyDown={(e) => e.key === "Enter" && onTitleClick(item.id)}
-            className={`flex-1 min-w-0 break-words transition-all duration-300 cursor-text ${
+            className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] transition-all duration-300 cursor-text ${
               item.completed
                 ? "line-through text-text-muted"
                 : "text-text-secondary"
@@ -148,25 +152,12 @@ export function DayTodoItem({
           </motion.span>
         )}
 
-        <motion.button
-          type="button"
-          whileHover={controlHover}
-          whileTap={controlTap}
+        <SubTaskToggle
+          count={subTaskCount}
+          expanded={expanded}
+          isMobile={isMobile}
           onClick={() => onToggleExpand(item.id)}
-          className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-          aria-label={expanded ? "Collapse" : "Expand sub-tasks"}
-        >
-          {expanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </motion.button>
-        {item.subTasks.length > 0 && !expanded && (
-          <span className="text-xs text-accent-hover font-medium">
-            [{item.subTasks.length}]
-          </span>
-        )}
+        />
         {dragHandle}
         <motion.button
           type="button"

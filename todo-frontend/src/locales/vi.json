@@ -22,7 +22,13 @@
     ],
     "reflectionTitle": "Nhìn lại ngày",
     "moodLabel": "Hôm nay bạn thấy thế nào?",
-    "moodLevels": ["Tệ", "Không vui", "Bình thường", "Tốt", "Tuyệt"],
+    "moodLevels": [
+      "Tệ",
+      "Không vui",
+      "Bình thường",
+      "Tốt",
+      "Tuyệt"
+    ],
     "energyLabel": "Mức năng lượng",
     "energyAria": "Năng lượng mức {{level}}/5",
     "gratitudePrompt": "Hôm nay bạn biết ơn điều gì?",
@@ -182,6 +188,8 @@
   "common": {
     "deleteAria": "Xóa",
     "errorTitle": "Có lỗi xảy ra ở đây.",
-    "reload": "Tải lại"
+    "reload": "Tải lại",
+    "subTasksAria": "Việc con ({{count}})",
+    "subTasksEmptyAria": "Thêm việc con"
   }
 }

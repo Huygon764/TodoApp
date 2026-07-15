@@ -59,10 +59,10 @@ export function ModalContainer({
         className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
       >
         <div
-          className={`relative w-full ${maxWidth} pointer-events-auto`}
+          className={`relative w-full ${maxWidth} max-h-[90dvh] pointer-events-auto`}
           ref={contentRef as React.RefObject<HTMLDivElement>}
         >
-          <div className="relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden">
+          <div className="relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] overflow-y-auto">
             {children}
           </div>
         </div>

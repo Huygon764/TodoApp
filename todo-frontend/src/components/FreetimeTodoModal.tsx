@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Trash2, Check, Circle, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Check, Circle } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
@@ -18,6 +18,7 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 
 interface FreetimeTodoModalProps {
   isOpen: boolean;
@@ -315,29 +316,16 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 </span>
                               )}
 
-                              <motion.button
-                                type="button"
-                                whileHover={controlHover}
-                                whileTap={controlTap}
+                              <SubTaskToggle
+                                count={(item.subTasks ?? []).length}
+                                expanded={expandedId === item.id}
+                                isMobile={isMobile}
                                 onClick={() =>
                                   setExpandedId((prev) =>
                                     prev === item.id ? null : item.id
                                   )
                                 }
-                                className="p-2 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-all duration-200 cursor-pointer"
-                                aria-label={
-                                  expandedId === item.id ? "Collapse" : "Expand sub-tasks"
-                                }
-                              >
-                                {expandedId === item.id ? (
-                                  <ChevronDown className="w-4 h-4" />
-                                ) : (
-                                  <ChevronRight className="w-4 h-4" />
-                                )}
-                              </motion.button>
-                              {(item.subTasks ?? []).length > 0 && expandedId !== item.id && (
-                                <span className="text-xs text-accent-hover font-medium">[{(item.subTasks ?? []).length}]</span>
-                              )}
+                              />
                               {dragHandle}
 
                               <motion.button

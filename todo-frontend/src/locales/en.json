@@ -22,7 +22,13 @@
     ],
     "reflectionTitle": "Reflection",
     "moodLabel": "How are you feeling?",
-    "moodLevels": ["Awful", "Bad", "Okay", "Good", "Great"],
+    "moodLevels": [
+      "Awful",
+      "Bad",
+      "Okay",
+      "Good",
+      "Great"
+    ],
     "energyLabel": "Energy level",
     "energyAria": "Energy level {{level}} of 5",
     "gratitudePrompt": "What are you grateful for today?",
@@ -182,6 +188,8 @@
   "common": {
     "deleteAria": "Delete",
     "errorTitle": "Something went wrong here.",
-    "reload": "Reload"
+    "reload": "Reload",
+    "subTasksAria": "Sub-tasks ({{count}})",
+    "subTasksEmptyAria": "Add sub-tasks"
   }
 }

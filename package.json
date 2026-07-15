@@ -7,6 +7,10 @@
     "dev": "(cd todo-backend && bun run dev) & (cd todo-frontend && bun run dev) & wait",
     "dev:back": "cd todo-backend && bun run dev",
     "dev:front": "cd todo-frontend && bun run dev",
+    "build": "cd todo-backend && bun run typecheck && cd ../todo-frontend && bun run build",
+    "build:back": "cd todo-backend && bun run typecheck",
+    "build:front": "cd todo-frontend && bun run build",
+    "typecheck": "cd todo-backend && bun run typecheck && cd ../todo-frontend && bun run typecheck",
     "install:all": "cd todo-backend && bun install && cd ../todo-frontend && bun install"
   }
 }

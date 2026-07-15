@@ -192,7 +192,9 @@
     "subTasksAria": "Sub-tasks ({{count}})",
     "subTasksEmptyAria": "Add sub-tasks",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "habits": {
     "title": "Discipline",
@@ -223,5 +225,20 @@
     "legendDone": "done",
     "legendMissed": "missed",
     "legendOff": "off"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Language and your data",
+    "language": "Language",
+    "export": "Export data",
+    "exportHint": "Download all your data as a JSON file",
+    "import": "Import data",
+    "importHint": "Replace all current data with a backup file",
+    "importConfirm": "This will delete all your current data and replace it with the file. Continue?",
+    "importing": "Importing...",
+    "importDone": "Imported. Reloading your data.",
+    "importConfirmBtn": "Replace data",
+    "importInvalid": "That file is not valid JSON.",
+    "importFailed": "Import failed. Your data was not changed."
   }
 }

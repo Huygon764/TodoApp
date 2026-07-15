@@ -5,7 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Settings,
   Target,
-  Languages,
   FileText,
   StickyNote,
   Menu,
@@ -61,7 +60,8 @@ export type ModalKey =
   | "freetime"
   | "peopleNotes"
   | "habits"
-  | "habitStats";
+  | "habitStats"
+  | "settings";
 
 interface HeaderProps {
   onOpenModal: (key: ModalKey) => void;
@@ -69,19 +69,13 @@ interface HeaderProps {
 }
 
 export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const iconHover = isMobile ? undefined : { scale: 1.05 };
   const iconTap = isMobile ? { scale: 0.98 } : { scale: 0.95 };
-
-  const toggleLang = () => {
-    const next = i18n.language === "vi" ? "en" : "vi";
-    i18n.changeLanguage(next);
-    if (typeof localStorage !== "undefined") localStorage.setItem("lang", next);
-  };
 
   useModalClose(menuOpen, () => setMenuOpen(false), menuRef);
 
@@ -102,16 +96,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
         <AppLogo />
         {!isMobile ? (
           <div className="flex items-center gap-2">
-            <motion.button
-              type="button"
-              whileHover={iconHover}
-              whileTap={iconTap}
-              onClick={toggleLang}
-              className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-text-secondary hover:border-border-strong transition-all duration-200 cursor-pointer"
-              title={i18n.language === "vi" ? "English" : "Tieng Viet"}
-            >
-              <Languages className="w-5 h-5" />
-            </motion.button>
             <motion.button
               whileHover={iconHover}
               whileTap={iconTap}
@@ -144,9 +128,9 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
             <motion.button
               whileHover={iconHover}
               whileTap={iconTap}
-              onClick={() => onOpenModal("default")}
+              onClick={() => onOpenModal("settings")}
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
-              title={t("home.defaultTemplateTitle")}
+              title={t("settings.title")}
             >
               <Settings className="w-5 h-5" />
             </motion.button>
@@ -178,11 +162,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                   className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
                 >
                   <HeaderMenuItem
-                    icon={Languages}
-                    label={i18n.language === "vi" ? "English" : "Tieng Viet"}
-                    onClick={() => menuAction(toggleLang)}
-                  />
-                  <HeaderMenuItem
                     icon={Target}
                     label={t("home.goalsTitle")}
                     onClick={() => menuAction(() => onOpenModal("goal"))}
@@ -199,8 +178,8 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                   />
                   <HeaderMenuItem
                     icon={Settings}
-                    label={t("home.defaultTemplateTitle")}
-                    onClick={() => menuAction(() => onOpenModal("default"))}
+                    label={t("settings.title")}
+                    onClick={() => menuAction(() => onOpenModal("settings"))}
                   />
                   <div className="my-1 h-px bg-border-default" />
                   <LogoutButton variant="menu" onAfterClick={closeMenu} />

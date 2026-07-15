@@ -192,7 +192,9 @@
     "subTasksAria": "Việc con ({{count}})",
     "subTasksEmptyAria": "Thêm việc con",
     "collapse": "Thu gọn",
-    "expand": "Mở rộng"
+    "expand": "Mở rộng",
+    "cancel": "Huỷ",
+    "confirm": "Xác nhận"
   },
   "habits": {
     "title": "Kỷ luật",
@@ -223,5 +225,20 @@
     "legendDone": "xong",
     "legendMissed": "trượt",
     "legendOff": "nghỉ"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "subtitle": "Ngôn ngữ và dữ liệu",
+    "language": "Ngôn ngữ",
+    "export": "Xuất dữ liệu",
+    "exportHint": "Tải toàn bộ dữ liệu về dạng file JSON",
+    "import": "Nhập dữ liệu",
+    "importHint": "Thay toàn bộ dữ liệu hiện tại bằng file sao lưu",
+    "importConfirm": "Việc này sẽ xoá toàn bộ dữ liệu hiện tại và thay bằng file. Tiếp tục?",
+    "importing": "Đang nhập...",
+    "importDone": "Đã nhập. Đang tải lại dữ liệu.",
+    "importConfirmBtn": "Thay dữ liệu",
+    "importInvalid": "File không phải JSON hợp lệ.",
+    "importFailed": "Nhập thất bại. Dữ liệu không bị thay đổi."
   }
 }

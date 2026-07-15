@@ -12,6 +12,7 @@ import { DayGoalsPanel } from "@/components/DayGoalsPanel";
 import { HabitPanel } from "@/components/HabitPanel";
 import { HabitModal } from "@/components/HabitModal";
 import { HabitStatsModal } from "@/components/HabitStatsModal";
+import { SettingsModal } from "@/components/SettingsModal";
 import { DayTodoList } from "@/components/DayTodoList";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
@@ -298,6 +299,7 @@ export function HomePage() {
       <PeopleNotesModal isOpen={openModal === "peopleNotes"} onClose={closeM} />
       <HabitModal isOpen={openModal === "habits"} onClose={closeM} />
       <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
+      <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />
       <ReviewHistoryModal
         isOpen={openModal === "reviewHistory"}
         onClose={closeM}

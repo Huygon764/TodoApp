@@ -55,4 +55,6 @@ export const API_PATHS = {
   HABIT_BY_ID: (id: string) => `/api/habits/${id}`,
   HABIT_TOGGLE: (id: string) => `/api/habits/${id}/toggle`,
   HABIT_STATS: (days: number) => `/api/habits/stats?days=${days}`,
+  DATA_EXPORT: "/api/data/export",
+  DATA_IMPORT: "/api/data/import",
 } as const;

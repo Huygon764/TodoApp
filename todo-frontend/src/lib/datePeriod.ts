@@ -65,15 +65,17 @@ export function getWeekDateRange(periodStr: string): { start: Date; end: Date } 
 /** Format week period for display e.g. "Feb 17 – 23, 2026" */
 export function formatWeekPeriodLabel(periodStr: string): string {
   const { start, end } = getWeekDateRange(periodStr);
+  const month = (d: Date) => d.toLocaleDateString(undefined, { month: "short" });
   const sameYear = start.getFullYear() === end.getFullYear();
   const sameMonth = start.getMonth() === end.getMonth();
+  // Day-first: "13 – 19 Jul 2026", "28 Jul – 3 Aug 2026", "29 Dec 2025 – 4 Jan 2026"
   if (sameMonth && sameYear) {
-    return `${start.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${end.getDate()}, ${end.getFullYear()}`;
+    return `${start.getDate()} – ${end.getDate()} ${month(end)} ${end.getFullYear()}`;
   }
   if (sameYear) {
-    return `${start.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+    return `${start.getDate()} ${month(start)} – ${end.getDate()} ${month(end)} ${end.getFullYear()}`;
   }
-  return `${start.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} – ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+  return `${start.getDate()} ${month(start)} ${start.getFullYear()} – ${end.getDate()} ${month(end)} ${end.getFullYear()}`;
 }
 
 export function getMonthPeriod(d: Date = new Date()): string {

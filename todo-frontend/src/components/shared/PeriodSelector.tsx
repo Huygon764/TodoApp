@@ -53,7 +53,7 @@ export function PeriodSelector({
         <button
           type="button"
           onClick={onTogglePicker}
-          className="min-w-[140px] px-2 py-1.5 rounded-lg text-sm text-text-tertiary hover:text-text-secondary hover:bg-bg-surface transition-colors text-left truncate cursor-pointer"
+          className="max-w-[220px] px-2 py-1.5 rounded-lg text-sm text-text-tertiary hover:text-text-secondary hover:bg-bg-surface transition-colors text-center truncate cursor-pointer"
         >
           {periodLabel}
         </button>

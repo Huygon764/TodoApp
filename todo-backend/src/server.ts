@@ -21,7 +21,8 @@ app.use(
 
 app.use(cookieParser());
 
-app.use(express.json({ limit: "1mb" }));
+// 25mb so a full data-import upload (many days of history) fits.
+app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Telegram webhook. Mounted at the app root (no path prefix) so Express

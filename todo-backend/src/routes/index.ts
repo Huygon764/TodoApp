@@ -9,6 +9,7 @@ import dateTemplatesRouter from "./dateTemplates.js";
 import reviewsRouter from "./reviews.js";
 import personNotesRouter from "./personNotes.js";
 import habitsRouter from "./habits.js";
+import dataRouter from "./data.js";
 import internalRouter from "./internal.js";
 
 const router = Router();
@@ -39,6 +40,7 @@ router.use("/date-templates", dateTemplatesRouter);
 router.use("/reviews", reviewsRouter);
 router.use("/people-notes", personNotesRouter);
 router.use("/habits", habitsRouter);
+router.use("/data", dataRouter);
 router.use("/internal", internalRouter);
 
 export default router;

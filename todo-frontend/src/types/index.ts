@@ -11,10 +11,14 @@ export interface User {
 
 export interface BaseSubTask {
   title: string;
+  /** Repetition target; when set, this sub-task is a counter. */
+  target?: number;
 }
 
 export interface CheckableSubTask extends BaseSubTask {
   completed: boolean;
+  /** Progress toward `target`; 0..target. */
+  count?: number;
 }
 
 export type DayTodoSubTask = CheckableSubTask;
@@ -23,6 +27,10 @@ export interface DayTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  /** Repetition target; when set, this item is a counter (no subTasks). */
+  target?: number;
+  /** Progress toward `target`; 0..target. */
+  count?: number;
   subTasks?: DayTodoSubTask[];
   /** Original date (YYYY-MM-DD) this task was first postponed from */
   carriedFrom?: string;
@@ -72,6 +80,7 @@ export interface DefaultItem {
   userId: string;
   title: string;
   order: number;
+  target?: number;
   subTasks?: DefaultItemSubTask[];
   createdAt: string;
   updatedAt: string;
@@ -83,6 +92,8 @@ export interface GoalItem {
   title: string;
   completed: boolean;
   order: number;
+  target?: number;
+  count?: number;
   subTasks?: GoalSubTask[];
 }
 
@@ -101,6 +112,7 @@ export type RecurringTemplateSubTask = BaseSubTask;
 export interface RecurringTemplateItem {
   title: string;
   order: number;
+  target?: number;
   /** 1-7, 1 = Monday, 7 = Sunday (for weekly templates) */
   daysOfWeek?: number[];
   /** 1-31 (for monthly templates) */
@@ -124,6 +136,7 @@ export type DateTemplateSubTask = BaseSubTask;
 export interface DateTemplateItem {
   title: string;
   order: number;
+  target?: number;
   subTasks?: DateTemplateSubTask[];
 }
 

@@ -5,6 +5,7 @@ import { Trash2, Check } from "lucide-react";
 import type { DayTodoSubTask, DayTodoItem as DayTodoItemType } from "@/types";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { CounterChip } from "@/components/shared/CounterChip";
 
 export interface DayTodoItemView extends DayTodoItemType {
   id: string;
@@ -30,6 +31,7 @@ interface DayTodoItemProps {
   newSubTaskTitle: string;
   dragHandle: ReactNode;
   onToggle: (id: string) => void;
+  onCounterIncrement: (id: string) => void;
   onTitleClick: (id: string) => void;
   onTitleChange: (value: string) => void;
   onTitleSave: (id: string) => void;
@@ -55,6 +57,7 @@ export function DayTodoItem({
   newSubTaskTitle,
   dragHandle,
   onToggle,
+  onCounterIncrement,
   onTitleClick,
   onTitleChange,
   onTitleSave,
@@ -73,6 +76,7 @@ export function DayTodoItem({
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
   const checkboxHover = isMobile ? undefined : { scale: 1.15 };
   const subTaskCount = item.subTasks.length;
+  const isCounter = item.target != null;
 
   return (
     <>
@@ -152,12 +156,21 @@ export function DayTodoItem({
           </motion.span>
         )}
 
-        <SubTaskToggle
-          count={subTaskCount}
-          expanded={expanded}
-          isMobile={isMobile}
-          onClick={() => onToggleExpand(item.id)}
-        />
+        {isCounter ? (
+          <CounterChip
+            count={item.count ?? 0}
+            target={item.target as number}
+            isMobile={isMobile}
+            onIncrement={() => onCounterIncrement(item.id)}
+          />
+        ) : (
+          <SubTaskToggle
+            count={subTaskCount}
+            expanded={expanded}
+            isMobile={isMobile}
+            onClick={() => onToggleExpand(item.id)}
+          />
+        )}
         {dragHandle}
         <motion.button
           type="button"

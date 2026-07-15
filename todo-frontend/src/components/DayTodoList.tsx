@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { generateId } from "@/lib/generateId";
+import { parseTarget } from "@/lib/parseTarget";
 import { addClientIds, removeClientIds } from "@/lib/itemIds";
 import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
 import { ReorderItem } from "@/components/shared/ReorderItem";
@@ -42,7 +43,9 @@ export function DayTodoList({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const counterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const REORDER_DEBOUNCE_MS = 600;
+  const COUNTER_DEBOUNCE_MS = 600;
 
   // Sync items from props
   useEffect(() => {
@@ -57,17 +60,19 @@ export function DayTodoList({
   const addButtonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
 
   const handleAdd = () => {
-    const t = newTitle.trim();
-    if (!t) return;
-    
+    const raw = newTitle.trim();
+    if (!raw) return;
+
+    const { title, target } = parseTarget(raw);
     const newItem: DayTodoItemWithId = {
       id: generateId(),
-      title: t,
+      title,
       completed: false,
       order: items.length,
       subTasks: [],
+      ...(target ? { target, count: 0 } : {}),
     };
-    
+
     const newItems = [...items, newItem];
     setItems(newItems);
     onUpdateItems(removeIdsFromItems(newItems));
@@ -81,6 +86,14 @@ export function DayTodoList({
     const toggled = items.map((item) => {
       if (item.id !== id) return item;
       const nextCompleted = !item.completed;
+      // A counter item's checkbox fills or empties the count.
+      if (item.target != null) {
+        return {
+          ...item,
+          completed: nextCompleted,
+          count: nextCompleted ? item.target : 0,
+        };
+      }
       const subTasks = item.subTasks ?? [];
       if (nextCompleted && subTasks.length > 0) {
         return {
@@ -99,6 +112,27 @@ export function DayTodoList({
       onUpdateItems(removeIdsFromItems(reordered));
       setPendingToggle(null);
     }, 400);
+  };
+
+  // A counter tap adds one (or resets a full counter to zero). The UI updates
+  // immediately; persistence is debounced so rapid taps send one PATCH.
+  const handleCounterIncrement = (id: string) => {
+    const updated = items.map((item) => {
+      if (item.id !== id || item.target == null) return item;
+      const target = item.target;
+      const current = item.count ?? 0;
+      const next = current >= target ? 0 : current + 1;
+      return { ...item, count: next, completed: next >= target };
+    });
+    // Regroup only shifts an item between the incomplete/complete sections when
+    // its completion actually flips (at the last tap or on reset).
+    const reordered = regroupByCompletion(updated);
+    setItems(reordered);
+    if (counterDebounceRef.current) clearTimeout(counterDebounceRef.current);
+    counterDebounceRef.current = setTimeout(() => {
+      onUpdateItems(removeIdsFromItems(reordered));
+      counterDebounceRef.current = null;
+    }, COUNTER_DEBOUNCE_MS);
   };
 
   const handleSubTasksChange = (next: DayTodoItemWithId[]) => {
@@ -153,6 +187,7 @@ export function DayTodoList({
   useEffect(() => {
     return () => {
       if (reorderDebounceRef.current) clearTimeout(reorderDebounceRef.current);
+      if (counterDebounceRef.current) clearTimeout(counterDebounceRef.current);
     };
   }, []);
 
@@ -287,6 +322,7 @@ export function DayTodoList({
                         newSubTaskTitle={newSubTaskTitle[item.id] ?? ""}
                         dragHandle={dragHandle}
                         onToggle={handleToggle}
+                        onCounterIncrement={handleCounterIncrement}
                         onTitleClick={handleTitleClick}
                         onTitleChange={setEditValue}
                         onTitleSave={saveTitle}

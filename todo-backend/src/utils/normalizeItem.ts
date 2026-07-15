@@ -1,22 +1,53 @@
 /**
  * Normalize a todo item from API input. Shared across dayController, goalController, freetimeTodoController.
  */
+interface RawCounterSubTask {
+  title?: string;
+  completed?: boolean;
+  target?: number;
+  count?: number;
+}
+
 export interface RawTodoItem {
   title?: string;
   completed?: boolean;
   order?: number;
-  subTasks?: { title?: string; completed?: boolean }[];
+  target?: number;
+  count?: number;
+  subTasks?: RawCounterSubTask[];
   carriedFrom?: string;
   postponeCount?: number;
+}
+
+interface NormalizedCounterSubTask {
+  title: string;
+  completed: boolean;
+  target?: number;
+  count?: number;
 }
 
 export interface NormalizedTodoItem {
   title: string;
   completed: boolean;
   order: number;
-  subTasks?: { title: string; completed: boolean }[];
+  target?: number;
+  count?: number;
+  subTasks?: NormalizedCounterSubTask[];
   carriedFrom?: string;
   postponeCount?: number;
+}
+
+/** A counter target below 2 is not a counter; drop it and its count. */
+function counterFields(source: { target?: number; count?: number }): {
+  target?: number;
+  count?: number;
+} {
+  if (typeof source.target !== "number" || source.target < 2) return {};
+  const count =
+    typeof source.count === "number"
+      ? Math.max(0, Math.min(source.target, Math.trunc(source.count)))
+      : 0;
+  return { target: Math.trunc(source.target), count };
 }
 
 export function normalizeItem(
@@ -27,10 +58,12 @@ export function normalizeItem(
     title: (item.title ?? "").trim(),
     completed: Boolean(item.completed),
     order: typeof item.order === "number" ? item.order : index,
+    ...counterFields(item),
     subTasks: Array.isArray(item.subTasks)
       ? item.subTasks.map((st) => ({
           title: (st.title ?? "").trim(),
           completed: Boolean(st.completed),
+          ...counterFields(st),
         }))
       : undefined,
   };

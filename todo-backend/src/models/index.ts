@@ -7,5 +7,7 @@ export * from "./freetimeTodo.js";
 export * from "./dateTemplate.js";
 export * from "./review.js";
 export * from "./personNote.js";
+export * from "./habit.js";
+export * from "./habitLog.js";
 export * from "./backupRequest.js";
 export * from "./inviteCode.js";

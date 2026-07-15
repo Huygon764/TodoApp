@@ -279,6 +279,48 @@ export const validatePersonNoteBody = [
   optionalOrder(),
 ];
 
+const daysOfWeekHabitValidators = (required: boolean) => {
+  const arr = body("daysOfWeek");
+  return [
+    (required
+      ? arr.isArray({ min: 1 }).withMessage("daysOfWeek must be a non-empty array")
+      : arr.optional().isArray({ min: 1 }).withMessage("daysOfWeek must be a non-empty array")),
+    body("daysOfWeek.*")
+      .optional()
+      .isInt({ min: 1, max: 7 })
+      .withMessage("daysOfWeek values must be between 1 and 7"),
+  ];
+};
+
+export const validateCreateHabitBody = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ max: 200 })
+    .withMessage("Name cannot exceed 200 characters"),
+  ...daysOfWeekHabitValidators(false),
+];
+
+export const validatePatchHabitBody = [
+  body("name")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Name cannot be empty")
+    .isLength({ max: 200 })
+    .withMessage("Name cannot exceed 200 characters"),
+  ...daysOfWeekHabitValidators(false),
+  optionalOrder(),
+];
+
+export const validateHabitStatsQuery = [
+  query("days")
+    .optional()
+    .isInt({ min: 7, max: 365 })
+    .withMessage("days must be between 7 and 365"),
+];
+
 export const validatePatchPersonNoteBody = [
   body("name")
     .optional()

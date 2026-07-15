@@ -35,6 +35,48 @@ export const optionalOrder = (path = "order"): ValidationChain =>
     .isInt({ min: 0 })
     .withMessage(`${path} must be a non-negative integer`);
 
+/** Counter target: optional integer 2..999 (below 2 is not a counter). */
+export const optionalTarget = (path = "target"): ValidationChain =>
+  body(path)
+    .optional()
+    .isInt({ min: 2, max: 999 })
+    .withMessage(`${path} must be an integer between 2 and 999`);
+
+/**
+ * Cross-field counter rules for an items array: an item cannot have both a
+ * `target` and sub-tasks, and any `count` must stay within 0..target. Applied
+ * to the whole `items` value so it can inspect item + sub-task shape together.
+ */
+export const counterConsistency: CustomValidator = (items) => {
+  if (!Array.isArray(items)) return true;
+  const checkCount = (holder: { target?: unknown; count?: unknown }, label: string) => {
+    if (typeof holder.count !== "number") return;
+    if (typeof holder.target !== "number") {
+      throw new Error(`${label} count requires a target`);
+    }
+    if (holder.count < 0 || holder.count > holder.target) {
+      throw new Error(`${label} count must be between 0 and target`);
+    }
+  };
+  for (const item of items) {
+    if (item == null || typeof item !== "object") continue;
+    const hasTarget = typeof item.target === "number";
+    const hasSubTasks = Array.isArray(item.subTasks) && item.subTasks.length > 0;
+    if (hasTarget && hasSubTasks) {
+      throw new Error("An item cannot have both a target and sub-tasks");
+    }
+    checkCount(item, "item");
+    if (Array.isArray(item.subTasks)) {
+      for (const subTask of item.subTasks) {
+        if (subTask != null && typeof subTask === "object") {
+          checkCount(subTask, "sub-task");
+        }
+      }
+    }
+  }
+  return true;
+};
+
 /**
  * Validators for an array of todo items where each item may have
  * title/completed/order, plus subtasks with title and (optionally) completed.
@@ -43,10 +85,20 @@ export const itemsArrayValidators = (
   options: { withSubTasks?: boolean; subTaskCompleted?: boolean } = {},
 ): ValidationChain[] => {
   const chains: ValidationChain[] = [
-    body("items").optional().isArray().withMessage("items must be an array"),
+    body("items")
+      .optional()
+      .isArray()
+      .withMessage("items must be an array")
+      .bail()
+      .custom(counterConsistency),
     body("items.*.title").optional().trim().isString(),
     body("items.*.completed").optional().isBoolean(),
     body("items.*.order").optional().isInt({ min: 0 }),
+    body("items.*.target")
+      .optional()
+      .isInt({ min: 2, max: 999 })
+      .withMessage("target must be an integer between 2 and 999"),
+    body("items.*.count").optional().isInt({ min: 0 }),
   ];
   if (options.withSubTasks) {
     chains.push(
@@ -55,9 +107,16 @@ export const itemsArrayValidators = (
         .isArray()
         .withMessage("subTasks must be an array"),
       body("items.*.subTasks.*.title").optional().trim().isString(),
+      body("items.*.subTasks.*.target")
+        .optional()
+        .isInt({ min: 2, max: 999 })
+        .withMessage("target must be an integer between 2 and 999"),
     );
     if (options.subTaskCompleted) {
-      chains.push(body("items.*.subTasks.*.completed").optional().isBoolean());
+      chains.push(
+        body("items.*.subTasks.*.completed").optional().isBoolean(),
+        body("items.*.subTasks.*.count").optional().isInt({ min: 0 }),
+      );
     }
   }
   return chains;
@@ -69,7 +128,26 @@ export const itemsArrayValidators = (
 export const subTasksValidators = (path = "subTasks"): ValidationChain[] => [
   body(path).optional().isArray().withMessage("subTasks must be an array"),
   body(`${path}.*.title`).optional().trim().isString(),
+  body(`${path}.*.target`)
+    .optional()
+    .isInt({ min: 2, max: 999 })
+    .withMessage("target must be an integer between 2 and 999"),
 ];
+
+/**
+ * Reject a single-item create/patch body that sets both `target` and a
+ * non-empty `subTasks` array (they are mutually exclusive).
+ */
+export const targetSubTasksExclusive = (): ValidationChain =>
+  body("target").custom((value, { req }) => {
+    const subTasks = (req.body as { subTasks?: unknown })?.subTasks;
+    const hasTarget = value !== undefined && value !== null;
+    const hasSubTasks = Array.isArray(subTasks) && subTasks.length > 0;
+    if (hasTarget && hasSubTasks) {
+      throw new Error("An item cannot have both a target and sub-tasks");
+    }
+    return true;
+  });
 
 export const daysOfWeekValidators = (): ValidationChain[] => [
   body("daysOfWeek").optional().isArray().withMessage("daysOfWeek must be an array"),

@@ -9,8 +9,11 @@ import {
   requiredTitle,
   optionalTitle,
   optionalOrder,
+  optionalTarget,
+  targetSubTasksExclusive,
   itemsArrayValidators,
   subTasksValidators,
+  counterConsistency,
   daysOfWeekValidators,
   daysOfMonthValidators,
   datesOfYearValidators,
@@ -55,11 +58,13 @@ export const validateDateParam = [
 export const validateDefaultItemBody = [
   requiredTitle(),
   optionalOrder(),
+  optionalTarget(),
+  targetSubTasksExclusive(),
   ...subTasksValidators(),
 ];
 
 export const validatePatchDayBody = [
-  ...itemsArrayValidators(),
+  ...itemsArrayValidators({ withSubTasks: true, subTaskCompleted: true }),
   body("reflection")
     .optional()
     .isString()
@@ -91,6 +96,8 @@ export const validatePatchFreetimeTodoBody = itemsArrayValidators({
 export const validatePatchDefaultBody = [
   optionalTitle(),
   optionalOrder(),
+  optionalTarget(),
+  targetSubTasksExclusive(),
   ...subTasksValidators(),
 ];
 
@@ -139,6 +146,8 @@ export const validatePostRecurringTemplateBody = [
     .withMessage("type must be week, month or year"),
   requiredTitle(),
   optionalOrder(),
+  optionalTarget(),
+  targetSubTasksExclusive(),
   ...daysOfWeekValidators(),
   ...daysOfMonthValidators(),
   ...datesOfYearValidators(),
@@ -153,6 +162,8 @@ export const validateRecurringTemplateTypeParam = [
 
 export const validatePatchRecurringTemplateItemBody = [
   optionalTitle(),
+  optionalTarget(),
+  targetSubTasksExclusive(),
   ...daysOfWeekValidators(),
   ...daysOfMonthValidators(),
   ...datesOfYearValidators(),
@@ -220,7 +231,11 @@ export const validateAnalyzeReviewsBody = [
 ];
 
 export const validatePatchDateTemplateBody = [
-  body("items").isArray().withMessage("items must be an array"),
+  body("items")
+    .isArray()
+    .withMessage("items must be an array")
+    .bail()
+    .custom(counterConsistency),
   body("items.*.title")
     .trim()
     .notEmpty()
@@ -230,11 +245,19 @@ export const validatePatchDateTemplateBody = [
   body("items.*.order")
     .isInt({ min: 0 })
     .withMessage("Item order must be a non-negative integer"),
+  body("items.*.target")
+    .optional()
+    .isInt({ min: 2, max: 999 })
+    .withMessage("target must be an integer between 2 and 999"),
   body("items.*.subTasks")
     .optional()
     .isArray()
     .withMessage("subTasks must be an array"),
   body("items.*.subTasks.*.title").optional().trim().isString(),
+  body("items.*.subTasks.*.target")
+    .optional()
+    .isInt({ min: 2, max: 999 })
+    .withMessage("target must be an integer between 2 and 999"),
 ];
 
 export const validatePersonNoteBody = [

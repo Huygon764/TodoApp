@@ -7,8 +7,8 @@ const userSchema = new Schema<IUserDocument, IUserModel>(
   {
     username: {
       type: String,
-      required: [true, "Username is required"],
       unique: true,
+      sparse: true,
       trim: true,
       minlength: [3, "Username must be at least 3 characters"],
       maxlength: [30, "Username cannot exceed 30 characters"],
@@ -19,10 +19,13 @@ const userSchema = new Schema<IUserDocument, IUserModel>(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
+    // Google sign-in identity (absent for username/password accounts).
+    googleId: { type: String, unique: true, sparse: true },
+    email: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
+    avatarUrl: { type: String, default: undefined },
     displayName: {
       type: String,
       trim: true,
@@ -50,7 +53,7 @@ const userSchema = new Schema<IUserDocument, IUserModel>(
 );
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
   try {
     const salt = await bcrypt.genSalt(env.bcryptRounds);
     this.password = await bcrypt.hash(this.password, salt);
@@ -64,6 +67,7 @@ userSchema.methods.comparePassword = async function (
   this: IUserDocument,
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.password) return false; // Google-only accounts have no password
   return bcrypt.compare(candidatePassword, this.password);
 };
 

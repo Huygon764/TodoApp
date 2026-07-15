@@ -15,6 +15,11 @@ import {
   releaseInviteCode,
   type InviteInvalidReason,
 } from "../services/inviteService.js";
+import {
+  verifyGoogleToken,
+  findOrCreateGoogleUser,
+} from "../services/googleAuth.js";
+import { notifyPendingSignup } from "../services/pendingApproval.js";
 import type {
   IUserDocument,
   IInviteCodeDocument,
@@ -60,8 +65,9 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   sameSite: "lax" as const,
-  // secure: env.nodeEnv === "production",
-  secure: false, // false because on vps dont have domain name, only ip address, later when buy domain name, can change this
+  // Production runs behind HTTPS (NODE_ENV=production is set in the Dockerfile),
+  // so the cookie is secure there; local dev stays on http.
+  secure: env.nodeEnv === "production",
   path: "/",
 };
 
@@ -112,6 +118,42 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 
   (user as { password?: string }).password = undefined;
 
+  issueAuthCookie(res, user);
+  sendSuccess(res, 200, { user }, MESSAGES.AUTH.LOGIN_SUCCESS);
+});
+
+export const googleLogin = catchAsync(async (req: Request, res: Response) => {
+  const { idToken, timezone } = req.body as {
+    idToken?: string;
+    timezone?: string;
+  };
+  if (!idToken) throw badRequest("idToken is required");
+
+  let profile;
+  try {
+    profile = await verifyGoogleToken(idToken);
+  } catch {
+    throw unauthorized("Google sign-in failed");
+  }
+  if (!profile.emailVerified) throw unauthorized("Google email not verified");
+
+  const tz =
+    typeof timezone === "string" && timezone.trim() && isValidTimezone(timezone.trim())
+      ? timezone.trim()
+      : undefined;
+
+  const { user, created } = await findOrCreateGoogleUser(profile, tz);
+
+  // Ping the admin the first time this account is seen.
+  if (created) await notifyPendingSignup(user);
+
+  if (!user.isActive) {
+    return sendSuccess(res, 200, { pending: true });
+  }
+
+  if (tz) user.timezone = tz;
+  await user.updateLastLogin();
+  (user as { password?: string }).password = undefined;
   issueAuthCookie(res, user);
   sendSuccess(res, 200, { user }, MESSAGES.AUTH.LOGIN_SUCCESS);
 });

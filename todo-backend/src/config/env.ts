@@ -16,6 +16,7 @@ interface Env {
   telegramWebhookSecret: string | null;
   geminiApiKey: string | null;
   cronSecret: string | null;
+  googleClientId: string | null;
 }
 
 function requireEnv(key: string): string {
@@ -63,6 +64,7 @@ export const env: Env = {
   telegramWebhookSecret: optionalEnv("TELEGRAM_WEBHOOK_SECRET"),
   geminiApiKey: optionalEnv("GEMINI_API_KEY"),
   cronSecret: optionalEnv("CRON_SECRET"),
+  googleClientId: optionalEnv("GOOGLE_CLIENT_ID"),
 };
 
 if (!env.cronSecret) {

@@ -1,8 +1,11 @@
 import type { Document, Model, Types } from "mongoose";
 
 export interface IUser {
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
+  googleId?: string;
+  email?: string;
+  avatarUrl?: string;
   displayName: string;
   isActive: boolean;
   lastLogin: Date | null;

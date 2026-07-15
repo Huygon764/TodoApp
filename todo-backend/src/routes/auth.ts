@@ -9,6 +9,7 @@ import { authenticate } from "../middleware/auth.js";
 import { createRateLimit } from "../middleware/rateLimit.js";
 import {
   login,
+  googleLogin,
   logout,
   me,
   register,
@@ -27,8 +28,14 @@ const checkInviteLimiter = createRateLimit({
   windowMs: 10 * 60 * 1000,
   max: 30,
 });
+// Blunt password brute-forcing and Google-token spam.
+const loginLimiter = createRateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 20,
+});
 
-router.post("/login", validateLogin, validateRequest, login);
+router.post("/login", loginLimiter, validateLogin, validateRequest, login);
+router.post("/google", loginLimiter, googleLogin);
 router.post("/logout", authenticate, logout);
 router.get("/me", authenticate, me);
 router.get("/register/check", checkInviteLimiter, checkInvite);

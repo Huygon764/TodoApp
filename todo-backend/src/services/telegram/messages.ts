@@ -76,6 +76,20 @@ export const TELEGRAM_MESSAGES = {
     `Password reset link for "${name}".\n\n` +
     `Link (one-time, valid until ${expiresStr}):\n${link}`,
   RESETLINK_ERROR: "An error occurred while creating the reset link.",
+  SIGNUP_PENDING: (name: string, email: string) =>
+    `New Google sign-up awaiting approval:\n\n${name}\n${email}`,
+  SIGNUP_BTN_APPROVE: "Approve",
+  SIGNUP_BTN_DENY: "Deny",
+  SIGNUP_APPROVED: (name: string) => `Approved ${name}. They can sign in now.`,
+  SIGNUP_DENIED: (name: string) => `Denied ${name}. The pending account was removed.`,
+  SIGNUP_NOT_FOUND: "That pending account no longer exists.",
+  PENDING_EMPTY: "No accounts awaiting approval.",
+  PENDING_HEADER: (count: number) => `Pending approvals (${count}):\n\n`,
+  PENDING_LINE: (index: number, name: string, email: string) =>
+    `${index}. ${name} - ${email}`,
+  APPROVE_USAGE: "Usage: /approve <email>",
+  DENY_USAGE: "Usage: /deny <email>",
+  APPROVE_NOT_FOUND: (email: string) => `No pending account for "${email}".`,
 } as const;
 
 /** Registered with Telegram so typing "/" shows the command menu */
@@ -87,6 +101,9 @@ export const TELEGRAM_BOT_COMMANDS = [
   { command: "revoke", description: "Revoke a pending invite" },
   { command: "remove", description: "Remove a user" },
   { command: "list", description: "Show user list" },
+  { command: "pending", description: "List sign-ups awaiting approval" },
+  { command: "approve", description: "Approve a pending sign-up by email" },
+  { command: "deny", description: "Deny a pending sign-up by email" },
   { command: "backup", description: "Back up MongoDB now" },
   { command: "synccommands", description: "Re-sync the bot command menu" },
   { command: "help", description: "Show help" },

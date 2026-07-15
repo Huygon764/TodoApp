@@ -15,6 +15,8 @@ import {
   TELEGRAM_MESSAGES as MESSAGES,
   TELEGRAM_BOT_COMMANDS,
 } from "./telegram/messages.js";
+import { setPendingNotifier } from "./pendingApproval.js";
+import type { IUserDocument } from "../types/index.js";
 import type { RequestHandler } from "express";
 
 const MAX_RETRIES = 5;
@@ -284,10 +286,108 @@ class TelegramBot {
     this.bot.action(/^backup:no:([a-f0-9]+)$/i, (ctx) =>
       this.handleBackupNo(ctx)
     );
+    this.bot.command("pending", (ctx) => this.handlePending(ctx));
+    this.bot.command("approve", (ctx) => this.handleApproveCommand(ctx));
+    this.bot.command("deny", (ctx) => this.handleDenyCommand(ctx));
+    this.bot.action(/^approve:([a-f0-9]+)$/i, (ctx) => this.handleApprove(ctx));
+    this.bot.action(/^deny:([a-f0-9]+)$/i, (ctx) => this.handleDeny(ctx));
+
+    // Let the auth controller ping us when a new Google user needs approval.
+    setPendingNotifier((user) => this.sendSignupPrompt(user));
 
     this.bot.on(message("text"), (ctx) => {
       if (!this.requireAdmin(ctx)) return;
     });
+  }
+
+  private async sendSignupPrompt(user: IUserDocument): Promise<void> {
+    if (!this.bot || !this.adminChatId) return;
+    await this.bot.telegram.sendMessage(
+      this.adminChatId,
+      MESSAGES.SIGNUP_PENDING(user.displayName, user.email ?? ""),
+      Markup.inlineKeyboard([
+        Markup.button.callback(MESSAGES.SIGNUP_BTN_APPROVE, `approve:${user._id}`),
+        Markup.button.callback(MESSAGES.SIGNUP_BTN_DENY, `deny:${user._id}`),
+      ])
+    );
+  }
+
+  private async handleApprove(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    await ctx.answerCbQuery();
+    const id = (ctx.callbackQuery as { data?: string })?.data?.match(
+      /^approve:([a-f0-9]+)$/i
+    )?.[1];
+    if (!id) return;
+    const user = await User.findOneAndUpdate(
+      { _id: id, isActive: false },
+      { isActive: true }
+    );
+    await ctx.editMessageText(
+      user ? MESSAGES.SIGNUP_APPROVED(user.displayName) : MESSAGES.SIGNUP_NOT_FOUND
+    );
+  }
+
+  private async handleDeny(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    await ctx.answerCbQuery();
+    const id = (ctx.callbackQuery as { data?: string })?.data?.match(
+      /^deny:([a-f0-9]+)$/i
+    )?.[1];
+    if (!id) return;
+    const user = await User.findOneAndDelete({ _id: id, isActive: false });
+    await ctx.editMessageText(
+      user ? MESSAGES.SIGNUP_DENIED(user.displayName) : MESSAGES.SIGNUP_NOT_FOUND
+    );
+  }
+
+  private async handlePending(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    const pending = await User.find({ isActive: false }).sort({ createdAt: 1 });
+    if (pending.length === 0) {
+      await ctx.reply(MESSAGES.PENDING_EMPTY);
+      return;
+    }
+    const lines = pending.map((u, i) =>
+      MESSAGES.PENDING_LINE(i + 1, u.displayName, u.email ?? "")
+    );
+    await ctx.reply(MESSAGES.PENDING_HEADER(pending.length) + lines.join("\n"));
+  }
+
+  private async handleApproveCommand(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    const email = this.commandArg(ctx);
+    if (!email) return void ctx.reply(MESSAGES.APPROVE_USAGE);
+    const user = await User.findOneAndUpdate(
+      { email: email.toLowerCase(), isActive: false },
+      { isActive: true }
+    );
+    await ctx.reply(
+      user
+        ? MESSAGES.SIGNUP_APPROVED(user.displayName)
+        : MESSAGES.APPROVE_NOT_FOUND(email)
+    );
+  }
+
+  private async handleDenyCommand(ctx: Context): Promise<void> {
+    if (!this.requireAdmin(ctx)) return;
+    const email = this.commandArg(ctx);
+    if (!email) return void ctx.reply(MESSAGES.DENY_USAGE);
+    const user = await User.findOneAndDelete({
+      email: email.toLowerCase(),
+      isActive: false,
+    });
+    await ctx.reply(
+      user
+        ? MESSAGES.SIGNUP_DENIED(user.displayName)
+        : MESSAGES.APPROVE_NOT_FOUND(email)
+    );
+  }
+
+  private commandArg(ctx: Context): string | null {
+    const text = (ctx.message as { text?: string })?.text ?? "";
+    const parts = text.trim().split(/\s+/);
+    return parts.length > 1 ? parts.slice(1).join(" ").trim() : null;
   }
 
   async sendBackupPrompt(requestId: string): Promise<void> {

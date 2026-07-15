@@ -7,11 +7,13 @@ export interface IRecurringTemplateDayOfYear {
 
 export interface IRecurringTemplateSubTask {
   title: string;
+  target?: number;
 }
 
 export interface IRecurringTemplateItem {
   title: string;
   order: number;
+  target?: number;
   /** 1-7, 1 = Monday, 7 = Sunday (for type = "week") */
   daysOfWeek?: number[];
   /** 1-31 (for type = "month") */

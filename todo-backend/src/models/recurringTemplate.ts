@@ -19,6 +19,7 @@ const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
   {
     title: { type: String, required: true, trim: true },
     order: { type: Number, required: true, default: 0 },
+    target: { type: Number, min: 2, max: 999 },
     // For weekly templates: 1-7 (1 = Monday, 7 = Sunday)
     daysOfWeek: {
       type: [Number],

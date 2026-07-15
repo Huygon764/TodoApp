@@ -6,18 +6,28 @@ export function parseDateString(dateStr: string): Date {
   return new Date(dateStr + "T12:00:00Z");
 }
 
-/** Convert template subTasks ({ title }) to DayTodo subTasks ({ title, completed }) */
+/** A counter target copied from a template; below 2 it is not a counter. */
+function normalizeTarget(target?: number): number | undefined {
+  return typeof target === "number" && target >= 2 ? target : undefined;
+}
+
+/** Convert template subTasks ({ title, target? }) to DayTodo subTasks ({ title, completed, count }) */
 function convertSubTasks(
-  subTasks?: { title: string }[]
+  subTasks?: { title: string; target?: number }[]
 ): IDayTodoItem["subTasks"] {
   if (!Array.isArray(subTasks) || subTasks.length === 0) return undefined;
-  return subTasks.map((st) => ({ title: st.title, completed: false }));
+  return subTasks.map((st) => {
+    const target = normalizeTarget(st.target);
+    return target
+      ? { title: st.title, completed: false, target, count: 0 }
+      : { title: st.title, completed: false };
+  });
 }
 
 /** Append items from source to existing items if title not already present (by trimmed title, case-sensitive) */
 export function mergeItemsByTitle(
   existing: IDayTodoItem[],
-  source: { title: string; subTasks?: { title: string }[] }[],
+  source: { title: string; target?: number; subTasks?: { title: string; target?: number }[] }[],
   startOrder: number
 ): IDayTodoItem[] {
   const existingTitles = new Set(
@@ -28,10 +38,12 @@ export function mergeItemsByTitle(
     const trimmedTitle = (sourceItem.title ?? "").trim();
     if (trimmedTitle && !existingTitles.has(trimmedTitle)) {
       existingTitles.add(trimmedTitle);
+      const target = normalizeTarget(sourceItem.target);
       toAppend.push({
         title: sourceItem.title,
         completed: false,
         order: startOrder + toAppend.length,
+        ...(target ? { target, count: 0 } : {}),
         subTasks: convertSubTasks(sourceItem.subTasks),
       });
     }
@@ -93,11 +105,11 @@ export async function fetchAndFilterTemplateItems(
   dayOfMonth: number,
   isFirstOfMonth: boolean,
   month: number
-): Promise<{ title: string; subTasks?: { title: string }[] }[]> {
+): Promise<{ title: string; target?: number; subTasks?: { title: string; target?: number }[] }[]> {
   const types = ["week", "month", "year"] as const;
   const templates = await RecurringTemplate.find({ userId, type: { $in: types } });
 
-  const filtered: { title: string; subTasks?: { title: string }[] }[] = [];
+  const filtered: { title: string; target?: number; subTasks?: { title: string; target?: number }[] }[] = [];
   for (const tpl of templates) {
     for (const item of tpl.items) {
       let include = false;
@@ -121,12 +133,16 @@ export async function initializeDayItems(
   month: number
 ): Promise<IDayTodoItem[]> {
   const defaultItems = await DefaultItem.find({ userId }).sort({ order: 1 });
-  let items: IDayTodoItem[] = defaultItems.map((defaultItem, index) => ({
-    title: defaultItem.title,
-    completed: false,
-    order: index,
-    subTasks: convertSubTasks(defaultItem.subTasks),
-  }));
+  let items: IDayTodoItem[] = defaultItems.map((defaultItem, index) => {
+    const target = normalizeTarget(defaultItem.target);
+    return {
+      title: defaultItem.title,
+      completed: false,
+      order: index,
+      ...(target ? { target, count: 0 } : {}),
+      subTasks: convertSubTasks(defaultItem.subTasks),
+    };
+  });
 
   const recurringItems = await fetchAndFilterTemplateItems(
     userId, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
@@ -228,12 +244,19 @@ export async function mergeCarryOverItems(
     const trimmedTitle = (prevItem.title ?? "").trim();
     if (!trimmedTitle || existingTitles.has(trimmedTitle)) continue;
     existingTitles.add(trimmedTitle);
+    const target = normalizeTarget(prevItem.target);
     toAppend.push({
       title: prevItem.title,
       completed: false,
       order: currentItems.length + toAppend.length,
+      ...(target ? { target, count: 0 } : {}),
       subTasks: Array.isArray(prevItem.subTasks)
-        ? prevItem.subTasks.map((st) => ({ title: st.title, completed: false }))
+        ? prevItem.subTasks.map((st) => {
+            const stTarget = normalizeTarget(st.target);
+            return stTarget
+              ? { title: st.title, completed: false, target: stTarget, count: 0 }
+              : { title: st.title, completed: false };
+          })
         : undefined,
       carriedFrom: prevItem.carriedFrom ?? prevDay.date,
       postponeCount: (prevItem.postponeCount ?? 0) + 1,

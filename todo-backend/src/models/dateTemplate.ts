@@ -6,6 +6,7 @@ const dateTemplateItemSchema = new Schema<IDateTemplateItem>(
   {
     title: { type: String, required: true, trim: true },
     order: { type: Number, required: true, default: 0 },
+    target: { type: Number, min: 2, max: 999 },
     subTasks: {
       type: [subTaskTitleOnlySchema],
       default: undefined,

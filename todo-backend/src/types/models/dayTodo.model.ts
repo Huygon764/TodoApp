@@ -3,12 +3,20 @@ import type { Document, Types } from "mongoose";
 export interface IDayTodoSubTask {
   title: string;
   completed: boolean;
+  /** Repetition target; when set, this sub-task is a counter. */
+  target?: number;
+  /** Progress toward `target`; 0..target. */
+  count?: number;
 }
 
 export interface IDayTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  /** Repetition target; when set, this item is a counter (no subTasks). */
+  target?: number;
+  /** Progress toward `target`; 0..target. */
+  count?: number;
   subTasks?: IDayTodoSubTask[];
   /** Original date (YYYY-MM-DD) this task was first postponed from */
   carriedFrom?: string;

@@ -4,6 +4,7 @@ import type { IDefaultItemDocument } from "../types/index.js";
 const defaultSubTaskSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
+    target: { type: Number, min: 2, max: 999 },
   },
   { _id: false }
 );
@@ -27,6 +28,7 @@ const defaultItemSchema = new Schema<IDefaultItemDocument>(
       required: true,
       default: 0,
     },
+    target: { type: Number, min: 2, max: 999 },
     subTasks: {
       type: [defaultSubTaskSchema],
       default: undefined,

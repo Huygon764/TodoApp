@@ -87,18 +87,32 @@ export function normalizeItems(items: RawTodoItem[]): NormalizedTodoItem[] {
 
 export interface RawSubTaskTitle {
   title?: string;
+  target?: number;
+}
+
+/** A counter target for a template item/sub-task: kept only when >= 2. */
+export function normalizeTargetField(target?: number): number | undefined {
+  return typeof target === "number" && target >= 2
+    ? Math.trunc(target)
+    : undefined;
 }
 
 /**
- * Normalize subtasks that only carry a title (no completed flag).
- * Returns undefined when nothing remains, so callers can drop the field.
+ * Normalize subtasks that carry a title and an optional counter target (no
+ * completed flag). Returns undefined when nothing remains, so callers can drop
+ * the field.
  */
 export function normalizeSubTaskTitles(
   subTasks: unknown
-): { title: string }[] | undefined {
+): { title: string; target?: number }[] | undefined {
   if (!Array.isArray(subTasks)) return undefined;
   const cleaned = (subTasks as RawSubTaskTitle[])
-    .map((st) => ({ title: (st.title ?? "").trim() }))
+    .map((st) => {
+      const target = normalizeTargetField(st.target);
+      return target
+        ? { title: (st.title ?? "").trim(), target }
+        : { title: (st.title ?? "").trim() };
+    })
     .filter((st) => st.title.length > 0);
   return cleaned.length > 0 ? cleaned : undefined;
 }

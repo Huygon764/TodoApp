@@ -5,6 +5,7 @@ import {
   sendSuccess,
   notFound,
   normalizeSubTaskTitles,
+  normalizeTargetField,
 } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 
@@ -17,17 +18,20 @@ export const getDefaultList = catchAsync(async (req: Request, res: Response) => 
 export const createDefaultItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { title, order, subTasks } = req.body as {
+    const { title, order, target, subTasks } = req.body as {
       title: string;
       order?: number;
+      target?: number;
       subTasks?: { title: string }[];
     };
 
     const count = await DefaultItem.countDocuments({ userId });
+    const normalizedTarget = normalizeTargetField(target);
     const item = await DefaultItem.create({
       userId,
       title: title.trim(),
       order: typeof order === "number" ? order : count,
+      ...(normalizedTarget ? { target: normalizedTarget } : {}),
       subTasks: normalizeSubTaskTitles(subTasks),
     });
     sendSuccess(res, 201, { item });
@@ -38,9 +42,10 @@ export const patchDefaultItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { id } = req.params;
-    const { title, order, subTasks } = req.body as {
+    const { title, order, target, subTasks } = req.body as {
       title?: string;
       order?: number;
+      target?: number;
       subTasks?: { title: string }[];
     };
 
@@ -51,6 +56,9 @@ export const patchDefaultItem = catchAsync(
 
     if (title !== undefined) item.title = title.trim();
     if (typeof order === "number") item.order = order;
+    if (target !== undefined) {
+      item.set("target", normalizeTargetField(target));
+    }
     if (Array.isArray(subTasks)) {
       item.subTasks = normalizeSubTaskTitles(subTasks);
     }

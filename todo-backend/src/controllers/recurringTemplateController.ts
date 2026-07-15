@@ -9,6 +9,7 @@ import {
   normalizeUniqueSortedInts,
   normalizeDatesOfYear,
   normalizeSubTaskTitles,
+  normalizeTargetField,
 } from "../utils/index.js";
 import { MESSAGES } from "../constants/index.js";
 import type { IRecurringTemplateItem } from "../types/index.js";
@@ -36,10 +37,11 @@ export const getRecurringTemplate = catchAsync(
 export const addRecurringTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { type, title, order, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
+    const { type, title, order, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
       type: "week" | "month" | "year";
       title: string;
       order?: number;
+      target?: number;
       daysOfWeek?: number[];
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
@@ -72,6 +74,8 @@ export const addRecurringTemplateItem = catchAsync(
     if (normalizedDatesOfYear) {
       itemBase.datesOfYear = normalizedDatesOfYear;
     }
+    const normalizedTarget = normalizeTargetField(target);
+    if (normalizedTarget) itemBase.target = normalizedTarget;
     const normalizedSubTasks = normalizeSubTaskTitles(subTasks);
     if (normalizedSubTasks) itemBase.subTasks = normalizedSubTasks;
 
@@ -95,8 +99,9 @@ export const patchRecurringTemplateItem = catchAsync(
     const userId = req.user!.userId;
     const { type, idx } = req.params;
     const index = parseInt(idx!, 10);
-    const { title, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
+    const { title, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
       title?: string;
+      target?: number;
       daysOfWeek?: number[];
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
@@ -119,6 +124,10 @@ export const patchRecurringTemplateItem = catchAsync(
 
     if (typeof title === "string") {
       item.title = title.trim();
+    }
+
+    if ("target" in req.body) {
+      item.target = normalizeTargetField(target);
     }
 
     const normalizedDaysOfWeek =

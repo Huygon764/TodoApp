@@ -5,6 +5,7 @@ import {
   sendSuccess,
   getOrCreate,
   normalizeSubTaskTitles,
+  normalizeTargetField,
 } from "../utils/index.js";
 import type { IDateTemplateItem } from "../types/index.js";
 
@@ -39,10 +40,17 @@ export const patchDateTemplate = catchAsync(
     const items = rawItems
       .map((item, i) => {
         const subTasks = normalizeSubTaskTitles(item.subTasks);
-        const base: { title: string; order: number; subTasks?: { title: string }[] } = {
+        const target = normalizeTargetField(item.target);
+        const base: {
+          title: string;
+          order: number;
+          target?: number;
+          subTasks?: { title: string }[];
+        } = {
           title: (item.title ?? "").trim(),
           order: i,
         };
+        if (target) base.target = target;
         if (subTasks) base.subTasks = subTasks;
         return base;
       })

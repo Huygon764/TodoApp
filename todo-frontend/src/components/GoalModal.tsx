@@ -11,6 +11,8 @@ import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { CounterChip } from "@/components/shared/CounterChip";
+import { parseTarget } from "@/lib/parseTarget";
 import { PeriodSelector } from "@/components/shared/PeriodSelector";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
@@ -178,18 +180,20 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
   const periodLabel =
     activeTab === "week"
-      ? `${period} (${formatWeekPeriodLabel(period)})`
+      ? formatWeekPeriodLabel(period)
       : activeTab === "month"
         ? formatMonthLabel(period)
         : t("goalModal.yearLabel", { period });
 
   const handleAdd = () => {
-    const t = newTitle.trim();
-    if (!t) return;
+    const raw = newTitle.trim();
+    if (!raw) return;
+    const { title, target } = parseTarget(raw);
     const newItems = removeIdsFromItems(sortedItems).concat({
-      title: t,
+      title,
       completed: false,
       order: sortedItems.length,
+      ...(target ? { target, count: 0 } : {}),
     });
     patchMutation.mutate(newItems);
     setNewTitle("");
@@ -201,6 +205,13 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     const toggled = sortedItems.map((item) => {
       if (item.id !== id) return item;
       const nextCompleted = !item.completed;
+      if (item.target != null) {
+        return {
+          ...item,
+          completed: nextCompleted,
+          count: nextCompleted ? item.target : 0,
+        };
+      }
       const subTasks = item.subTasks ?? [];
       if (nextCompleted && subTasks.length > 0) {
         return {
@@ -217,6 +228,19 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     setTimeout(() => setPendingToggle(null), 150);
   };
 
+  const handleCounterIncrement = (id: string) => {
+    const updated = sortedItems.map((item) => {
+      if (item.id !== id || item.target == null) return item;
+      const target = item.target;
+      const current = item.count ?? 0;
+      const next = current >= target ? 0 : current + 1;
+      return { ...item, count: next, completed: next >= target };
+    });
+    const reordered = regroupByCompletion(updated);
+    setLocalItems(reordered);
+    patchMutation.mutate(removeIdsFromItems(reordered));
+  };
+
   const subTaskManager = useSubTaskManager(localItems, (next) => {
     setLocalItems(next);
     patchMutation.mutate(removeIdsFromItems(next));
@@ -227,6 +251,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
   };
   const toggleSubTask = subTaskManager.toggleSubTask;
+  const incrementSubTask = subTaskManager.incrementSubTask;
   const deleteSubTask = subTaskManager.deleteSubTask;
   const editSubTask = subTaskManager.editSubTask;
   const moveSubTask = subTaskManager.moveSubTask;
@@ -370,12 +395,21 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             {item.title}
           </span>
         )}
-        <SubTaskToggle
-          count={(item.subTasks ?? []).length}
-          expanded={expandedId === item.id}
-          isMobile={isMobile}
-          onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
-        />
+        {item.target != null ? (
+          <CounterChip
+            count={item.count ?? 0}
+            target={item.target}
+            isMobile={isMobile}
+            onIncrement={() => handleCounterIncrement(item.id)}
+          />
+        ) : (
+          <SubTaskToggle
+            count={(item.subTasks ?? []).length}
+            expanded={expandedId === item.id}
+            isMobile={isMobile}
+            onClick={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
+          />
+        )}
         {dragHandle}
         <motion.button
           type="button"
@@ -394,6 +428,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           subTasks={item.subTasks ?? []}
           showCheckbox
           onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
+          onIncrement={(subIdx) => incrementSubTask(item.id, subIdx)}
           onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
           onEditTitle={(subIdx, val) => editSubTask(item.id, subIdx, val)}
           onMove={(subIdx, dir) => moveSubTask(item.id, subIdx, dir)}

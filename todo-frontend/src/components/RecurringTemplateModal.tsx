@@ -13,6 +13,8 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { TargetBadge } from "@/components/shared/TargetBadge";
+import { parseTarget } from "@/lib/parseTarget";
 import {
   isLegacyRecurringItem,
   isMonthItemVisible,
@@ -85,11 +87,12 @@ export function RecurringTemplateModal({
     });
 
   const addMutation = useMutation({
-    mutationFn: (title: string) =>
+    mutationFn: ({ title, target }: { title: string; target?: number }) =>
       apiPost<{ template: RecurringTemplate }>(API_PATHS.RECURRING_TEMPLATES, {
         type: activeTab as "week" | "month" | "year",
         title,
         order: items.length,
+        ...(target ? { target } : {}),
         ...(activeTab === "week" ? { daysOfWeek: [weeklyContextDay] } : {}),
         ...(activeTab === "month" ? { daysOfMonth: [monthlyContextDay] } : {}),
         ...(activeTab === "year"
@@ -148,7 +151,11 @@ export function RecurringTemplateModal({
     if (!trimmed) return;
     const item = items[idx];
     if (!item) return;
-    const subTasks = [...(item.subTasks ?? []), { title: trimmed }];
+    const parsed = parseTarget(trimmed);
+    const newSub = parsed.target
+      ? { title: parsed.title, target: parsed.target }
+      : { title: parsed.title };
+    const subTasks = [...(item.subTasks ?? []), newSub];
     patchItemMutation.mutate({ idx, subTasks });
     setNewSubTaskTitle((prev) => ({ ...prev, [idx]: "" }));
   };
@@ -197,7 +204,8 @@ export function RecurringTemplateModal({
   const addItem = () => {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
-    addMutation.mutate(trimmed);
+    const { title, target } = parseTarget(trimmed);
+    addMutation.mutate({ title, target });
     setNewTitle("");
   };
 
@@ -402,13 +410,17 @@ export function RecurringTemplateModal({
                                     )}
                                   </div>
                                 )}
-                                <SubTaskToggle
-                                  count={(item.subTasks ?? []).length}
-                                  expanded={expandedIdx === idx}
-                                  onClick={() =>
-                                    setExpandedIdx((prev) => (prev === idx ? null : idx))
-                                  }
-                                />
+                                {item.target != null ? (
+                                  <TargetBadge target={item.target} />
+                                ) : (
+                                  <SubTaskToggle
+                                    count={(item.subTasks ?? []).length}
+                                    expanded={expandedIdx === idx}
+                                    onClick={() =>
+                                      setExpandedIdx((prev) => (prev === idx ? null : idx))
+                                    }
+                                  />
+                                )}
                                 <motion.button
                                   type="button"
                                   whileHover={{ scale: 1.1 }}

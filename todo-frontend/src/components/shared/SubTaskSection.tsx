@@ -3,6 +3,7 @@ import { Check, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { CounterChip } from "@/components/shared/CounterChip";
+import { TargetBadge } from "@/components/shared/TargetBadge";
 
 interface SubTask {
   title: string;
@@ -123,9 +124,7 @@ export function SubTaskSection({
                 onIncrement={() => onIncrement(subIdx)}
               />
             ) : (
-              <span className="shrink-0 rounded-full border border-accent-primary/25 bg-accent-primary/10 px-2 py-0.5 text-xs font-semibold text-accent-hover tabular-nums">
-                &times;{st.target}
-              </span>
+              <TargetBadge target={st.target} />
             ))}
           {onMove && (
             <div className="flex items-center">

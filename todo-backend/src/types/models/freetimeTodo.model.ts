@@ -3,12 +3,16 @@ import type { Document, Types } from "mongoose";
 export interface IFreetimeSubTask {
   title: string;
   completed: boolean;
+  target?: number;
+  count?: number;
 }
 
 export interface IFreetimeTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  target?: number;
+  count?: number;
   subTasks?: IFreetimeSubTask[];
 }
 

@@ -15,6 +15,8 @@ import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { TargetBadge } from "@/components/shared/TargetBadge";
+import { parseTarget } from "@/lib/parseTarget";
 
 export type DefaultOrderUpdate = { id: string; order: number };
 
@@ -22,7 +24,7 @@ interface DefaultListModalProps {
   isOpen: boolean;
   onClose: () => void;
   items: DefaultItem[];
-  onAddItem: (title: string) => void;
+  onAddItem: (title: string, target?: number) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
 }
@@ -74,9 +76,10 @@ export function DefaultListModal({
   handleCloseRef.current = handleClose;
 
   const addItem = () => {
-    const t = newTitle.trim();
-    if (!t) return;
-    onAddItem(t);
+    const raw = newTitle.trim();
+    if (!raw) return;
+    const { title, target } = parseTarget(raw);
+    onAddItem(title, target);
     setNewTitle("");
   };
 
@@ -110,7 +113,11 @@ export function DefaultListModal({
     if (!trimmed) return;
     const item = localItems.find((i) => i._id === itemId);
     if (!item) return;
-    const subTasks = [...(item.subTasks ?? []), { title: trimmed }];
+    const parsed = parseTarget(trimmed);
+    const newSub = parsed.target
+      ? { title: parsed.title, target: parsed.target }
+      : { title: parsed.title };
+    const subTasks = [...(item.subTasks ?? []), newSub];
     setLocalItems((prev) =>
       prev.map((it) => (it._id === itemId ? { ...it, subTasks } : it))
     );
@@ -226,14 +233,18 @@ export function DefaultListModal({
                                     {item.title}
                                   </span>
                                 )}
-                                <SubTaskToggle
-                                  count={(item.subTasks ?? []).length}
-                                  expanded={expandedId === item._id}
-                                  isMobile={isMobile}
-                                  onClick={() =>
-                                    setExpandedId((prev) => (prev === item._id ? null : item._id))
-                                  }
-                                />
+                                {item.target != null ? (
+                                  <TargetBadge target={item.target} />
+                                ) : (
+                                  <SubTaskToggle
+                                    count={(item.subTasks ?? []).length}
+                                    expanded={expandedId === item._id}
+                                    isMobile={isMobile}
+                                    onClick={() =>
+                                      setExpandedId((prev) => (prev === item._id ? null : item._id))
+                                    }
+                                  />
+                                )}
                                 {dragHandle}
                                 <motion.button
                                   type="button"

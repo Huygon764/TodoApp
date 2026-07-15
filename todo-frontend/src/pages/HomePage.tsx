@@ -128,10 +128,11 @@ export function HomePage() {
   });
 
   const addDefaultMutation = useMutation({
-    mutationFn: (title: string) =>
+    mutationFn: ({ title, target }: { title: string; target?: number }) =>
       apiPost<{ item: DefaultItem }>(API_PATHS.DEFAULT, {
         title,
         order: defaultData?.length ?? 0,
+        ...(target ? { target } : {}),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default"] });
@@ -250,7 +251,7 @@ export function HomePage() {
         isOpen={openModal === "default"}
         onClose={closeM}
         items={defaultItems}
-        onAddItem={(title) => addDefaultMutation.mutate(title)}
+        onAddItem={(title, target) => addDefaultMutation.mutate({ title, target })}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
         onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
       />

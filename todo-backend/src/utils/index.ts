@@ -6,6 +6,7 @@ export {
   normalizeItem,
   normalizeItems,
   normalizeSubTaskTitles,
+  normalizeTargetField,
 } from "./normalizeItem.js";
 export { getOrCreate } from "./getOrCreate.js";
 export { removeAndReorder } from "./removeAndReorder.js";

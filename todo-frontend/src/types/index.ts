@@ -179,6 +179,8 @@ export interface FreetimeTodoItem {
   title: string;
   completed: boolean;
   order: number;
+  target?: number;
+  count?: number;
   subTasks?: FreetimeSubTask[];
 }
 

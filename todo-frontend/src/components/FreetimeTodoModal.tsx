@@ -19,6 +19,8 @@ import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { CounterChip } from "@/components/shared/CounterChip";
+import { parseTarget } from "@/lib/parseTarget";
 
 interface FreetimeTodoModalProps {
   isOpen: boolean;
@@ -105,14 +107,16 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   }, []);
 
   const handleAdd = () => {
-    const tVal = newTitle.trim();
-    if (!tVal) return;
+    const raw = newTitle.trim();
+    if (!raw) return;
+    const { title, target } = parseTarget(raw);
     const newItem: FreetimeTodoItemWithId = {
       id: generateId(),
-      title: tVal,
+      title,
       completed: false,
       order: items.length,
       subTasks: [],
+      ...(target ? { target, count: 0 } : {}),
     };
     const next = [...items, newItem];
     syncItems(next);
@@ -123,6 +127,13 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     const toggled = items.map((item) => {
       if (item.id !== id) return item;
       const nextCompleted = !item.completed;
+      if (item.target != null) {
+        return {
+          ...item,
+          completed: nextCompleted,
+          count: nextCompleted ? item.target : 0,
+        };
+      }
       const subTasks = item.subTasks ?? [];
       if (nextCompleted && subTasks.length > 0) {
         return {
@@ -134,6 +145,17 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
       return { ...item, completed: nextCompleted };
     });
     syncItems(regroupByCompletion(toggled));
+  };
+
+  const handleCounterIncrement = (id: string) => {
+    const updated = items.map((item) => {
+      if (item.id !== id || item.target == null) return item;
+      const target = item.target;
+      const current = item.count ?? 0;
+      const next = current >= target ? 0 : current + 1;
+      return { ...item, count: next, completed: next >= target };
+    });
+    syncItems(regroupByCompletion(updated));
   };
 
   const handleDelete = (id: string) => {
@@ -163,6 +185,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     setNewSubTaskTitle((prev) => ({ ...prev, [itemId]: "" }));
   };
   const toggleSubTask = subTaskManager.toggleSubTask;
+  const incrementSubTask = subTaskManager.incrementSubTask;
   const deleteSubTask = subTaskManager.deleteSubTask;
   const editSubTask = subTaskManager.editSubTask;
   const moveSubTask = subTaskManager.moveSubTask;
@@ -316,16 +339,25 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 </span>
                               )}
 
-                              <SubTaskToggle
-                                count={(item.subTasks ?? []).length}
-                                expanded={expandedId === item.id}
-                                isMobile={isMobile}
-                                onClick={() =>
-                                  setExpandedId((prev) =>
-                                    prev === item.id ? null : item.id
-                                  )
-                                }
-                              />
+                              {item.target != null ? (
+                                <CounterChip
+                                  count={item.count ?? 0}
+                                  target={item.target}
+                                  isMobile={isMobile}
+                                  onIncrement={() => handleCounterIncrement(item.id)}
+                                />
+                              ) : (
+                                <SubTaskToggle
+                                  count={(item.subTasks ?? []).length}
+                                  expanded={expandedId === item.id}
+                                  isMobile={isMobile}
+                                  onClick={() =>
+                                    setExpandedId((prev) =>
+                                      prev === item.id ? null : item.id
+                                    )
+                                  }
+                                />
+                              )}
                               {dragHandle}
 
                               <motion.button
@@ -346,6 +378,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   subTasks={item.subTasks ?? []}
                                   showCheckbox={true}
                                   onToggle={(subIdx) => toggleSubTask(item.id, subIdx)}
+                                  onIncrement={(subIdx) => incrementSubTask(item.id, subIdx)}
                                   onDelete={(subIdx) => deleteSubTask(item.id, subIdx)}
                                   onEditTitle={(subIdx, val) =>
                                     editSubTask(item.id, subIdx, val)

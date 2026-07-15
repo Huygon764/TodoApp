@@ -3,12 +3,16 @@ import type { Document, Types } from "mongoose";
 export interface IGoalSubTask {
   title: string;
   completed: boolean;
+  target?: number;
+  count?: number;
 }
 
 export interface IGoalItem {
   title: string;
   completed: boolean;
   order: number;
+  target?: number;
+  count?: number;
   subTasks?: IGoalSubTask[];
 }
 

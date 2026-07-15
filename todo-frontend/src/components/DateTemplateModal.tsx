@@ -17,6 +17,8 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
+import { TargetBadge } from "@/components/shared/TargetBadge";
+import { parseTarget } from "@/lib/parseTarget";
 
 interface DateTemplateModalProps {
   isOpen: boolean;
@@ -91,7 +93,11 @@ export function DateTemplateModal({
   const addItem = () => {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
-    const next = [...items, { title: trimmed, order: items.length }];
+    const { title, target } = parseTarget(trimmed);
+    const next = [
+      ...items,
+      { title, order: items.length, ...(target ? { target } : {}) },
+    ];
     setItems(next);
     setNewTitle("");
   };
@@ -120,9 +126,13 @@ export function DateTemplateModal({
   const addSubTask = (index: number, title: string) => {
     const trimmed = title.trim();
     if (!trimmed) return;
+    const parsed = parseTarget(trimmed);
+    const newSub = parsed.target
+      ? { title: parsed.title, target: parsed.target }
+      : { title: parsed.title };
     const next = items.map((it, i) =>
       i === index
-        ? { ...it, subTasks: [...(it.subTasks ?? []), { title: trimmed }] }
+        ? { ...it, subTasks: [...(it.subTasks ?? []), newSub] }
         : it
     );
     setItems(next);
@@ -175,6 +185,7 @@ export function DateTemplateModal({
       .map((it, i) => ({
         title: it.title.trim(),
         order: i,
+        ...(it.target ? { target: it.target } : {}),
         ...(it.subTasks && it.subTasks.length > 0 ? { subTasks: it.subTasks } : {}),
       }))
       .filter((it) => it.title.length > 0);
@@ -305,13 +316,17 @@ export function DateTemplateModal({
                                   {item.title}
                                 </span>
                               )}
-                              <SubTaskToggle
-                                count={(item.subTasks ?? []).length}
-                                expanded={expandedIdx === index}
-                                onClick={() =>
-                                  setExpandedIdx((prev) => (prev === index ? null : index))
-                                }
-                              />
+                              {item.target != null ? (
+                                <TargetBadge target={item.target} />
+                              ) : (
+                                <SubTaskToggle
+                                  count={(item.subTasks ?? []).length}
+                                  expanded={expandedIdx === index}
+                                  onClick={() =>
+                                    setExpandedIdx((prev) => (prev === index ? null : index))
+                                  }
+                                />
+                              )}
                               <motion.button
                                 type="button"
                                 whileHover={{ scale: 1.1 }}

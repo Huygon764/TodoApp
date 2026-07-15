@@ -190,6 +190,38 @@
     "errorTitle": "Có lỗi xảy ra ở đây.",
     "reload": "Tải lại",
     "subTasksAria": "Việc con ({{count}})",
-    "subTasksEmptyAria": "Thêm việc con"
+    "subTasksEmptyAria": "Thêm việc con",
+    "collapse": "Thu gọn",
+    "expand": "Mở rộng"
+  },
+  "habits": {
+    "title": "Kỷ luật",
+    "doneToday": "{{done}}/{{total}} hôm nay",
+    "manage": "Quản lý habit",
+    "stats": "Thống kê",
+    "empty": "Chưa có habit nào. Thêm việc bạn phải làm mỗi ngày.",
+    "pastDay": "Habit chỉ tick trong chính ngày đó."
+  },
+  "habitModal": {
+    "title": "Habit",
+    "subtitle": "Việc bạn phải làm, theo dõi mỗi ngày",
+    "addPlaceholder": "Habit mới, vd. Dậy trước 6h",
+    "add": "Thêm",
+    "empty": "Chưa có habit nào",
+    "deleteAria": "Lưu trữ habit"
+  },
+  "habitStats": {
+    "title": "Kỷ luật · 90 ngày",
+    "bestStreak": "Streak dài nhất",
+    "days": "ngày",
+    "rate30": "Tỉ lệ 30 ngày",
+    "perfectDays": "Ngày trọn vẹn",
+    "best": "tốt nhất {{n}}",
+    "worst": "Yếu nhất 30 ngày: {{name}} — {{rate}}%, gãy {{breaks}} lần.",
+    "empty": "Chưa có habit để phân tích.",
+    "legendHint": "Mỗi ô là một ngày · 13 tuần gần nhất",
+    "legendDone": "xong",
+    "legendMissed": "trượt",
+    "legendOff": "nghỉ"
   }
 }

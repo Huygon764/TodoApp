@@ -59,7 +59,9 @@ export type ModalKey =
   | "reviewHistory"
   | "dateTemplate"
   | "freetime"
-  | "peopleNotes";
+  | "peopleNotes"
+  | "habits"
+  | "habitStats";
 
 interface HeaderProps {
   onOpenModal: (key: ModalKey) => void;

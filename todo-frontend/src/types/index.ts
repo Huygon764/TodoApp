@@ -191,3 +191,57 @@ export interface FreetimeTodo {
   createdAt: string;
   updatedAt: string;
 }
+
+export type HabitDayState = "done" | "missed" | "off";
+
+export interface Habit {
+  _id: string;
+  userId: string;
+  name: string;
+  /** 1 = Monday .. 7 = Sunday; non-empty */
+  daysOfWeek: number[];
+  order: number;
+  archivedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HabitDayCell {
+  date: string;
+  state: HabitDayState;
+}
+
+export interface HabitTodayEntry {
+  id: string;
+  name: string;
+  daysOfWeek: number[];
+  order: number;
+  doneToday: boolean;
+  streak: number;
+  last7: HabitDayCell[];
+}
+
+export interface HabitToday {
+  today: string;
+  habits: HabitTodayEntry[];
+}
+
+export interface HabitStatsEntry {
+  id: string;
+  name: string;
+  streak: number;
+  bestStreak: number;
+  rate30: number;
+  days: HabitDayCell[];
+}
+
+export interface HabitStats {
+  overall: {
+    bestStreak: number;
+    rate30: number;
+    perfectDays30: number;
+    totalDays: number;
+  };
+  habits: HabitStatsEntry[];
+  worst: { id: string; name: string; rate30: number; breaks30: number } | null;
+}

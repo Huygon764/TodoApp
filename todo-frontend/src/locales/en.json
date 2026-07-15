@@ -190,6 +190,38 @@
     "errorTitle": "Something went wrong here.",
     "reload": "Reload",
     "subTasksAria": "Sub-tasks ({{count}})",
-    "subTasksEmptyAria": "Add sub-tasks"
+    "subTasksEmptyAria": "Add sub-tasks",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "habits": {
+    "title": "Discipline",
+    "doneToday": "{{done}}/{{total}} today",
+    "manage": "Manage habits",
+    "stats": "Stats",
+    "empty": "No habits yet. Add the things you must do daily.",
+    "pastDay": "Habits are ticked on the day itself."
+  },
+  "habitModal": {
+    "title": "Habits",
+    "subtitle": "Things you must do, tracked daily",
+    "addPlaceholder": "New habit, e.g. Get up before 6",
+    "add": "Add",
+    "empty": "No habits yet",
+    "deleteAria": "Archive habit"
+  },
+  "habitStats": {
+    "title": "Discipline · 90 days",
+    "bestStreak": "Best streak",
+    "days": "days",
+    "rate30": "30-day rate",
+    "perfectDays": "Perfect days",
+    "best": "best {{n}}",
+    "worst": "Weakest over 30 days: {{name}} — {{rate}}%, broke {{breaks}} times.",
+    "empty": "No habits to analyse yet.",
+    "legendHint": "Each square is a day · last 13 weeks",
+    "legendDone": "done",
+    "legendMissed": "missed",
+    "legendOff": "off"
   }
 }

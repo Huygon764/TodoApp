@@ -9,6 +9,9 @@ import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from 
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayGoalsPanel } from "@/components/DayGoalsPanel";
+import { HabitPanel } from "@/components/HabitPanel";
+import { HabitModal } from "@/components/HabitModal";
+import { HabitStatsModal } from "@/components/HabitStatsModal";
 import { DayTodoList } from "@/components/DayTodoList";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
@@ -199,6 +202,14 @@ export function HomePage() {
             <DayGoalsPanel date={selectedDate} />
           </motion.section>
 
+          <motion.section {...getSectionMotion(0.06)}>
+            <HabitPanel
+              date={selectedDate}
+              onManage={() => openM("habits")}
+              onStats={() => openM("habitStats")}
+            />
+          </motion.section>
+
           <motion.section {...getSectionMotion(0.08)} className="flex-1">
             <DayTodoList
               dayTodo={dayTodo}
@@ -285,6 +296,8 @@ export function HomePage() {
         }}
       />
       <PeopleNotesModal isOpen={openModal === "peopleNotes"} onClose={closeM} />
+      <HabitModal isOpen={openModal === "habits"} onClose={closeM} />
+      <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
       <ReviewHistoryModal
         isOpen={openModal === "reviewHistory"}
         onClose={closeM}

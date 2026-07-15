@@ -50,4 +50,9 @@ export const API_PATHS = {
   REVIEWS_ANALYZE: "/api/reviews/analyze",
   PEOPLE_NOTES: "/api/people-notes",
   PEOPLE_NOTE_BY_ID: (id: string) => `/api/people-notes/${id}`,
+  HABITS_TODAY: "/api/habits/today",
+  HABITS: "/api/habits",
+  HABIT_BY_ID: (id: string) => `/api/habits/${id}`,
+  HABIT_TOGGLE: (id: string) => `/api/habits/${id}/toggle`,
+  HABIT_STATS: (days: number) => `/api/habits/stats?days=${days}`,
 } as const;

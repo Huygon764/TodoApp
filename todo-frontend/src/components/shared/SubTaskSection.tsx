@@ -2,10 +2,13 @@ import { motion } from "framer-motion";
 import { Check, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { CounterChip } from "@/components/shared/CounterChip";
 
 interface SubTask {
   title: string;
   completed?: boolean;
+  target?: number;
+  count?: number;
 }
 
 interface SubTaskSectionProps {
@@ -13,6 +16,8 @@ interface SubTaskSectionProps {
   /** Whether sub-tasks have completion toggle (DayTodo/Freetime have it, templates don't) */
   showCheckbox?: boolean;
   onToggle?: (subIndex: number) => void;
+  /** Tap a counter sub-task's chip to add one. Omit for read-only (template) contexts. */
+  onIncrement?: (subIndex: number) => void;
   onDelete: (subIndex: number) => void;
   /** Called when subtask title is edited. If omitted, titles are read-only. */
   onEditTitle?: (subIndex: number, newTitle: string) => void;
@@ -27,6 +32,7 @@ export function SubTaskSection({
   subTasks,
   showCheckbox = false,
   onToggle,
+  onIncrement,
   onDelete,
   onEditTitle,
   onMove,
@@ -108,6 +114,19 @@ export function SubTaskSection({
               {st.title}
             </span>
           )}
+          {st.target != null &&
+            (onIncrement ? (
+              <CounterChip
+                count={st.count ?? 0}
+                target={st.target}
+                size="sm"
+                onIncrement={() => onIncrement(subIdx)}
+              />
+            ) : (
+              <span className="shrink-0 rounded-full border border-accent-primary/25 bg-accent-primary/10 px-2 py-0.5 text-xs font-semibold text-accent-hover tabular-nums">
+                &times;{st.target}
+              </span>
+            ))}
           {onMove && (
             <div className="flex items-center">
               <motion.button

@@ -35,18 +35,18 @@ export function CounterChip({
       aria-label={`${clamped} of ${target}${full ? ", tap to reset" : ", tap to add one"}`}
       className={`shrink-0 relative overflow-hidden isolate flex items-center gap-0.5 rounded-full border font-semibold leading-none tabular-nums cursor-pointer transition-colors duration-200 ${pad} ${
         full
-          ? "border-success/40 text-success"
+          ? "border-accent-primary text-white"
           : "border-accent-primary/30 text-accent-hover"
       }`}
     >
       <span
         className={`absolute inset-y-0 left-0 -z-10 transition-[width] duration-300 ease-out ${
-          full ? "bg-success/20" : "bg-accent-primary/25"
+          full ? "bg-accent-primary" : "bg-accent-primary/25"
         }`}
         style={{ width: `${pct}%` }}
       />
       <span>{clamped}</span>
-      <span className={full ? "text-success/70" : "text-text-muted"}>/{target}</span>
+      <span className={full ? "text-white/70" : "text-text-muted"}>/{target}</span>
     </motion.button>
   );
 }

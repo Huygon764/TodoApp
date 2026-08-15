@@ -31,6 +31,7 @@ import {
   getYearOptionsForPicker,
 } from "@/lib/datePeriod";
 import { stepPeriod } from "@/lib/periodStep";
+import { isSpuriousReorder, shouldPersistGoalItemsOnClose } from "@/lib/goalDraft";
 import type { Goal, GoalItem } from "@/types";
 
 export type GoalPeriodType = "week" | "month" | "year";
@@ -195,6 +196,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       order: sortedItems.length,
       ...(target ? { target, count: 0 } : {}),
     });
+    setLocalItems(addIdsToItems(newItems));
     patchMutation.mutate(newItems);
     setNewTitle("");
   };
@@ -272,6 +274,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   };
 
   const reorderIncomplete = (newIncomplete: (GoalItem & { id: string })[]) => {
+    if (isSpuriousReorder(newIncomplete, incomplete)) return;
     const withOrder = newIncomplete.map((it, idx) => ({ ...it, order: idx }));
     const completedWithOrder = completed.map((it, idx) => ({
       ...it,
@@ -296,6 +299,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   };
 
   const reorderCompleted = (newCompleted: (GoalItem & { id: string })[]) => {
+    if (isSpuriousReorder(newCompleted, completed)) return;
     const withOrder = newCompleted.map((it, idx) => ({
       ...it,
       order: incomplete.length + idx,
@@ -308,8 +312,13 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
   const handleClose = () => {
     const currentOrder = localItems.map((i) => i.id).join(",");
-    const shouldSave =
-      currentOrder !== initialOrderRef.current && goal != null;
+    const shouldSave = shouldPersistGoalItemsOnClose({
+      hasGoal: goal != null,
+      localCount: localItems.length,
+      serverCount: goal?.items.length ?? 0,
+      currentOrder,
+      initialOrder: initialOrderRef.current,
+    });
     if (shouldSave) {
       const payload = [...localItems]
         .sort((a, b) => a.order - b.order)

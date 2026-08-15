@@ -29,7 +29,9 @@ export function ItemAddInput({
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onAdd()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !disabled) onAdd();
+            }}
             placeholder={placeholder}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-bg-surface border border-border-subtle text-slate-100 placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary/40 focus:border-accent-primary/50 hover:border-border-strong transition-all duration-200"
           />

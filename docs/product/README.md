@@ -10,10 +10,9 @@ files after actual product domains, such as `overview.md`, `billing.md`,
 
 ## Current Product Contract
 
-No consumer-specific product contract is shipped in this generic directory.
-The upstream `repository-harness` contract lives in the root README, current
-workflow and architecture documents, lasting decisions, implementation, and
-executable tests.
+- [`discipline.md`](discipline.md): habit ticks, skip-as-bridge, two-day window,
+  streak and rate rules.
+
 
 ## Update Rule
 

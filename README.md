@@ -1,4 +1,4 @@
-# Todo App
+# Orbit
 
 A daily productivity app: a per-day todo list that materializes from your templates,
 week/month/year goals, daily reflection, a discipline (habit) tracker with streaks,

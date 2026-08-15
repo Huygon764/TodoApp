@@ -1,7 +1,7 @@
 {
-  "name": "Todo App",
-  "short_name": "Todo",
-  "description": "Personal productivity todo app",
+  "name": "Orbit",
+  "short_name": "Orbit",
+  "description": "Personal productivity app",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0D0E12",

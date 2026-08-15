@@ -1,5 +1,5 @@
 export const TELEGRAM_MESSAGES = {
-  START_HEADER: "Todo App Bot\n\nCommands:\n",
+  START_HEADER: "Orbit Bot\n\nCommands:\n",
   HELP_HEADER: "Help:\n\n",
   COMMAND_LIST:
     "/register <username> <password> - Create a new user\n" +

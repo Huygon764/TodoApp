@@ -17,7 +17,7 @@ const router = Router();
 router.get("/health", (req, res) => {
   res.json({
     success: true,
-    message: "Todo API is healthy",
+    message: "Orbit API is healthy",
     timestamp: new Date().toISOString(),
   });
 });
@@ -25,7 +25,7 @@ router.get("/health", (req, res) => {
 router.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Todo App API",
+    message: "Orbit API",
     version: "1.0.0",
   });
 });

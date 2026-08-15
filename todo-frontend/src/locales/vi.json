@@ -1,5 +1,5 @@
 {
-  "appName": "Todo App",
+  "appName": "Orbit",
   "dayTodo": {
     "title": "Công việc hôm nay",
     "completedCount": "{{done}}/{{total}} hoàn thành",

@@ -41,7 +41,7 @@ export function AuthShell({ subtitle, children }: AuthShellProps) {
           <AppLogo />
           <div className="text-center mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Todo App
+              Orbit
             </h1>
             <p className="text-text-tertiary text-sm sm:text-base">
               {subtitle}

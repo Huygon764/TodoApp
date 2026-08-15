@@ -321,6 +321,20 @@ export const validateHabitStatsQuery = [
     .withMessage("days must be between 7 and 365"),
 ];
 
+export const validateHabitPanelQuery = [
+  query("date")
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("Date must be YYYY-MM-DD"),
+];
+
+export const validateHabitDateBody = [
+  body("date")
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("Date must be YYYY-MM-DD"),
+];
+
 export const validatePatchPersonNoteBody = [
   body("name")
     .optional()

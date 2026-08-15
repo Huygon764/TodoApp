@@ -202,7 +202,11 @@
     "manage": "Manage habits",
     "stats": "Stats",
     "empty": "No habits yet. Add the things you must do daily.",
-    "pastDay": "Habits are ticked on the day itself."
+    "pastDay": "Habits are ticked on the day itself.",
+    "skip": "Skip {{name}}",
+    "unskip": "Unskip {{name}}",
+    "skipDay": "Skip day",
+    "unskipDay": "Unskip day"
   },
   "habitModal": {
     "title": "Habits",
@@ -224,7 +228,10 @@
     "legendHint": "Each square is a day · last 13 weeks",
     "legendDone": "done",
     "legendMissed": "missed",
-    "legendOff": "off"
+    "legendSkipped": "skip",
+    "legendOff": "off",
+    "skips30": "Skips (30d)",
+    "skipsN": "{{n}} skip"
   },
   "settings": {
     "title": "Settings",

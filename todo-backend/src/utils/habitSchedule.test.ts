@@ -123,3 +123,55 @@ test("windowStates shows off for days before createdDate", () => {
   expect(states[0]).toEqual({ date: "2026-07-15", state: "off" });
   expect(states[1]).toEqual({ date: "2026-07-16", state: "missed" });
 });
+
+test("skipped days bridge a streak without incrementing", () => {
+  const logDates = new Set(["2026-07-13", "2026-07-15"]);
+  const skipDates = new Set(["2026-07-14"]);
+  expect(
+    computeStreak({
+      today: "2026-07-15",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      skipDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(2);
+});
+
+test("skipping yesterday does not repair a miss from the day before", () => {
+  // Today 16th un-ticked; 15th skipped; 14th missed; 13th done.
+  const logDates = new Set(["2026-07-13"]);
+  const skipDates = new Set(["2026-07-15"]);
+  expect(
+    computeStreak({
+      today: "2026-07-16",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      skipDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(0);
+});
+
+test("rate excludes skipped scheduled days from the denominator", () => {
+  const logDates = new Set(["2026-07-13"]);
+  const skipDates = new Set(["2026-07-14"]);
+  const r = computeRate("2026-07-13", "2026-07-15", EVERY_DAY, logDates, "2026-07-01", skipDates);
+  expect(r).toEqual({ scheduled: 2, done: 1, rate: 0.5 });
+});
+
+test("windowStates marks skipped cells", () => {
+  const states = windowStates(
+    "2026-07-15",
+    3,
+    EVERY_DAY,
+    new Set(["2026-07-13"]),
+    "2026-07-01",
+    new Set(["2026-07-14"]),
+  );
+  expect(states).toEqual([
+    { date: "2026-07-13", state: "done" },
+    { date: "2026-07-14", state: "skipped" },
+    { date: "2026-07-15", state: "missed" },
+  ]);
+});

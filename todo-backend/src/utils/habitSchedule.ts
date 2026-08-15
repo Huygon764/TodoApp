@@ -5,7 +5,7 @@
  * testable in isolation.
  */
 
-export type HabitDayState = "done" | "missed" | "off";
+export type HabitDayState = "done" | "missed" | "off" | "skipped";
 
 /** ISO weekday for a date string: 1 = Monday .. 7 = Sunday. */
 export function isoWeekday(dateStr: string): number {
@@ -40,10 +40,16 @@ export function enumerateDates(from: string, to: string): string[] {
 interface StreakInput {
   today: string;
   daysOfWeek: number[];
-  /** Set of "YYYY-MM-DD" dates that have a log. */
+  /** Set of "YYYY-MM-DD" dates ticked done. */
   logDates: Set<string>;
+  /** Set of skipped dates; bridges like unscheduled days. */
+  skipDates?: Set<string>;
   /** Habit creation date ("YYYY-MM-DD"); dates before it never break a streak. */
   createdDate: string;
+}
+
+function skipsOf(input: { skipDates?: Set<string> }): Set<string> {
+  return input.skipDates ?? new Set();
 }
 
 /**
@@ -52,17 +58,20 @@ interface StreakInput {
  * *today* does not break the streak because the day is not over; any earlier
  * scheduled date without a log ends it. Dates before createdDate end the walk.
  */
-export function computeStreak({ today, daysOfWeek, logDates, createdDate }: StreakInput): number {
+export function computeStreak(input: StreakInput): number {
+  const { today, daysOfWeek, logDates, createdDate } = input;
+  const skipDates = skipsOf(input);
   let streak = 0;
   let cursor = today;
   while (cursor >= createdDate) {
     if (isScheduled(cursor, daysOfWeek)) {
-      if (logDates.has(cursor)) {
+      if (skipDates.has(cursor)) {
+        // Bridge: neither increment nor break.
+      } else if (logDates.has(cursor)) {
         streak += 1;
       } else if (cursor !== today) {
         break;
       }
-      // Un-ticked today: grace, keep walking without incrementing.
     }
     cursor = addDays(cursor, -1);
   }
@@ -73,11 +82,14 @@ export function computeStreak({ today, daysOfWeek, logDates, createdDate }: Stre
  * Longest run of consecutive scheduled dates with a log since createdDate,
  * inclusive of today. Never smaller than the current streak.
  */
-export function computeBestStreak({ today, daysOfWeek, logDates, createdDate }: StreakInput): number {
+export function computeBestStreak(input: StreakInput): number {
+  const { today, daysOfWeek, logDates, createdDate } = input;
+  const skipDates = skipsOf(input);
   let best = 0;
   let run = 0;
   for (const date of enumerateDates(createdDate, today)) {
     if (!isScheduled(date, daysOfWeek)) continue;
+    if (skipDates.has(date)) continue;
     if (logDates.has(date)) {
       run += 1;
       if (run > best) best = run;
@@ -85,8 +97,7 @@ export function computeBestStreak({ today, daysOfWeek, logDates, createdDate }: 
       run = 0;
     }
   }
-  const current = computeStreak({ today, daysOfWeek, logDates, createdDate });
-  return Math.max(best, current);
+  return Math.max(best, computeStreak(input));
 }
 
 /**
@@ -99,12 +110,14 @@ export function computeRate(
   daysOfWeek: number[],
   logDates: Set<string>,
   createdDate: string,
+  skipDates: Set<string> = new Set(),
 ): { scheduled: number; done: number; rate: number } {
   let scheduled = 0;
   let done = 0;
   for (const date of enumerateDates(from, to)) {
     if (date < createdDate) continue;
     if (!isScheduled(date, daysOfWeek)) continue;
+    if (skipDates.has(date)) continue;
     scheduled += 1;
     if (logDates.has(date)) done += 1;
   }
@@ -124,12 +137,14 @@ export function windowStates(
   daysOfWeek: number[],
   logDates: Set<string>,
   createdDate: string,
+  skipDates: Set<string> = new Set(),
 ): { date: string; state: HabitDayState }[] {
   const from = addDays(today, -(days - 1));
   return enumerateDates(from, today).map((date) => {
     if (date < createdDate || !isScheduled(date, daysOfWeek)) {
       return { date, state: "off" as const };
     }
+    if (skipDates.has(date)) return { date, state: "skipped" as const };
     return { date, state: logDates.has(date) ? "done" : "missed" };
   });
 }

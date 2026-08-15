@@ -15,10 +15,13 @@ export interface IHabitDocument extends IHabit, Document {
   _id: Types.ObjectId;
 }
 
+export type HabitLogKind = "done" | "skipped";
+
 export interface IHabitLog {
   userId: Types.ObjectId;
   habitId: Types.ObjectId;
   date: string; // YYYY-MM-DD
+  kind?: HabitLogKind;
   createdAt: Date;
 }
 

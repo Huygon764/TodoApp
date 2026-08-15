@@ -202,7 +202,11 @@
     "manage": "Quản lý habit",
     "stats": "Thống kê",
     "empty": "Chưa có habit nào. Thêm việc bạn phải làm mỗi ngày.",
-    "pastDay": "Habit chỉ tick trong chính ngày đó."
+    "pastDay": "Habit chỉ tick trong chính ngày đó.",
+    "skip": "Bỏ qua {{name}}",
+    "unskip": "Huỷ bỏ qua {{name}}",
+    "skipDay": "Bỏ qua ngày",
+    "unskipDay": "Huỷ bỏ qua ngày"
   },
   "habitModal": {
     "title": "Habit",
@@ -224,7 +228,10 @@
     "legendHint": "Mỗi ô là một ngày · 13 tuần gần nhất",
     "legendDone": "xong",
     "legendMissed": "trượt",
-    "legendOff": "nghỉ"
+    "legendSkipped": "bỏ qua",
+    "legendOff": "nghỉ",
+    "skips30": "Bỏ qua (30n)",
+    "skipsN": "{{n}} bỏ qua"
   },
   "settings": {
     "title": "Cài đặt",

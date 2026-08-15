@@ -23,6 +23,11 @@ const habitLogSchema = new Schema<IHabitLogDocument>(
       required: true,
       match: /^\d{4}-\d{2}-\d{2}$/,
     },
+    kind: {
+      type: String,
+      enum: ["done", "skipped"],
+      default: "done",
+    },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

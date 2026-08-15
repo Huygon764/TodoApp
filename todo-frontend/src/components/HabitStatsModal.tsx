@@ -20,6 +20,7 @@ const cellClass = (state: HabitDayState) => {
   const base = "w-[11px] h-[11px] rounded-[3px] shrink-0";
   if (state === "done") return `${base} bg-accent-primary`;
   if (state === "missed") return `${base} bg-danger/[0.16]`;
+  if (state === "skipped") return `${base} bg-sky-400/70`;
   return `${base} bg-white/[0.03]`;
 };
 
@@ -90,16 +91,18 @@ export function HabitStatsModal({ isOpen, onClose }: HabitStatsModalProps) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-px bg-border-subtle border-b border-border-subtle">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border-subtle border-b border-border-subtle">
             <Kpi label={t("habitStats.bestStreak", "Best streak")} value={data.overall.bestStreak} unit={t("habitStats.days", "days")} flame />
             <Kpi label={t("habitStats.rate30", "30-day rate")} value={pct(data.overall.rate30)} unit="%" />
             <Kpi label={t("habitStats.perfectDays", "Perfect days")} value={data.overall.perfectDays30} unit="/30" />
+            <Kpi label={t("habitStats.skips30", "Skips (30d)")} value={data.overall.skips30} />
           </div>
 
           <div className="flex items-center gap-4 px-5 py-2.5 border-b border-border-subtle text-[11.5px] text-text-muted">
             <span className="text-text-faint">{t("habitStats.legendHint", "Each square is a day · last 13 weeks")}</span>
             <span className="ml-auto flex items-center gap-1.5"><span className={cellClass("done")} /> {t("habitStats.legendDone", "done")}</span>
             <span className="flex items-center gap-1.5"><span className={cellClass("missed")} /> {t("habitStats.legendMissed", "missed")}</span>
+            <span className="flex items-center gap-1.5"><span className={cellClass("skipped")} /> {t("habitStats.legendSkipped", "skip")}</span>
             <span className="flex items-center gap-1.5"><span className={cellClass("off")} /> {t("habitStats.legendOff", "off")}</span>
           </div>
 
@@ -119,6 +122,7 @@ export function HabitStatsModal({ isOpen, onClose }: HabitStatsModalProps) {
                     </span>
                     <span className="text-[11.5px] text-text-faint">{t("habitStats.best", "best {{n}}", { n: h.bestStreak })}</span>
                     <span className={`text-xs font-semibold tabular-nums ${rateColor}`}>{rate}%</span>
+                    <span className="text-[11px] text-text-faint">{t("habitStats.skipsN", "{{n}} skip", { n: h.skips30 })}</span>
                   </div>
                   <Heatmap days={h.days} />
                 </div>

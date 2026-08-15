@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Check, Settings2, BarChart3, ChevronDown } from "lucide-react";
+import { Flame, Check, Settings2, BarChart3, ChevronDown, Moon } from "lucide-react";
 import type { HabitToday, HabitTodayEntry, HabitDayState } from "@/types";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
@@ -10,8 +10,13 @@ import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 
 const WEEKDAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 interface HabitPanelProps {
-  /** Selected day, YYYY-MM-DD. Ticking is only allowed when this is today. */
   date: string;
   onManage: () => void;
   onStats: () => void;
@@ -57,8 +62,7 @@ const dotClass = (state: HabitDayState, isToday: boolean) => {
   const ring = isToday ? " ring-2 ring-accent-primary/25" : "";
   if (state === "done") return `${base} bg-accent-primary border-accent-primary${ring}`;
   if (state === "missed") return `${base} bg-transparent border-danger/45${ring}`;
-  // "off" (not scheduled / before the habit existed) — a muted but visible dot
-  // so the 7-day row always reads as a row, not a lone dot floating at the end.
+  if (state === "skipped") return `${base} bg-sky-400/80 border-sky-400${ring}`;
   return `${base} bg-bg-elevated border-border-strong${ring}`;
 };
 
@@ -67,60 +71,50 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = usePersistentBoolean("habitPanel.expanded", true);
+  const queryKey = ["habits", "panel", date] as const;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["habits", "today"],
+    queryKey,
     queryFn: async () => {
-      const res = await apiGet<HabitToday>(API_PATHS.HABITS_TODAY);
-      return res.data ?? { today: date, habits: [] };
+      const res = await apiGet<HabitToday>(API_PATHS.HABITS_TODAY(date));
+      return res.data ?? { today: date, date, habits: [] };
     },
   });
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["habits"] });
+  };
+
   const toggleMutation = useMutation({
-    mutationFn: (habitId: string) =>
-      apiPost(API_PATHS.HABIT_TOGGLE(habitId), {}),
-    onMutate: async (habitId: string) => {
-      await queryClient.cancelQueries({ queryKey: ["habits", "today"] });
-      const previous = queryClient.getQueryData<HabitToday>(["habits", "today"]);
-      queryClient.setQueryData<HabitToday>(["habits", "today"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          habits: old.habits.map((h) =>
-            h.id === habitId
-              ? {
-                  ...h,
-                  doneToday: !h.doneToday,
-                  streak: h.doneToday ? Math.max(0, h.streak - 1) : h.streak + 1,
-                  last7: h.last7.map((c, i) =>
-                    i === h.last7.length - 1
-                      ? { ...c, state: h.doneToday ? "missed" : "done" }
-                      : c,
-                  ),
-                }
-              : h,
-          ),
-        };
-      });
-      return { previous };
-    },
-    onError: (_e, _v, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["habits", "today"], context.previous);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["habits", "today"] });
-    },
+    mutationFn: (habitId: string) => apiPost(API_PATHS.HABIT_TOGGLE(habitId), { date }),
+    onSettled: invalidate,
+  });
+
+  const skipMutation = useMutation({
+    mutationFn: (habitId: string) => apiPost(API_PATHS.HABIT_SKIP(habitId), { date }),
+    onSettled: invalidate,
+  });
+
+  const skipDayMutation = useMutation({
+    mutationFn: () => apiPost(API_PATHS.HABITS_SKIP_DAY, { date }),
+    onSettled: invalidate,
+  });
+
+  const unskipDayMutation = useMutation({
+    mutationFn: () => apiPost(API_PATHS.HABITS_UNSKIP_DAY, { date }),
+    onSettled: invalidate,
   });
 
   const today = data?.today;
   const habits = data?.habits ?? [];
-  const isToday = today != null && date === today;
+  const yesterday = today ? addDays(today, -1) : null;
+  const canMutate = today != null && (date === today || date === yesterday);
   const doneCount = habits.filter((h) => h.doneToday).length;
+  const countable = habits.filter((h) => !h.skippedToday).length;
   const total = habits.length;
-  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-
+  const pct = countable > 0 ? Math.round((doneCount / countable) * 100) : total > 0 ? 100 : 0;
+  const anySkipped = habits.some((h) => h.skippedToday);
+  const needsSkip = habits.some((h) => !h.doneToday && !h.skippedToday);
   const maxDots = isMobile ? 5 : 7;
 
   return (
@@ -138,10 +132,32 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
               {t("habits.title", "Discipline")}
             </span>
             <span className="block text-sm text-text-muted">
-              {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total })}
+              {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
             </span>
           </span>
         </button>
+        {canMutate && total > 0 && (needsSkip || anySkipped) && (
+          <div className="shrink-0 flex gap-1">
+            {needsSkip && (
+              <button
+                type="button"
+                onClick={() => skipDayMutation.mutate()}
+                className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer"
+              >
+                {t("habits.skipDay", "Skip day")}
+              </button>
+            )}
+            {anySkipped && (
+              <button
+                type="button"
+                onClick={() => unskipDayMutation.mutate()}
+                className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer"
+              >
+                {t("habits.unskipDay", "Unskip day")}
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="button"
           onClick={onManage}
@@ -194,10 +210,6 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
             >
               {t("habits.empty", "No habits yet. Add the things you must do daily.")}
             </button>
-          ) : !isToday ? (
-            <p className="px-3 py-4 text-sm text-text-muted">
-              {t("habits.pastDay", "Habits are ticked on the day itself.")}
-            </p>
           ) : (
             <div className="space-y-1.5">
               {habits.map((h) => (
@@ -206,7 +218,9 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
                   habit={h}
                   maxDots={maxDots}
                   showSchedule={!isMobile}
+                  canMutate={canMutate}
                   onToggle={() => toggleMutation.mutate(h.id)}
+                  onSkip={() => skipMutation.mutate(h.id)}
                 />
               ))}
             </div>
@@ -223,24 +237,32 @@ interface HabitRowProps {
   habit: HabitTodayEntry;
   maxDots: number;
   showSchedule: boolean;
+  canMutate: boolean;
   onToggle: () => void;
+  onSkip: () => void;
 }
 
-function HabitRow({ habit, maxDots, showSchedule, onToggle }: HabitRowProps) {
+function HabitRow({ habit, maxDots, showSchedule, canMutate, onToggle, onSkip }: HabitRowProps) {
+  const { t } = useTranslation();
   const dots = habit.last7.slice(habit.last7.length - maxDots);
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${
         habit.doneToday
           ? "bg-accent-primary/[0.06] border-accent-primary/20"
-          : "bg-bg-surface border-border-subtle"
+          : habit.skippedToday
+            ? "bg-sky-400/[0.06] border-sky-400/20"
+            : "bg-bg-surface border-border-subtle"
       }`}
     >
       <motion.button
         type="button"
         whileTap={{ scale: 0.9 }}
         onClick={onToggle}
-        className={`shrink-0 w-[26px] h-[26px] rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer ${
+        disabled={!canMutate}
+        className={`shrink-0 w-[26px] h-[26px] rounded-lg border-2 flex items-center justify-center transition-all ${
+          canMutate ? "cursor-pointer" : "cursor-default opacity-70"
+        } ${
           habit.doneToday
             ? "bg-accent-primary border-accent-primary"
             : "border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
@@ -252,7 +274,7 @@ function HabitRow({ habit, maxDots, showSchedule, onToggle }: HabitRowProps) {
       <div className="flex-1 min-w-0">
         <span
           className={`block text-[14.5px] [overflow-wrap:anywhere] ${
-            habit.doneToday ? "text-text-tertiary" : "text-text-secondary"
+            habit.doneToday || habit.skippedToday ? "text-text-tertiary" : "text-text-secondary"
           }`}
         >
           {habit.name}
@@ -261,6 +283,24 @@ function HabitRow({ habit, maxDots, showSchedule, onToggle }: HabitRowProps) {
           <span className="block text-[11px] text-text-faint">{scheduleLabel(habit.daysOfWeek)}</span>
         )}
       </div>
+      {canMutate && (
+        <button
+          type="button"
+          onClick={onSkip}
+          className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors cursor-pointer ${
+            habit.skippedToday
+              ? "border-sky-400/50 text-sky-300 bg-sky-400/10"
+              : "border-border-default text-text-muted hover:text-sky-300 hover:border-sky-400/40"
+          }`}
+          aria-label={
+            habit.skippedToday
+              ? t("habits.unskip", "Unskip {{name}}", { name: habit.name })
+              : t("habits.skip", "Skip {{name}}", { name: habit.name })
+          }
+        >
+          <Moon className="w-3.5 h-3.5" />
+        </button>
+      )}
       <span
         className={`shrink-0 inline-flex items-center gap-1 text-[12.5px] font-bold tabular-nums ${
           habit.streak === 0 ? "text-text-faint" : "text-amber-400"

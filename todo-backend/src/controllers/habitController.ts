@@ -4,13 +4,30 @@ import { catchAsync, sendSuccess, notFound, badRequest } from "../utils/index.js
 import {
   getTodayPanel,
   listHabits,
-  toggleToday,
+  toggleDone,
+  toggleSkip,
+  skipDay,
+  unskipDay,
   getStats,
 } from "../services/habitService.js";
 
+function mapHabitError(err: unknown): never {
+  if (err instanceof Error && err.message === "NOT_FOUND") {
+    throw notFound("Habit not found");
+  }
+  if (err instanceof Error && err.message === "NOT_SCHEDULED") {
+    throw badRequest("Habit is not scheduled on that date");
+  }
+  if (err instanceof Error && err.message === "DATE_NOT_ALLOWED") {
+    throw badRequest("Date must be today or yesterday");
+  }
+  throw err;
+}
+
 export const getHabitsToday = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const panel = await getTodayPanel(userId, req.userDoc?.timezone);
+  const date = typeof req.query.date === "string" ? req.query.date : undefined;
+  const panel = await getTodayPanel(userId, req.userDoc?.timezone, date);
   sendSuccess(res, 200, panel);
 });
 
@@ -72,18 +89,46 @@ export const archiveHabit = catchAsync(async (req: Request, res: Response) => {
 export const toggleHabit = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { id } = req.params;
-
+  const date = typeof req.body?.date === "string" ? req.body.date : undefined;
   try {
-    const result = await toggleToday(userId, id!, req.userDoc?.timezone);
+    const result = await toggleDone(userId, id!, req.userDoc?.timezone, date);
     sendSuccess(res, 200, result);
   } catch (err) {
-    if (err instanceof Error && err.message === "NOT_FOUND") {
-      throw notFound("Habit not found");
-    }
-    if (err instanceof Error && err.message === "NOT_SCHEDULED") {
-      throw badRequest("Habit is not scheduled today");
-    }
-    throw err;
+    mapHabitError(err);
+  }
+});
+
+export const skipHabit = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { id } = req.params;
+  const date = typeof req.body?.date === "string" ? req.body.date : undefined;
+  try {
+    const result = await toggleSkip(userId, id!, req.userDoc?.timezone, date);
+    sendSuccess(res, 200, result);
+  } catch (err) {
+    mapHabitError(err);
+  }
+});
+
+export const skipHabitsDay = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const date = typeof req.body?.date === "string" ? req.body.date : undefined;
+  try {
+    const result = await skipDay(userId, req.userDoc?.timezone, date);
+    sendSuccess(res, 200, result);
+  } catch (err) {
+    mapHabitError(err);
+  }
+});
+
+export const unskipHabitsDay = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const date = typeof req.body?.date === "string" ? req.body.date : undefined;
+  try {
+    const result = await unskipDay(userId, req.userDoc?.timezone, date);
+    sendSuccess(res, 200, result);
+  } catch (err) {
+    mapHabitError(err);
   }
 });
 

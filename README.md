@@ -15,8 +15,9 @@ username/password. English and Vietnamese.
 - **Counters** – Type `Pull up x20` on any item or sub-task to track reps; tap the chip
   to count up, and it completes at the target. Works across every list.
 - **Discipline (habits)** – Things you must do daily (get up early, no phone at work).
-  Tick them for the day only; streaks, a 7-day strip on each row, and a 90-day heatmap.
-  No back-filling, so the numbers stay honest.
+  Tick them for today or yesterday; skip a habit or the whole day when you
+  cannot (illness). Skip bridges the streak without counting as done. Streaks,
+  a 7-day strip, and a 90-day heatmap. No back-fill older than yesterday.
 - **Goals** – Week, month, and year goals with an optional template.
 - **Reflection** – One-line journal, mood/energy, gratitude, and an "on this day" flashback.
 - **Reviews** – Week/month self-reviews with history, plus optional Gemini AI analysis.

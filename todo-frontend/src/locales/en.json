@@ -233,6 +233,19 @@
     "skips30": "Skips (30d)",
     "skipsN": "{{n}} skip"
   },
+  "expense": {
+    "title": "Expenses",
+    "subtitle": "Track your spending",
+    "sectionDesc": "View and add daily expenses",
+    "tabDay": "Day",
+    "tabWeek": "Week",
+    "tabMonth": "Month",
+    "total": "Total",
+    "amountPlaceholder": "Amount",
+    "descPlaceholder": "What for?",
+    "add": "Add",
+    "empty": "No expenses yet"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Language and your data",

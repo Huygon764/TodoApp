@@ -11,6 +11,7 @@ import personNotesRouter from "./personNotes.js";
 import habitsRouter from "./habits.js";
 import dataRouter from "./data.js";
 import internalRouter from "./internal.js";
+import expensesRouter from "./expenses.js";
 
 const router = Router();
 
@@ -42,5 +43,6 @@ router.use("/people-notes", personNotesRouter);
 router.use("/habits", habitsRouter);
 router.use("/data", dataRouter);
 router.use("/internal", internalRouter);
+router.use("/expenses", expensesRouter);
 
 export default router;

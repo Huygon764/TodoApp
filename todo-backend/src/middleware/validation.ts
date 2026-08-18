@@ -351,6 +351,48 @@ export const validatePatchPersonNoteBody = [
   optionalOrder(),
 ];
 
+export const validateExpenseQuery = [
+  query("from")
+    .trim()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("from must be YYYY-MM-DD"),
+  query("to")
+    .trim()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("to must be YYYY-MM-DD"),
+];
+
+export const validateCreateExpenseBody = [
+  body("date")
+    .trim()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("date must be YYYY-MM-DD"),
+  body("amount")
+    .isFloat({ min: 0 })
+    .withMessage("amount must be a non-negative number"),
+  body("description")
+    .trim()
+    .notEmpty()
+    .withMessage("description is required"),
+];
+
+export const validatePatchExpenseBody = [
+  body("date")
+    .optional()
+    .trim()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage("date must be YYYY-MM-DD"),
+  body("amount")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("amount must be a non-negative number"),
+  body("description")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("description cannot be empty"),
+];
+
 export const validatePatchReviewBody = [
   body("goodThings")
     .optional()

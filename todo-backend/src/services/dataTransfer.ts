@@ -1,6 +1,6 @@
 import {
   DayTodo, Goal, DefaultItem, RecurringTemplate, DateTemplate,
-  Review, FreetimeTodo, PersonNote, Habit, HabitLog,
+  Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense,
 } from "../models/index.js";
 import { Types, type Model } from "mongoose";
 
@@ -28,6 +28,7 @@ export const COLLECTIONS: CollectionSpec[] = [
   { key: "personNotes", model: PersonNote, kind: "many" },
   { key: "habits", model: Habit, kind: "many" },
   { key: "habitLogs", model: HabitLog, kind: "many" },
+  { key: "expenses", model: Expense, kind: "many" },
 ];
 
 export interface ExportDoc {

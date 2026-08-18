@@ -63,6 +63,10 @@ export function apiPatch<T>(path: string, body: unknown) {
   return api<T>(path, { method: "PATCH", body: JSON.stringify(body) });
 }
 
+export function apiPut<T>(path: string, body: unknown) {
+  return api<T>(path, { method: "PUT", body: JSON.stringify(body) });
+}
+
 export function apiDelete<T>(path: string) {
   return api<T>(path, { method: "DELETE" });
 }

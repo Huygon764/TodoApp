@@ -59,6 +59,12 @@ export const API_PATHS = {
   HABITS_SKIP_DAY: "/api/habits/skip-day",
   HABITS_UNSKIP_DAY: "/api/habits/unskip-day",
   HABIT_STATS: (days: number) => `/api/habits/stats?days=${days}`,
+  EXPENSES: (from: string, to: string) =>
+    `/api/expenses?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+  EXPENSES_SUMMARY: (from: string, to: string) =>
+    `/api/expenses/summary?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+  EXPENSE_CREATE: "/api/expenses",
+  EXPENSE_BY_ID: (id: string) => `/api/expenses/${id}`,
   DATA_EXPORT: "/api/data/export",
   DATA_IMPORT: "/api/data/import",
   AUTH_GOOGLE: "/api/auth/google",

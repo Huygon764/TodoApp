@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ListTodo, CalendarRange, Calendar, Circle } from "lucide-react";
+import { ListTodo, CalendarRange, Calendar, Circle, Wallet } from "lucide-react";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
@@ -23,6 +23,7 @@ import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
 import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { PeopleNotesModal } from "@/components/PeopleNotesModal";
+import { ExpenseModal } from "@/components/ExpenseModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { Header, type ModalKey } from "@/components/Header";
 import { SectionCard } from "@/components/SectionCard";
@@ -250,6 +251,15 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.15)}>
           <SectionCard
+            icon={Wallet}
+            title={t("expense.title")}
+            description={t("expense.sectionDesc")}
+            onClick={() => openM("expense")}
+          />
+        </motion.section>
+
+        <motion.section {...getSectionMotion(0.16)}>
+          <SectionCard
             icon={CalendarRange}
             title={t("home.recurringTemplateTitle")}
             description={t("home.recurringTemplateDesc")}
@@ -299,6 +309,7 @@ export function HomePage() {
       <PeopleNotesModal isOpen={openModal === "peopleNotes"} onClose={closeM} />
       <HabitModal isOpen={openModal === "habits"} onClose={closeM} />
       <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
+      <ExpenseModal isOpen={openModal === "expense"} onClose={closeM} />
       <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />
       <ReviewHistoryModal
         isOpen={openModal === "reviewHistory"}

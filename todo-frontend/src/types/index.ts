@@ -192,6 +192,29 @@ export interface FreetimeTodo {
   updatedAt: string;
 }
 
+// Expenses
+
+export interface Expense {
+  _id: string;
+  userId: string;
+  date: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseDaySummary {
+  date: string;
+  total: number;
+  count: number;
+}
+
+export interface ExpenseSummary {
+  days: ExpenseDaySummary[];
+  total: number;
+}
+
 export type HabitDayState = "done" | "missed" | "off" | "skipped";
 
 export interface Habit {

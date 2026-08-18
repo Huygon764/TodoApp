@@ -233,6 +233,19 @@
     "skips30": "Bỏ qua (30n)",
     "skipsN": "{{n}} bỏ qua"
   },
+  "expense": {
+    "title": "Chi tiêu",
+    "subtitle": "Theo dõi chi tiêu",
+    "sectionDesc": "Xem và thêm chi tiêu hàng ngày",
+    "tabDay": "Ngày",
+    "tabWeek": "Tuần",
+    "tabMonth": "Tháng",
+    "total": "Tổng",
+    "amountPlaceholder": "Số tiền",
+    "descPlaceholder": "Chi cho gì?",
+    "add": "Thêm",
+    "empty": "Chưa có khoản chi nào"
+  },
   "settings": {
     "title": "Cài đặt",
     "subtitle": "Ngôn ngữ và dữ liệu",

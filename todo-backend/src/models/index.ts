@@ -11,3 +11,4 @@ export * from "./habit.js";
 export * from "./habitLog.js";
 export * from "./backupRequest.js";
 export * from "./inviteCode.js";
+export * from "./expense.js";

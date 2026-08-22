@@ -10,6 +10,8 @@ interface ModalContainerProps {
   maxWidth?: string;
   zBackdrop?: string;
   zContent?: string;
+  /** When false, the card does not scroll; children manage their own overflow. Default true. */
+  scrollable?: boolean;
 }
 
 const EXIT_DURATION_MS = 220;
@@ -22,6 +24,7 @@ export function ModalContainer({
   maxWidth = "max-w-lg",
   zBackdrop = "z-[60]",
   zContent = "z-[70]",
+  scrollable = true,
 }: ModalContainerProps) {
   // Drive mount state from React, not framer-motion's AnimatePresence.
   // AnimatePresence can leave the backdrop stuck in the DOM (opacity: 0) when
@@ -62,7 +65,11 @@ export function ModalContainer({
           className={`relative w-full ${maxWidth} max-h-[90dvh] pointer-events-auto`}
           ref={contentRef as React.RefObject<HTMLDivElement>}
         >
-          <div className="relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] overflow-y-auto">
+          <div
+            className={`relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] ${
+              scrollable ? "overflow-y-auto" : "flex flex-col"
+            }`}
+          >
             {children}
           </div>
         </div>

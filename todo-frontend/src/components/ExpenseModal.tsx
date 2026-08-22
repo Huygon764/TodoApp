@@ -232,15 +232,17 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
   ];
 
   return (
-    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
-      <ModalHeader
-        icon={<Wallet className="w-5 h-5 text-accent-hover" />}
-        title={t("expense.title")}
-        subtitle={t("expense.subtitle")}
-        onClose={onClose}
-      />
+    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} scrollable={false}>
+      <div className="shrink-0">
+        <ModalHeader
+          icon={<Wallet className="w-5 h-5 text-accent-hover" />}
+          title={t("expense.title")}
+          subtitle={t("expense.subtitle")}
+          onClose={onClose}
+        />
+      </div>
 
-      <div className="p-5 space-y-4">
+      <div className="shrink-0 p-5 space-y-4 border-b border-border-subtle">
         {/* Add form — always visible */}
         <div className="space-y-3">
           <div className="flex gap-1.5 flex-wrap">
@@ -336,8 +338,6 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
           </div>
         </div>
 
-        <div className="border-t border-border-subtle" />
-
         {/* Filter: tabs + period nav + total */}
         <div className="flex items-center justify-between">
           <div className="flex gap-1.5">
@@ -389,9 +389,10 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+      </div>
 
-        {/* Expense list grouped by date */}
-        <div className="space-y-3 max-h-[40vh] overflow-y-auto">
+      {/* Expense list — only this scrolls */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-3">
           {grouped.length === 0 && (
             <p className="text-center text-text-muted text-sm py-6">{t("expense.empty")}</p>
           )}
@@ -471,7 +472,6 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
               </div>
             );
           })}
-        </div>
       </div>
     </ModalContainer>
   );

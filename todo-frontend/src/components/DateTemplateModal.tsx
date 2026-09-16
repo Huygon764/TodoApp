@@ -18,6 +18,7 @@ import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 
 interface DateTemplateModalProps {
@@ -313,7 +314,7 @@ export function DateTemplateModal({
                                   }
                                   className="flex-1 text-text-secondary cursor-text"
                                 >
-                                  {item.title}
+                                  <LinkifiedText text={item.title} />
                                 </span>
                               )}
                               {item.target != null ? (

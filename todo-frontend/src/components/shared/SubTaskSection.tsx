@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { CounterChip } from "@/components/shared/CounterChip";
 import { TargetBadge } from "@/components/shared/TargetBadge";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 
 interface SubTask {
   title: string;
@@ -112,7 +113,7 @@ export function SubTaskSection({
                   : "text-text-secondary"
               }`}
             >
-              {st.title}
+              <LinkifiedText text={st.title} />
             </span>
           )}
           {st.target != null &&

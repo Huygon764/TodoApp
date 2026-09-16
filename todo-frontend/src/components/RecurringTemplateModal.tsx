@@ -14,6 +14,7 @@ import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 import {
   isLegacyRecurringItem,
@@ -397,7 +398,7 @@ export function RecurringTemplateModal({
                                       }
                                       className="text-text-secondary cursor-text"
                                     >
-                                      {item.title}
+                                      <LinkifiedText text={item.title} />
                                     </span>
                                     {isLegacy && (
                                       <span className="text-[11px] text-text-muted leading-tight">

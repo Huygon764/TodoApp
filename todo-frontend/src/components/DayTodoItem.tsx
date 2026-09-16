@@ -6,6 +6,7 @@ import type { DayTodoSubTask, DayTodoItem as DayTodoItemType } from "@/types";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { CounterChip } from "@/components/shared/CounterChip";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 
 export interface DayTodoItemView extends DayTodoItemType {
   id: string;
@@ -154,7 +155,7 @@ export function DayTodoItem({
             }`}
             animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}
           >
-            {item.title}
+            <LinkifiedText text={item.title} />
           </motion.span>
         )}
 

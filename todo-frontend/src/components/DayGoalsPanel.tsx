@@ -9,6 +9,7 @@ import { getWeekPeriod, getMonthPeriod } from "@/lib/datePeriod";
 import { sortItemsByCompletion } from "@/lib/sortItems";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 
 type GoalType = "week" | "month";
 
@@ -162,7 +163,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
                               : "text-text-secondary"
                           }`}
                         >
-                          {item.title}
+                          <LinkifiedText text={item.title} />
                         </span>
                       </li>
                     ))}

@@ -16,6 +16,7 @@ import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 
 export type DefaultOrderUpdate = { id: string; order: number };
@@ -230,7 +231,7 @@ export function DefaultListModal({
                                     }
                                     className="flex-1 text-text-secondary cursor-text"
                                   >
-                                    {item.title}
+                                    <LinkifiedText text={item.title} />
                                   </span>
                                 )}
                                 {item.target != null ? (

@@ -18,6 +18,7 @@ import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { CounterChip } from "@/components/shared/CounterChip";
 import { parseTarget } from "@/lib/parseTarget";
@@ -335,7 +336,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                       : "text-text-secondary"
                                   }`}
                                 >
-                                  {item.title}
+                                  <LinkifiedText text={item.title} />
                                 </span>
                               )}
 

@@ -12,6 +12,7 @@ import { ReorderItem } from "@/components/shared/ReorderItem";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { CounterChip } from "@/components/shared/CounterChip";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 import { PeriodSelector } from "@/components/shared/PeriodSelector";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -401,7 +402,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               item.completed ? "line-through text-text-muted" : "text-text-secondary"
             }`}
           >
-            {item.title}
+            <LinkifiedText text={item.title} />
           </span>
         )}
         {item.target != null ? (

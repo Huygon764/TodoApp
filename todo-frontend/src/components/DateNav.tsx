@@ -1,9 +1,22 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { CalendarPopover } from "@/components/CalendarPopover";
 import { getTodayInTimezone, localeFromLanguage } from "@/lib/datePeriod";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { MIN_MOBILE_DATE_FONT_PX } from "@/constants/ui";
+
+function fitMobileDateLabel(label: HTMLElement, enabled: boolean) {
+  label.style.fontSize = "";
+  if (!enabled) return;
+  const base = parseFloat(getComputedStyle(label).fontSize);
+  let size = base;
+  while (size > MIN_MOBILE_DATE_FONT_PX && label.scrollWidth > label.clientWidth + 0.5) {
+    size -= 0.5;
+    label.style.fontSize = `${size}px`;
+  }
+}
 
 interface DateNavProps {
   date: string;
@@ -59,8 +72,28 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
   const { t, i18n } = useTranslation();
   const locale = localeFromLanguage(i18n.language);
   const todayInTz = getTodayInTimezone(timezone);
+  const isMobile = useIsMobile();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const dateDisplayRef = useRef<HTMLDivElement>(null);
+  const dateSlotRef = useRef<HTMLDivElement>(null);
+  const dateLabelRef = useRef<HTMLSpanElement>(null);
+  const displayDate = formatDisplayDate(date, t, locale, todayInTz, timezone);
+
+  useLayoutEffect(() => {
+    const label = dateLabelRef.current;
+    const slot = dateSlotRef.current;
+    if (!label) return;
+
+    const fit = () => fitMobileDateLabel(label, isMobile);
+    fit();
+    if (!slot || !isMobile) return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(slot);
+    return () => {
+      observer.disconnect();
+      label.style.fontSize = "";
+    };
+  }, [displayDate, isMobile]);
 
   return (
     <div className="relative">
@@ -69,14 +102,14 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
           type="button"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
+          className="shrink-0 p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
           onClick={() => onDateChange(addDays(date, -1))}
           aria-label={t("dateNav.prevAria")}
         >
           <ChevronLeft className="w-5 h-5" />
         </motion.button>
 
-        <div className="flex-1 flex justify-center relative">
+        <div ref={dateSlotRef} className="flex-1 min-w-0 flex justify-center relative">
           <div
             ref={dateDisplayRef}
             role="button"
@@ -84,11 +117,16 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
             onClick={() => setCalendarOpen(true)}
             onKeyDown={(e) => e.key === "Enter" && setCalendarOpen(true)}
             aria-label={t("dateNav.chooseDateAria")}
-            className="relative block w-full max-w-[240px] group cursor-pointer"
+            className="relative block w-fit min-w-0 md:min-w-[240px] max-w-full group cursor-pointer"
           >
             <div className="flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-bg-card border border-border-subtle group-hover:border-border-strong transition-all duration-200">
-              <Calendar className="w-5 h-5 text-text-muted group-hover:text-accent-hover transition-colors" />
-              <span className="text-text-secondary font-medium">{formatDisplayDate(date, t, locale, todayInTz, timezone)}</span>
+              <Calendar className="w-5 h-5 shrink-0 text-text-muted group-hover:text-accent-hover transition-colors" />
+              <span
+                ref={dateLabelRef}
+                className="min-w-0 text-text-secondary font-medium whitespace-nowrap"
+              >
+                {displayDate}
+              </span>
             </div>
           </div>
           <CalendarPopover
@@ -108,7 +146,7 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
           type="button"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
+          className="shrink-0 p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
           onClick={() => onDateChange(addDays(date, 1))}
           aria-label={t("dateNav.nextAria")}
         >

@@ -222,7 +222,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                   onKeyDown={(e) =>
                                     e.key === "Enter" && handleStartEditName(person)
                                   }
-                                  className="flex-1 text-text-secondary font-medium cursor-text"
+                                  className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-text-secondary font-medium cursor-text"
                                 >
                                   {person.name}
                                 </span>
@@ -256,7 +256,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                     className="flex items-start gap-2 py-1.5 pl-3 rounded-lg"
                                   >
                                     <span className="text-text-muted mt-0.5 shrink-0">•</span>
-                                    <span className="flex-1 text-sm text-text-secondary">
+                                    <span className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm text-text-secondary">
                                       {note}
                                     </span>
                                     <motion.button

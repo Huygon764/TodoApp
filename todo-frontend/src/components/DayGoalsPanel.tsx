@@ -157,7 +157,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
                           {item.completed && <Check className="w-3 h-3" />}
                         </motion.button>
                         <span
-                          className={`text-sm ${
+                          className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${
                             item.completed
                               ? "line-through text-text-muted"
                               : "text-text-secondary"

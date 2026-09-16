@@ -312,7 +312,7 @@ export function DateTemplateModal({
                                   onKeyDown={(e) =>
                                     e.key === "Enter" && handleTitleClick(index)
                                   }
-                                  className="flex-1 text-text-secondary cursor-text"
+                                  className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-text-secondary cursor-text"
                                 >
                                   <LinkifiedText text={item.title} />
                                 </span>

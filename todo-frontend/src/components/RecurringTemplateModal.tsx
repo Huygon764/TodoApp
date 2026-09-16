@@ -396,7 +396,7 @@ export function RecurringTemplateModal({
                                       onKeyDown={(e) =>
                                         e.key === "Enter" && handleTitleClick(idx)
                                       }
-                                      className="text-text-secondary cursor-text"
+                                      className="min-w-0 break-words [overflow-wrap:anywhere] text-text-secondary cursor-text"
                                     >
                                       <LinkifiedText text={item.title} />
                                     </span>

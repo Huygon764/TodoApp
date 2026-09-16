@@ -398,7 +398,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             tabIndex={0}
             onClick={() => handleTitleClick(item.id)}
             onKeyDown={(e) => e.key === "Enter" && handleTitleClick(item.id)}
-            className={`flex-1 cursor-text ${
+            className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] cursor-text ${
               item.completed ? "line-through text-text-muted" : "text-text-secondary"
             }`}
           >

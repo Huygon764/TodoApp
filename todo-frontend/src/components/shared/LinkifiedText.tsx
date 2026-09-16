@@ -23,7 +23,7 @@ export function LinkifiedText({ text }: LinkifiedTextProps) {
             href={segment.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-accent-hover hover:underline cursor-pointer"
+            className="text-accent-hover hover:underline cursor-pointer [overflow-wrap:anywhere]"
             onClick={stopLinkActivation}
             onKeyDown={stopLinkActivation}
           >

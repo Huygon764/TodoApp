@@ -330,7 +330,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   onKeyDown={(e) =>
                                     e.key === "Enter" && handleTitleClick(item.id)
                                   }
-                                  className={`flex-1 cursor-text text-sm ${
+                                  className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] cursor-text text-sm ${
                                     item.completed
                                       ? "line-through text-text-muted"
                                       : "text-text-secondary"

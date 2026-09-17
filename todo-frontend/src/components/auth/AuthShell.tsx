@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { OrbitLockup } from "@/components/shared/OrbitLockup";
 
 const AuthBackground = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -15,17 +16,6 @@ const AuthBackground = () => (
   </div>
 );
 
-const AppLogo = () => (
-  <div className="relative w-16 h-16 mx-auto mb-4">
-    <img
-      src="/favicon.png"
-      alt=""
-      draggable={false}
-      className="w-full h-full select-none"
-    />
-  </div>
-);
-
 interface AuthShellProps {
   subtitle: string;
   children: ReactNode;
@@ -38,10 +28,9 @@ export function AuthShell({ subtitle, children }: AuthShellProps) {
       <AuthBackground />
       <div className="w-full max-w-md relative z-10">
         <div className="relative bg-bg-card rounded-3xl border border-border-default p-8 sm:p-10 shadow-2xl">
-          <AppLogo />
           <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Orbit
+            <h1 className="flex justify-center mb-2">
+              <OrbitLockup size="lg" />
             </h1>
             <p className="text-text-tertiary text-sm sm:text-base">
               {subtitle}

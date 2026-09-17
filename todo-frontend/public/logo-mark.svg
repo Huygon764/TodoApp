@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="orbitPlanetMark" x1="18" y1="16" x2="46" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C85E0"/>
+      <stop offset="1" stop-color="#5E6AD2"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-34 32 32)">
+    <ellipse
+      cx="32"
+      cy="32"
+      rx="24"
+      ry="10"
+      stroke="#64748B"
+      stroke-width="2.25"
+      stroke-dasharray="42 80"
+      stroke-dashoffset="21"
+    />
+  </g>
+  <circle cx="30.5" cy="33.5" r="13" fill="url(#orbitPlanetMark)"/>
+  <circle cx="26" cy="29" r="4.5" fill="#A5B4FC" opacity="0.45"/>
+  <g transform="rotate(-34 32 32)">
+    <ellipse
+      cx="32"
+      cy="32"
+      rx="24"
+      ry="10"
+      stroke="#A5B4FC"
+      stroke-width="2.25"
+      stroke-dasharray="48 80"
+      stroke-dashoffset="-8"
+    />
+    <circle cx="13.6" cy="25.6" r="3.4" fill="#F1F5F9"/>
+  </g>
+</svg>

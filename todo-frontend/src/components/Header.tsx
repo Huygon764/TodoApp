@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
+import { OrbitLockup } from "@/components/shared/OrbitLockup";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModalClose } from "@/hooks/useModalClose";
 
@@ -30,23 +31,6 @@ function HeaderMenuItem({ icon: Icon, label, onClick }: HeaderMenuItemProps) {
       <Icon className="w-5 h-5 shrink-0" />
       <span className="text-sm font-medium">{label}</span>
     </button>
-  );
-}
-
-function AppLogo() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex items-center gap-3">
-      <img
-        src="/favicon.png"
-        alt=""
-        draggable={false}
-        className="w-9 h-9 select-none"
-      />
-      <span className="text-xl font-bold text-white tracking-tight">
-        {t("appName")}
-      </span>
-    </div>
   );
 }
 
@@ -94,7 +78,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-border-default bg-bg-surface">
       <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between relative">
-        <AppLogo />
+        <OrbitLockup />
         {!isMobile ? (
           <div className="flex items-center gap-2">
             <motion.button

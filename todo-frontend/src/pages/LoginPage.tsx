@@ -7,6 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiPost } from "@/lib/api";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { OrbitLockup } from "@/components/shared/OrbitLockup";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -26,27 +27,6 @@ const AnimatedBackground = () => {
     </div>
   );
 };
-
-// Logo Component
-const AppLogo = ({ isMobile }: { isMobile: boolean }) => (
-  <motion.div
-    initial={isMobile ? { opacity: 0, scale: 0.92 } : { scale: 0, rotate: -180 }}
-    animate={isMobile ? { opacity: 1, scale: 1 } : { scale: 1, rotate: 0 }}
-    transition={
-      isMobile
-        ? { duration: 0.2, ease: "easeOut" }
-        : { type: "spring", duration: 0.8 }
-    }
-    className="relative w-16 h-16 mx-auto mb-4"
-  >
-    <img
-      src="/favicon.png"
-      alt=""
-      draggable={false}
-      className="w-full h-full select-none"
-    />
-  </motion.div>
-);
 
 export function LoginPage() {
   const isMobile = useIsMobile();
@@ -151,16 +131,12 @@ export function LoginPage() {
         {/* Card */}
         <div className="relative">
           <div className="relative bg-bg-card rounded-3xl border border-border-default p-8 sm:p-10 shadow-2xl">
-            {/* Logo */}
-            <AppLogo isMobile={isMobile} />
-
-            {/* Header */}
             <motion.div
               {...getFadeUpMotion(0.2, 10)}
               className="text-center mb-8"
             >
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Orbit
+              <h1 className="flex justify-center mb-2">
+                <OrbitLockup size="lg" />
               </h1>
               <p className="text-text-tertiary text-sm sm:text-base">
                 Chào mừng trở lại! Đăng nhập để tiếp tục

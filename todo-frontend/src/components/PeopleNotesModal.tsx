@@ -11,6 +11,7 @@ import { useModalClose } from "@/hooks/useModalClose";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
+import { LinkifiedText } from "@/components/shared/LinkifiedText";
 
 interface PeopleNotesModalProps {
   isOpen: boolean;
@@ -34,6 +35,15 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
     startEdit: startEditName,
     cancelEdit: cancelEditName,
     finishEdit: finishEditName,
+  } = useInlineEdit<string>();
+  const {
+    editingId: editingNoteId,
+    editValue: editNoteValue,
+    setEditValue: setEditNoteValue,
+    editInputRef: editNoteRef,
+    startEdit: startEditNote,
+    cancelEdit: cancelEditNote,
+    finishEdit: finishEditNote,
   } = useInlineEdit<string>();
 
   const queryKey = ["peopleNotes"];
@@ -97,6 +107,21 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
     const notes = [...person.notes, text];
     patchMutation.mutate({ id: person._id, notes });
     setNewNoteText((prev) => ({ ...prev, [person._id]: "" }));
+  };
+
+  const noteEditKey = (personId: string, noteIndex: number) =>
+    `${personId}:${noteIndex}`;
+
+  const handleStartEditNote = (person: PersonNote, noteIndex: number) => {
+    startEditNote(noteEditKey(person._id, noteIndex), person.notes[noteIndex]);
+  };
+
+  const saveEditNote = (person: PersonNote, noteIndex: number) => {
+    const value = finishEditNote();
+    const current = person.notes[noteIndex];
+    if (!value || value === current) return;
+    const notes = person.notes.map((note, i) => (i === noteIndex ? value : note));
+    patchMutation.mutate({ id: person._id, notes });
   };
 
   const deleteNote = (person: PersonNote, noteIndex: number) => {
@@ -224,7 +249,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                   }
                                   className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-text-secondary font-medium cursor-text"
                                 >
-                                  {person.name}
+                                  <LinkifiedText text={person.name} />
                                 </span>
                               )}
 
@@ -256,9 +281,32 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                     className="flex items-start gap-2 py-1.5 pl-3 rounded-lg"
                                   >
                                     <span className="text-text-muted mt-0.5 shrink-0">•</span>
-                                    <span className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm text-text-secondary">
-                                      {note}
-                                    </span>
+                                    {editingNoteId === noteEditKey(person._id, noteIdx) ? (
+                                      <input
+                                        ref={editNoteRef}
+                                        type="text"
+                                        value={editNoteValue}
+                                        onChange={(e) => setEditNoteValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") saveEditNote(person, noteIdx);
+                                          if (e.key === "Escape") cancelEditNote();
+                                        }}
+                                        onBlur={() => saveEditNote(person, noteIdx)}
+                                        className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-sm text-text-secondary focus:ring-0"
+                                      />
+                                    ) : (
+                                      <span
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => handleStartEditNote(person, noteIdx)}
+                                        onKeyDown={(e) =>
+                                          e.key === "Enter" && handleStartEditNote(person, noteIdx)
+                                        }
+                                        className="flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm text-text-secondary cursor-text"
+                                      >
+                                        <LinkifiedText text={note} />
+                                      </span>
+                                    )}
                                     <motion.button
                                       type="button"
                                       whileHover={{ scale: 1.1 }}

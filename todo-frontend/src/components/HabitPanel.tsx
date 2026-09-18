@@ -178,7 +178,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   );
 
   return (
-    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[40vh]">
+    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[30vh]">
       <div className="shrink-0 flex items-center gap-2 p-4 flex-wrap">
         {isMobile ? (
           <button

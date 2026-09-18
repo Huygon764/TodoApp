@@ -174,7 +174,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
   );
 
   return (
-    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[40vh]">
+    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[30vh]">
       {isMobile ? (
         <button
           type="button"

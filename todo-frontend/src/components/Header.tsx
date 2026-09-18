@@ -33,12 +33,9 @@ function HeaderMenuItem({ icon: Icon, label, onClick }: HeaderMenuItemProps) {
 
 export type ModalKey =
   | "templates"
-  | "default"
-  | "recurring"
   | "goal"
   | "review"
   | "reviewHistory"
-  | "dateTemplate"
   | "freetime"
   | "peopleNotes"
   | "habits"

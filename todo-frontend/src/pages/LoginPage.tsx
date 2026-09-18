@@ -131,7 +131,7 @@ export function LoginPage() {
       >
         {/* Card */}
         <div className="relative">
-          <div className="relative bg-bg-card rounded-3xl border border-border-default p-8 sm:p-10 shadow-2xl">
+          <div className="relative bg-bg-card rounded-xl border border-border-default p-8 sm:p-10 shadow-2xl">
             <motion.div
               {...getFadeUpMotion(0.2, 10)}
               className="text-center mb-8"

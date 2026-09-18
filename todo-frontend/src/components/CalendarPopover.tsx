@@ -83,7 +83,7 @@ export function CalendarPopover({
         className="fixed z-[9999] -translate-x-1/2"
         style={{ top: position.top, left: position.left }}
       >
-        <div className="relative rounded-2xl border border-border-default bg-bg-surface shadow-xl">
+        <div className="relative rounded-xl border border-border-default bg-bg-surface shadow-xl">
           <div className="border-b border-border-default px-3 py-2">
             <button
               type="button"

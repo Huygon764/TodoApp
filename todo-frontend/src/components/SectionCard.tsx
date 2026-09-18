@@ -23,7 +23,7 @@ export function SectionCard({
       type="button"
       whileTap={cardTap}
       onClick={onClick}
-      className="w-full p-4 rounded-2xl bg-bg-card/50 border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-all duration-200 group cursor-pointer"
+      className="w-full p-4 rounded-xl bg-bg-card/50 border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-all duration-200 group cursor-pointer"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

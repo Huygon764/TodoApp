@@ -118,7 +118,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   const maxDots = isMobile ? 5 : 7;
 
   return (
-    <div className="rounded-3xl bg-bg-card border border-border-default overflow-hidden">
+    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden">
       <div className="flex items-center gap-2 p-4">
         <button
           type="button"

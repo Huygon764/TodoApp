@@ -136,7 +136,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
-                  className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
+                  className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
                 >
                   <HeaderMenuItem
                     icon={GoalsIcon}

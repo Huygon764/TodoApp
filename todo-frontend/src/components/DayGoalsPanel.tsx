@@ -108,7 +108,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
   if (groups.length === 0) return null;
 
   return (
-    <div className="relative rounded-3xl bg-bg-card border border-border-default overflow-hidden">
+    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}

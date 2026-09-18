@@ -27,7 +27,7 @@ export function AuthShell({ subtitle, children }: AuthShellProps) {
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       <AuthBackground />
       <div className="w-full max-w-md relative z-10">
-        <div className="relative bg-bg-card rounded-3xl border border-border-default p-8 sm:p-10 shadow-2xl">
+        <div className="relative bg-bg-card rounded-xl border border-border-default p-8 sm:p-10 shadow-2xl">
           <div className="text-center mb-8">
             <h1 className="flex justify-center mb-2">
               <OrbitLockup size="lg" />

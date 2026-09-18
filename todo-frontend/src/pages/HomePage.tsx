@@ -192,7 +192,7 @@ export function HomePage() {
         <ErrorBoundary
           key={selectedDate}
           fallback={
-            <div className="rounded-3xl bg-bg-card border border-danger-border p-6 text-center space-y-3">
+            <div className="rounded-xl bg-bg-card border border-danger-border p-6 text-center space-y-3">
               <p className="text-text-secondary">{t("common.errorTitle")}</p>
               <button
                 type="button"

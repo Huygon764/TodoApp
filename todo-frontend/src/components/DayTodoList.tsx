@@ -196,7 +196,7 @@ export function DayTodoList({
   if (isLoading) {
     return (
       <div className="relative">
-        <div className="relative rounded-3xl bg-bg-card border border-border-default p-6">
+        <div className="relative rounded-xl bg-bg-card border border-border-default p-6">
           <div className="h-8 w-48 bg-bg-surface rounded-lg animate-pulse mb-6" />
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -210,7 +210,7 @@ export function DayTodoList({
 
   return (
     <div className="relative">
-      <div className="relative rounded-3xl bg-bg-card border border-border-default overflow-hidden">
+      <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden">
         {/* Header with Stats */}
         <div className="p-6 pb-4 border-b border-border-subtle">
           <div className="flex items-center justify-between mb-4">

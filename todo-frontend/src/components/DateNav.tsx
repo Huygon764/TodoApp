@@ -97,7 +97,7 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
 
   return (
     <div className="relative">
-      <div className="relative flex items-center gap-3 p-2 rounded-2xl bg-bg-surface border border-border-default">
+      <div className="relative flex items-center gap-3 p-2 rounded-xl bg-bg-surface border border-border-default">
         <motion.button
           type="button"
           whileTap={{ scale: 0.95 }}

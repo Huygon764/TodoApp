@@ -66,7 +66,7 @@ export function ModalContainer({
           ref={contentRef as React.RefObject<HTMLDivElement>}
         >
           <div
-            className={`relative bg-bg-card rounded-3xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] ${
+            className={`relative bg-bg-card rounded-xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] ${
               scrollable ? "overflow-y-auto" : "flex flex-col"
             }`}
           >

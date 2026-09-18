@@ -425,7 +425,6 @@ export function RecurringTemplateModal({
                                 )}
                                 <motion.button
                                   type="button"
-                                  whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => deleteMutation.mutate(idx)}
                                   disabled={deleteMutation.isPending}

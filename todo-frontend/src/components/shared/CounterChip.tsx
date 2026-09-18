@@ -19,7 +19,6 @@ export function CounterChip({
   target,
   onIncrement,
   size = "md",
-  isMobile = false,
 }: CounterChipProps) {
   const clamped = Math.max(0, Math.min(target, count));
   const full = clamped >= target;
@@ -30,7 +29,6 @@ export function CounterChip({
     <motion.button
       type="button"
       whileTap={{ scale: 0.94 }}
-      whileHover={isMobile ? undefined : { scale: 1.04 }}
       onClick={onIncrement}
       aria-label={`${clamped} of ${target}${full ? ", tap to reset" : ", tap to add one"}`}
       className={`shrink-0 relative overflow-hidden isolate flex items-center gap-0.5 rounded-full border font-semibold leading-none tabular-nums cursor-pointer transition-colors duration-200 ${pad} ${

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 
 interface ItemAddInputProps {
   value: string;
@@ -18,6 +19,7 @@ export function ItemAddInput({
   addLabel,
   disabled,
 }: ItemAddInputProps) {
+  const primaryHover = usePrimaryHover();
   return (
     <div className="p-4 border-b border-border-subtle">
       <div className="flex gap-3">
@@ -38,7 +40,7 @@ export function ItemAddInput({
         </div>
         <motion.button
           type="button"
-          whileHover={{ scale: 1.02 }}
+          whileHover={primaryHover}
           whileTap={{ scale: 0.98 }}
           onClick={onAdd}
           disabled={disabled ?? !value.trim()}

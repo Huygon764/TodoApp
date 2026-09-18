@@ -4,6 +4,7 @@ import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Plus, Circle, TrendingUp } from "lucide-react";
 import type { DayTodo, DayTodoItem, DayReflectionMeta } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { generateId } from "@/lib/generateId";
@@ -56,7 +57,7 @@ export function DayTodoList({
   const completedCount = items.filter(item => item.completed).length;
   const totalCount = items.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const addButtonHover = isMobile ? undefined : { scale: 1.02 };
+  const primaryHover = usePrimaryHover();
   const addButtonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
 
   const handleAdd = () => {
@@ -278,7 +279,7 @@ export function DayTodoList({
             </div>
             <motion.button
               type="button"
-              whileHover={addButtonHover}
+              whileHover={primaryHover}
               whileTap={addButtonTap}
               onClick={handleAdd}
               disabled={!newTitle.trim()}

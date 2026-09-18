@@ -100,7 +100,6 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
       <div className="relative flex items-center gap-3 p-2 rounded-2xl bg-bg-surface border border-border-default">
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="shrink-0 p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
           onClick={() => onDateChange(addDays(date, -1))}
@@ -144,7 +143,6 @@ export function DateNav({ date, onDateChange, timezone }: DateNavProps) {
 
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="shrink-0 p-3 rounded-xl bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
           onClick={() => onDateChange(addDays(date, 1))}

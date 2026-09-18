@@ -42,7 +42,6 @@ export function PeriodSelector({
       <div className="flex items-center gap-1">
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onPrev}
           className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"
@@ -59,7 +58,6 @@ export function PeriodSelector({
         </button>
         <motion.button
           type="button"
-          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onNext}
           className="p-1.5 rounded-lg text-text-muted hover:text-accent-hover hover:bg-bg-surface transition-colors cursor-pointer"

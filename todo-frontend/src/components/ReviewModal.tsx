@@ -16,6 +16,7 @@ import {
 import { stepPeriod } from "@/lib/periodStep";
 import type { Review } from "@/types";
 import { useModalClose } from "@/hooks/useModalClose";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 
@@ -41,6 +42,7 @@ function ListEditor({
   addLabel: string;
   deleteAria: string;
 }) {
+  const primaryHover = usePrimaryHover();
   const add = () => onChange([...items, ""]);
   const setAt = (i: number, v: string) => {
     const next = [...items];
@@ -72,7 +74,6 @@ function ListEditor({
           />
           <motion.button
             type="button"
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => remove(i)}
             className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg shrink-0"
@@ -84,7 +85,7 @@ function ListEditor({
       ))}
       <motion.button
         type="button"
-        whileHover={{ scale: 1.02 }}
+        whileHover={primaryHover}
         whileTap={{ scale: 0.98 }}
         onClick={add}
         className="flex items-center gap-2 text-sm text-text-muted hover:text-accent-hover transition-colors"
@@ -104,6 +105,7 @@ export function ReviewModal({
   onOpenHistory,
 }: ReviewModalProps) {
   const { t, i18n } = useTranslation();
+  const primaryHover = usePrimaryHover();
   const dateLocale = localeFromLanguage(i18n.language);
   const [activeTab, setActiveTab] = useState<"week" | "month">(typeProp ?? "week");
   const [slotPeriod, setSlotPeriod] = useState<string | null>(null);
@@ -269,7 +271,6 @@ export function ReviewModal({
                           <div className="flex items-center gap-0.5">
                             <motion.button
                               type="button"
-                              whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() =>
                                 setSlotPeriod(stepPeriod(activeTab, period, "prev"))
@@ -282,7 +283,6 @@ export function ReviewModal({
                             </motion.button>
                             <motion.button
                               type="button"
-                              whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() =>
                                 setSlotPeriod(stepPeriod(activeTab, period, "next"))
@@ -298,7 +298,6 @@ export function ReviewModal({
                         {onOpenHistory && (
                           <motion.button
                             type="button"
-                            whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={onOpenHistory}
                             className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"
@@ -401,7 +400,7 @@ export function ReviewModal({
                     <div className="flex-1" />
                     <motion.button
                       type="submit"
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={primaryHover}
                       whileTap={{ scale: 0.98 }}
                       disabled={saveMutation.isPending}
                       className="px-5 py-2.5 rounded-xl bg-accent-primary hover:bg-accent-hover text-white font-semibold transition-all disabled:opacity-50"

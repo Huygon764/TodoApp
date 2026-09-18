@@ -56,7 +56,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const iconHover = isMobile ? undefined : { scale: 1.05 };
   const iconTap = isMobile ? { scale: 0.98 } : { scale: 0.95 };
 
   useModalClose(menuOpen, () => setMenuOpen(false), menuRef);
@@ -79,7 +78,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
         {!isMobile ? (
           <div className="flex items-center gap-2">
             <motion.button
-              whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("goal")}
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
@@ -89,7 +87,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
             </motion.button>
             <motion.button
               type="button"
-              whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("peopleNotes")}
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
@@ -99,7 +96,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
             </motion.button>
             <motion.button
               type="button"
-              whileHover={iconHover}
               whileTap={iconTap}
               onClick={onOpenReview}
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
@@ -108,7 +104,6 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               <ReviewIcon className="w-5 h-5" />
             </motion.button>
             <motion.button
-              whileHover={iconHover}
               whileTap={iconTap}
               onClick={() => onOpenModal("settings")}
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"

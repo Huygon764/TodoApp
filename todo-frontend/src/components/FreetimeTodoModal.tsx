@@ -53,9 +53,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
 
-  const controlHover = isMobile ? undefined : { scale: 1.1 };
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
-  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
 
   const REORDER_DEBOUNCE_MS = 600;
   const reorderDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -283,7 +281,6 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                             >
                               <motion.button
                                 type="button"
-                                whileHover={checkboxHover}
                                 whileTap={controlTap}
                                 onClick={() => handleToggle(item.id)}
                                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
@@ -364,7 +361,6 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
                               <motion.button
                                 type="button"
-                                whileHover={controlHover}
                                 whileTap={controlTap}
                                 onClick={() => handleDelete(item.id)}
                                 className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 cursor-pointer"

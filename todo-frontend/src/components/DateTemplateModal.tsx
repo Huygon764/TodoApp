@@ -331,7 +331,6 @@ export function DateTemplateModal({
                               )}
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => removeItem(index)}
                                 className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200"

@@ -9,6 +9,7 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
 import type { PersonNote } from "@/types";
 import { useModalClose } from "@/hooks/useModalClose";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
@@ -21,6 +22,7 @@ interface PeopleNotesModalProps {
 
 export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   const { t } = useTranslation();
+  const primaryHover = usePrimaryHover();
   const queryClient = useQueryClient();
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -211,7 +213,6 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                             <div className="flex items-center gap-3 p-3 hover:bg-bg-surface/80 group transition-all duration-200">
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() =>
                                   setExpandedId((prev) =>
@@ -262,7 +263,6 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
 
                               <motion.button
                                 type="button"
-                                whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => deleteMutation.mutate(person._id)}
                                 disabled={deleteMutation.isPending}
@@ -310,7 +310,6 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                     )}
                                     <motion.button
                                       type="button"
-                                      whileHover={{ scale: 1.1 }}
                                       whileTap={{ scale: 0.9 }}
                                       onClick={() => deleteNote(person, noteIdx)}
                                       className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-bg shrink-0 cursor-pointer"
@@ -338,7 +337,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
                                   />
                                   <motion.button
                                     type="button"
-                                    whileHover={{ scale: 1.02 }}
+                                    whileHover={primaryHover}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => addNote(person)}
                                     className="px-3 py-2 rounded-lg bg-accent-primary/20 text-accent-hover text-sm font-medium hover:bg-accent-primary/30 cursor-pointer"

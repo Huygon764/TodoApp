@@ -41,7 +41,6 @@ export function DefaultListModal({
 }: DefaultListModalProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const controlHover = isMobile ? undefined : { scale: 1.1 };
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
   const [newTitle, setNewTitle] = useState("");
   const [localItems, setLocalItems] = useState<DefaultItem[]>([]);
@@ -250,7 +249,6 @@ export function DefaultListModal({
                                 {dragHandle}
                                 <motion.button
                                   type="button"
-                                  whileHover={controlHover}
                                   whileTap={controlTap}
                                   onClick={() => deleteMutation.mutate(item._id)}
                                   disabled={deleteMutation.isPending}

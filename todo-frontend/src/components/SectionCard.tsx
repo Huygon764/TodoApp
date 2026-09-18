@@ -16,13 +16,11 @@ export function SectionCard({
   onClick,
 }: SectionCardProps) {
   const isMobile = useIsMobile();
-  const cardHover = isMobile ? undefined : { scale: 1.01 };
   const cardTap = isMobile ? { scale: 0.995 } : { scale: 0.99 };
 
   return (
     <motion.button
       type="button"
-      whileHover={cardHover}
       whileTap={cardTap}
       onClick={onClick}
       className="w-full p-4 rounded-2xl bg-bg-card/50 border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-all duration-200 group cursor-pointer"

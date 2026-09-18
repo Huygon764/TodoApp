@@ -33,7 +33,6 @@ export function LogoutButton({
   return (
     <motion.button
       type="button"
-      whileHover={isMenu ? undefined : { scale: 1.02 }}
       whileTap={isMenu ? { scale: 0.99 } : { scale: 0.98 }}
       onClick={() => logoutMutation.mutate()}
       disabled={logoutMutation.isPending}

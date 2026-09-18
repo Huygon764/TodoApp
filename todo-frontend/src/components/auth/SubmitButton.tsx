@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 
 interface SubmitButtonProps {
   pending: boolean;
@@ -13,13 +13,13 @@ export function SubmitButton({
   label,
   pendingLabel,
 }: SubmitButtonProps) {
-  const isMobile = useIsMobile();
+  const primaryHover = usePrimaryHover();
   return (
     <motion.button
       type="submit"
       disabled={pending}
-      whileHover={isMobile ? undefined : { scale: 1.02 }}
-      whileTap={isMobile ? { scale: 0.99 } : { scale: 0.98 }}
+      whileHover={primaryHover}
+      whileTap={{ scale: 0.98 }}
       className="relative w-full py-3.5 rounded-xl font-semibold text-white overflow-hidden
         bg-accent-primary hover:bg-accent-hover
         disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none

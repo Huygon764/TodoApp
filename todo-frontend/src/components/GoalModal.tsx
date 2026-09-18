@@ -56,9 +56,7 @@ function removeIdsFromItems(
 export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const controlHover = isMobile ? undefined : { scale: 1.1 };
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
-  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
   const [activeTab, setActiveTab] = useState<GoalPeriodType>("week");
   const [selectedWeekPeriod, setSelectedWeekPeriod] = useState(getWeekPeriod());
   const [selectedMonthPeriod, setSelectedMonthPeriod] = useState(getMonthPeriod());
@@ -353,7 +351,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       >
         <motion.button
           type="button"
-          whileHover={checkboxHover}
           whileTap={controlTap}
           onClick={() => handleToggle(item.id)}
           disabled={pendingToggle !== null}
@@ -424,7 +421,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         {dragHandle}
         <motion.button
           type="button"
-          whileHover={controlHover}
           whileTap={controlTap}
           onClick={() => handleDelete(item.id)}
           disabled={deleteItemMutation.isPending}
@@ -488,7 +484,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
         <div className="flex items-center gap-1">
           <motion.button
             type="button"
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handleClose}
             className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200 cursor-pointer"

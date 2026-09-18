@@ -31,7 +31,6 @@ export function ModalHeader({
         {extraActions}
         <motion.button
           type="button"
-          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={onClose}
           className="p-2 rounded-xl text-text-tertiary hover:text-white hover:bg-bg-surface transition-all duration-200"

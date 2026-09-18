@@ -11,6 +11,7 @@ import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsIn
 import type { Review } from "@/types";
 import { ReviewModal } from "./ReviewModal";
 import { useModalClose } from "@/hooks/useModalClose";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 
@@ -76,6 +77,7 @@ export function ReviewHistoryModal({
   onOpenSlot,
 }: ReviewHistoryModalProps) {
   const { t } = useTranslation();
+  const primaryHover = usePrimaryHover();
   const currentMonth = getMonthPeriod();
   const [selectedFromMonth, setSelectedFromMonth] = useState(currentMonth);
   const [selectedToMonth, setSelectedToMonth] = useState(currentMonth);
@@ -211,7 +213,7 @@ export function ReviewHistoryModal({
                       </span>
                       <motion.button
                         type="button"
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={primaryHover}
                         whileTap={{ scale: 0.98 }}
                         onClick={handleAnalyze}
                         disabled={selectedIds.size === 0 || analysisLoading}

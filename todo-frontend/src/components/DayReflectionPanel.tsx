@@ -109,7 +109,6 @@ export function DayReflectionPanel({
     dayTodo.mood != null ? MOOD_ICONS[dayTodo.mood - 1] : null;
 
   const buttonTap = { scale: 0.9 };
-  const buttonHover = isMobile ? undefined : { scale: 1.15 };
 
   return (
     <div className="border-t border-border-subtle">
@@ -161,7 +160,6 @@ export function DayReflectionPanel({
                       <motion.button
                         key={level}
                         type="button"
-                        whileHover={buttonHover}
                         whileTap={buttonTap}
                         onClick={() => handleMood(level)}
                         aria-label={moodLevels?.[idx] ?? String(level)}
@@ -191,7 +189,6 @@ export function DayReflectionPanel({
                       <motion.button
                         key={level}
                         type="button"
-                        whileHover={buttonHover}
                         whileTap={buttonTap}
                         onClick={() => handleEnergy(level)}
                         aria-label={t("dayTodo.energyAria", { level })}

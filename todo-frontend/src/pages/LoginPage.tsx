@@ -10,6 +10,7 @@ import { ParticleBackground } from "@/components/ParticleBackground";
 import { OrbitLockup } from "@/components/shared/OrbitLockup";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 
 // Animated Background (solid Linear style; particles added in Phase 5)
 const AnimatedBackground = () => {
@@ -44,7 +45,7 @@ export function LoginPage() {
   const queryClient = useQueryClient();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? ROUTES.HOME;
-  const buttonHover = isMobile ? undefined : { scale: 1.02 };
+  const primaryHover = usePrimaryHover();
   const buttonTap = isMobile ? { scale: 0.99 } : { scale: 0.98 };
   const getFadeUpMotion = (desktopDelay = 0, mobileOffset = 8) => ({
     initial: { opacity: 0, y: isMobile ? mobileOffset / 2 : mobileOffset },
@@ -303,7 +304,7 @@ export function LoginPage() {
                 <motion.button
                   type="submit"
                   disabled={loginMutation.isPending}
-                  whileHover={buttonHover}
+                  whileHover={primaryHover}
                   whileTap={buttonTap}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-white overflow-hidden
                     bg-accent-primary hover:bg-accent-hover

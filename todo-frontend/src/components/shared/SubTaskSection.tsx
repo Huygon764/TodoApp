@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { usePrimaryHover } from "@/hooks/usePrimaryHover";
 import { CounterChip } from "@/components/shared/CounterChip";
 import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
@@ -43,6 +44,7 @@ export function SubTaskSection({
   onAddSubTask,
 }: SubTaskSectionProps) {
   const { t } = useTranslation();
+  const primaryHover = usePrimaryHover();
   const {
     editingId: editingIdx,
     editValue,
@@ -74,7 +76,6 @@ export function SubTaskSection({
           {showCheckbox ? (
             <motion.button
               type="button"
-              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => onToggle?.(subIdx)}
               className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
@@ -131,7 +132,6 @@ export function SubTaskSection({
             <div className="flex items-center">
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onMove(subIdx, "up")}
                 disabled={subIdx === 0}
@@ -142,7 +142,6 @@ export function SubTaskSection({
               </motion.button>
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onMove(subIdx, "down")}
                 disabled={subIdx === subTasks.length - 1}
@@ -155,7 +154,6 @@ export function SubTaskSection({
           )}
           <motion.button
             type="button"
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => onDelete(subIdx)}
             className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-bg cursor-pointer"
@@ -178,7 +176,7 @@ export function SubTaskSection({
         />
         <motion.button
           type="button"
-          whileHover={{ scale: 1.02 }}
+          whileHover={primaryHover}
           whileTap={{ scale: 0.98 }}
           onClick={onAddSubTask}
           className="px-3 py-2 rounded-lg bg-accent-primary/20 text-accent-hover text-sm font-medium hover:bg-accent-primary/30 cursor-pointer"

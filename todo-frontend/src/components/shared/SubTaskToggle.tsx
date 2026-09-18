@@ -25,7 +25,6 @@ export function SubTaskToggle({
   return (
     <motion.button
       type="button"
-      whileHover={isMobile ? undefined : { scale: 1.1 }}
       whileTap={isMobile ? { scale: 0.96 } : { scale: 0.9 }}
       onClick={onClick}
       className={`shrink-0 flex items-center gap-1 rounded-full border text-xs font-semibold leading-none transition-all duration-200 cursor-pointer ${

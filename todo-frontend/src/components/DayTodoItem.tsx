@@ -75,9 +75,7 @@ export function DayTodoItem({
   onNewSubTaskTitleChange,
 }: DayTodoItemProps) {
   const { t } = useTranslation();
-  const controlHover = isMobile ? undefined : { scale: 1.1 };
   const controlTap = isMobile ? { scale: 0.96 } : { scale: 0.9 };
-  const checkboxHover = isMobile ? undefined : { scale: 1.15 };
   const subTaskCount = item.subTasks.length;
   const isCounter = item.target != null;
 
@@ -101,7 +99,6 @@ export function DayTodoItem({
       >
         <motion.button
           type="button"
-          whileHover={checkboxHover}
           whileTap={controlTap}
           onClick={() => onToggle(item.id)}
           disabled={pendingToggle !== null}
@@ -177,7 +174,6 @@ export function DayTodoItem({
         {dragHandle}
         <motion.button
           type="button"
-          whileHover={controlHover}
           whileTap={controlTap}
           onClick={() => onDelete(item.id)}
           className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 cursor-pointer"

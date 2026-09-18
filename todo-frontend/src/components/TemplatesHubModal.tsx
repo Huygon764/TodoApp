@@ -73,7 +73,7 @@ export function TemplatesHubModal({
           </button>
         ))}
       </div>
-      <div className={tab === "daily" ? "" : "hidden"}>
+      {tab === "daily" ? (
         <DefaultListModal
           embedded
           isOpen={isOpen}
@@ -84,23 +84,23 @@ export function TemplatesHubModal({
           onInvalidate={onInvalidate}
           onReorder={onReorder}
         />
-      </div>
-      <div className={tab === "date" ? "" : "hidden"}>
+      ) : null}
+      {tab === "date" ? (
         <DateTemplateModal
           embedded
           isOpen={isOpen}
           onClose={onClose}
           onSaved={onDateSaved}
         />
-      </div>
-      <div className={tab === "repeat" ? "" : "hidden"}>
+      ) : null}
+      {tab === "repeat" ? (
         <RecurringTemplateModal
           embedded
           isOpen={isOpen}
           onClose={onClose}
           initialTab="week"
         />
-      </div>
+      ) : null}
     </ModalContainer>
   );
 }

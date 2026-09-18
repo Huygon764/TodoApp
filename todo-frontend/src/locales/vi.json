@@ -40,7 +40,8 @@
   "dayGoals": {
     "title": "Tiêu điểm",
     "weekLabel": "Tuần này",
-    "monthLabel": "Tháng này"
+    "monthLabel": "Tháng này",
+    "empty": "Chưa có tiêu điểm tuần/tháng này"
   },
   "defaultModal": {
     "title": "Template mặc định",

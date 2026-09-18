@@ -80,11 +80,16 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
     },
   });
 
-  // Toggle by item reference (not display index) since the rendered list is
-  // sorted, so a display index would not match the stored items array.
-  const toggle = (type: GoalType, period: string, goal: Goal, item: GoalItem) => {
-    const items = goal.items.map((it) =>
-      it === item ? { ...it, completed: !it.completed } : it
+  // Toggle by stored index. Display order is sorted, so the visible index
+  // would not match the items array.
+  const toggle = (
+    type: GoalType,
+    period: string,
+    goal: Goal,
+    sourceIndex: number,
+  ) => {
+    const items = goal.items.map((it, i) =>
+      i === sourceIndex ? { ...it, completed: !it.completed } : it,
     );
     patchMutation.mutate({ goalId: goal._id, type, period, items });
   };
@@ -104,75 +109,114 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
     },
   ].filter((g) => g.goal && g.goal.items.length > 0);
 
-  // Nothing to show until the user has set goals for this week or month.
-  if (groups.length === 0) return null;
+  const showBody = !isMobile || expanded;
+  const empty = groups.length === 0;
+
+  if (empty && isMobile) return null;
+
+  const list = (
+    <div className="px-4 pb-4 space-y-4">
+      {empty ? (
+        <p className="text-sm text-text-muted py-6 text-center">
+          {t("dayGoals.empty")}
+        </p>
+      ) : (
+        groups.map((g) => (
+          <div key={g.type}>
+            <p className="text-xs uppercase tracking-wide text-text-muted mb-2">
+              {g.label}
+            </p>
+            <ul className="space-y-1.5">
+              <AnimatePresence initial={false} mode="popLayout">
+                {sortItemsByCompletion(
+                  g.goal!.items.map((item, sourceIndex) => ({
+                    ...item,
+                    sourceIndex,
+                  })),
+                ).map((item) => (
+                  <motion.li
+                    key={`${g.type}-${item.sourceIndex}`}
+                    layout
+                    layoutId={`focus-${g.type}-${item.sourceIndex}`}
+                    className="flex items-center gap-3"
+                  >
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() =>
+                        toggle(g.type, g.period, g.goal!, item.sourceIndex)
+                      }
+                      className={`shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 cursor-pointer ${
+                        item.completed
+                          ? "bg-accent-primary border-accent-primary text-white"
+                          : "border-text-muted hover:border-accent-hover"
+                      }`}
+                    >
+                      {item.completed && <Check className="w-3 h-3" />}
+                    </motion.button>
+                    <span
+                      className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${
+                        item.completed
+                          ? "line-through text-text-muted"
+                          : "text-text-secondary"
+                      }`}
+                    >
+                      <LinkifiedText text={item.title} />
+                    </span>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+          </div>
+        ))
+      )}
+    </div>
+  );
 
   return (
-    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-bg-card/80 transition-colors duration-200"
-      >
-        <span className="flex items-center gap-3">
+    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[40vh]">
+      {isMobile ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="shrink-0 w-full flex items-center justify-between p-4 cursor-pointer hover:bg-bg-card/80 transition-colors duration-200"
+        >
+          <span className="flex items-center gap-3">
+            <GoalsIcon className="w-4 h-4 text-accent-hover" />
+            <span className="text-base font-semibold text-white">
+              {t("dayGoals.title")}
+            </span>
+          </span>
+          <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
+            <ChevronDown className="w-4 h-4 text-text-tertiary" />
+          </motion.span>
+        </button>
+      ) : (
+        <div className="shrink-0 flex items-center gap-3 p-4">
           <GoalsIcon className="w-4 h-4 text-accent-hover" />
           <span className="text-base font-semibold text-white">
             {t("dayGoals.title")}
           </span>
-        </span>
-        <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
-          <ChevronDown className="w-4 h-4 text-text-tertiary" />
-        </motion.span>
-      </button>
+        </div>
+      )}
 
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: isMobile ? 0.16 : 0.2, ease: "easeOut" }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-4 space-y-4">
-              {groups.map((g) => (
-                <div key={g.type}>
-                  <p className="text-xs uppercase tracking-wide text-text-muted mb-2">
-                    {g.label}
-                  </p>
-                  <ul className="space-y-1.5">
-                    {sortItemsByCompletion(g.goal!.items).map((item, idx) => (
-                      <li key={idx} className="flex items-center gap-3">
-                        <motion.button
-                          type="button"
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => toggle(g.type, g.period, g.goal!, item)}
-                          className={`shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 cursor-pointer ${
-                            item.completed
-                              ? "bg-accent-primary border-accent-primary text-white"
-                              : "border-text-muted hover:border-accent-hover"
-                          }`}
-                        >
-                          {item.completed && <Check className="w-3 h-3" />}
-                        </motion.button>
-                        <span
-                          className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${
-                            item.completed
-                              ? "line-through text-text-muted"
-                              : "text-text-secondary"
-                          }`}
-                        >
-                          <LinkifiedText text={item.title} />
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isMobile ? (
+        <AnimatePresence initial={false}>
+          {showBody && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              {list}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto">{list}</div>
+      )}
     </div>
   );
 }

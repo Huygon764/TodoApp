@@ -8,6 +8,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import { ListSkeleton } from "@/components/shared/ListSkeleton";
+import { sortItemsByCompletion } from "@/lib/sortItems";
 
 const WEEKDAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -88,6 +89,32 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
 
   const toggleMutation = useMutation({
     mutationFn: (habitId: string) => apiPost(API_PATHS.HABIT_TOGGLE(habitId), { date }),
+    onMutate: async (habitId) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<HabitToday>(queryKey);
+      if (!previous) return { previous };
+      queryClient.setQueryData<HabitToday>(queryKey, {
+        ...previous,
+        habits: previous.habits.map((h) => {
+          if (h.id !== habitId) return h;
+          const doneToday = !h.doneToday;
+          return {
+            ...h,
+            doneToday,
+            skippedToday: false,
+            last7: h.last7.map((cell) =>
+              cell.date === date
+                ? { ...cell, state: doneToday ? "done" : "missed" }
+                : cell,
+            ),
+          };
+        }),
+      });
+      return { previous };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(queryKey, ctx.previous);
+    },
     onSettled: invalidate,
   });
 
@@ -117,26 +144,72 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   const anySkipped = habits.some((h) => h.skippedToday);
   const needsSkip = habits.some((h) => !h.doneToday && !h.skippedToday);
   const maxDots = isMobile ? 5 : 7;
+  const showBody = !isMobile || expanded;
+
+  const list = isLoading ? (
+    <ListSkeleton rowClassName="h-12" />
+  ) : total === 0 ? (
+    <button
+      type="button"
+      onClick={onManage}
+      className="w-full py-6 text-center text-sm text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
+    >
+      {t("habits.empty", "No habits yet. Add the things you must do daily.")}
+    </button>
+  ) : (
+    <div className="space-y-1.5">
+      <AnimatePresence initial={false} mode="popLayout">
+        {sortItemsByCompletion(
+          habits.map((h) => ({ ...h, completed: h.doneToday })),
+        ).map((h) => (
+          <motion.div key={h.id} layout layoutId={h.id}>
+            <HabitRow
+              habit={h}
+              maxDots={maxDots}
+              showSchedule={!isMobile}
+              canMutate={canMutate}
+              onToggle={() => toggleMutation.mutate(h.id)}
+              onSkip={() => skipMutation.mutate(h.id)}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
 
   return (
-    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden">
-      <div className="flex items-center gap-2 p-4">
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
-          aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
-        >
-          <Ring pct={pct} />
-          <span className="min-w-0">
-            <span className="block text-base font-semibold text-white">
-              {t("habits.title", "Discipline")}
+    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[40vh]">
+      <div className="shrink-0 flex items-center gap-2 p-4 flex-wrap">
+        {isMobile ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
+            aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
+          >
+            <Ring pct={pct} />
+            <span className="min-w-0">
+              <span className="block text-base font-semibold text-white">
+                {t("habits.title", "Discipline")}
+              </span>
+              <span className="block text-sm text-text-muted">
+                {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
+              </span>
             </span>
-            <span className="block text-sm text-text-muted">
-              {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
+          </button>
+        ) : (
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Ring pct={pct} />
+            <span className="min-w-0">
+              <span className="block text-base font-semibold text-white">
+                {t("habits.title", "Discipline")}
+              </span>
+              <span className="block text-sm text-text-muted">
+                {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
+              </span>
             </span>
-          </span>
-        </button>
+          </div>
+        )}
         {canMutate && total > 0 && (needsSkip || anySkipped) && (
           <div className="shrink-0 flex gap-1">
             {needsSkip && (
@@ -175,57 +248,37 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
         >
           <BarChart3 className="w-4 h-4" />
         </button>
-        <motion.button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          animate={{ rotate: expanded ? 0 : -90 }}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
-          aria-hidden="true"
-          tabIndex={-1}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </motion.button>
+        {isMobile && (
+          <motion.button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            animate={{ rotate: expanded ? 0 : -90 }}
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            <ChevronDown className="w-4 h-4" />
+          </motion.button>
+        )}
       </div>
 
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: isMobile ? 0.16 : 0.2, ease: "easeOut" }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3">
-          {isLoading ? (
-            <ListSkeleton rowClassName="h-12" />
-          ) : total === 0 ? (
-            <button
-              type="button"
-              onClick={onManage}
-              className="w-full py-6 text-center text-sm text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
+      {isMobile ? (
+        <AnimatePresence initial={false}>
+          {showBody && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+              className="overflow-hidden"
             >
-              {t("habits.empty", "No habits yet. Add the things you must do daily.")}
-            </button>
-          ) : (
-            <div className="space-y-1.5">
-              {habits.map((h) => (
-                <HabitRow
-                  key={h.id}
-                  habit={h}
-                  maxDots={maxDots}
-                  showSchedule={!isMobile}
-                  canMutate={canMutate}
-                  onToggle={() => toggleMutation.mutate(h.id)}
-                  onSkip={() => skipMutation.mutate(h.id)}
-                />
-              ))}
-            </div>
+            <div className="px-3 pb-3">{list}</div>
+            </motion.div>
           )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">{list}</div>
+      )}
     </div>
   );
 }

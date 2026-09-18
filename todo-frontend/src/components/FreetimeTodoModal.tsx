@@ -9,7 +9,7 @@ import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
 import { generateId } from "@/lib/generateId";
 import { addClientIds, removeClientIds } from "@/lib/itemIds";
-import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
+import { sortItemsByCompletion } from "@/lib/sortItems";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
@@ -145,7 +145,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
       }
       return { ...item, completed: nextCompleted };
     });
-    syncItems(regroupByCompletion(toggled));
+    setItems(sortItemsByCompletion(toggled));
+    patchMutation.mutate({ items: removeIdsFromItems(toggled) });
   };
 
   const handleCounterIncrement = (id: string) => {
@@ -156,7 +157,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
       const next = current >= target ? 0 : current + 1;
       return { ...item, count: next, completed: next >= target };
     });
-    syncItems(regroupByCompletion(updated));
+    setItems(sortItemsByCompletion(updated));
+    patchMutation.mutate({ items: removeIdsFromItems(updated) });
   };
 
   const handleDelete = (id: string) => {
@@ -267,7 +269,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                     >
                       <AnimatePresence mode="popLayout">
                         {items.map((item) => (
-                          <ReorderItem key={item.id} item={item} isMobile={isMobile}>
+                          <ReorderItem key={item.id} item={item} isMobile={isMobile} layoutId={item.id}>
                             {(dragHandle) => (
                               <>
                             <motion.div

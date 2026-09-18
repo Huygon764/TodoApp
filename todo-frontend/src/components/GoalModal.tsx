@@ -21,7 +21,7 @@ import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
 import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { addClientIds, removeClientIds } from "@/lib/itemIds";
-import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
+import { sortItemsByCompletion } from "@/lib/sortItems";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -64,7 +64,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [selectedYearPeriod, setSelectedYearPeriod] = useState(getYearPeriod());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
   const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -117,9 +116,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   }, [isOpen, goal]);
 
   const sortedItems =
-    localItems.length > 0 ? sortItemsByCompletion(localItems) : sortedItemsFromGoal;
-  const incomplete = sortedItems.filter((i) => !i.completed);
-  const completed = sortedItems.filter((i) => i.completed);
+    localItems.length > 0 ? localItems : sortedItemsFromGoal;
 
   const patchMutation = useMutation({
     mutationFn: (items: GoalItem[]) =>
@@ -203,8 +200,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   };
 
   const handleToggle = (id: string) => {
-    if (pendingToggle) return;
-    setPendingToggle(id);
     const toggled = sortedItems.map((item) => {
       if (item.id !== id) return item;
       const nextCompleted = !item.completed;
@@ -225,10 +220,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       }
       return { ...item, completed: nextCompleted };
     });
-    const reordered = regroupByCompletion(toggled);
+    const reordered = sortItemsByCompletion(toggled);
     setLocalItems(reordered);
-    patchMutation.mutate(removeIdsFromItems(reordered));
-    setTimeout(() => setPendingToggle(null), 150);
+    patchMutation.mutate(removeIdsFromItems(toggled));
   };
 
   const handleCounterIncrement = (id: string) => {
@@ -239,9 +233,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       const next = current >= target ? 0 : current + 1;
       return { ...item, count: next, completed: next >= target };
     });
-    const reordered = regroupByCompletion(updated);
+    const reordered = sortItemsByCompletion(updated);
     setLocalItems(reordered);
-    patchMutation.mutate(removeIdsFromItems(reordered));
+    patchMutation.mutate(removeIdsFromItems(updated));
   };
 
   const subTaskManager = useSubTaskManager(localItems, (next) => {
@@ -274,14 +268,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     setPickerOpen(false);
   };
 
-  const reorderIncomplete = (newIncomplete: (GoalItem & { id: string })[]) => {
-    if (isSpuriousReorder(newIncomplete, incomplete)) return;
-    const withOrder = newIncomplete.map((it, idx) => ({ ...it, order: idx }));
-    const completedWithOrder = completed.map((it, idx) => ({
-      ...it,
-      order: withOrder.length + idx,
-    }));
-    setLocalItems([...withOrder, ...completedWithOrder]);
+  const handleReorder = (newOrder: (GoalItem & { id: string })[]) => {
+    if (isSpuriousReorder(newOrder, sortedItems)) return;
+    setLocalItems(newOrder.map((it, idx) => ({ ...it, order: idx })));
   };
 
   const handleTitleClick = (id: string) => {
@@ -297,18 +286,6 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     );
     setLocalItems(updated);
     if (goal) patchMutation.mutate(removeIdsFromItems(updated));
-  };
-
-  const reorderCompleted = (newCompleted: (GoalItem & { id: string })[]) => {
-    if (isSpuriousReorder(newCompleted, completed)) return;
-    const withOrder = newCompleted.map((it, idx) => ({
-      ...it,
-      order: incomplete.length + idx,
-    }));
-    setLocalItems([
-      ...incomplete.map((it, idx) => ({ ...it, order: idx })),
-      ...withOrder,
-    ]);
   };
 
   const handleClose = () => {
@@ -336,30 +313,21 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const renderGoalItem = (item: GoalItem & { id: string }, dragHandle: ReactNode) => (
     <>
       <motion.div
-        layout
         className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
           item.completed
             ? "bg-accent-primary/5 border-accent-primary/20"
             : "bg-bg-surface border-border-subtle hover:bg-bg-surface/80"
         }`}
-        animate={{
-          scale: pendingToggle === item.id ? 0.98 : 1,
-        }}
-        transition={{
-          duration: isMobile ? 0.1 : 0.15,
-          ease: "easeOut",
-        }}
       >
         <motion.button
           type="button"
           whileTap={controlTap}
           onClick={() => handleToggle(item.id)}
-          disabled={pendingToggle !== null}
           className={`shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
             item.completed
               ? "bg-accent-primary border-accent-primary"
               : "border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
-          } disabled:cursor-not-allowed`}
+          }`}
         >
           <AnimatePresence mode="wait">
             {item.completed && (
@@ -536,19 +504,14 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            <Reorder.Group axis="y" values={incomplete} onReorder={reorderIncomplete} className="space-y-2">
-              {incomplete.map((item) => (
-                <ReorderItem key={item.id} item={item} isMobile={isMobile}>
-                  {(dragHandle) => renderGoalItem(item, dragHandle)}
-                </ReorderItem>
-              ))}
-            </Reorder.Group>
-            <Reorder.Group axis="y" values={completed} onReorder={reorderCompleted} className="space-y-2">
-              {completed.map((item) => (
-                <ReorderItem key={item.id} item={item} isMobile={isMobile}>
-                  {(dragHandle) => renderGoalItem(item, dragHandle)}
-                </ReorderItem>
-              ))}
+            <Reorder.Group axis="y" values={sortedItems} onReorder={handleReorder} className="space-y-2">
+              <AnimatePresence initial={false} mode="popLayout">
+                {sortedItems.map((item) => (
+                  <ReorderItem key={item.id} item={item} isMobile={isMobile} layoutId={item.id}>
+                    {(dragHandle) => renderGoalItem(item, dragHandle)}
+                  </ReorderItem>
+                ))}
+              </AnimatePresence>
             </Reorder.Group>
           </div>
         )}

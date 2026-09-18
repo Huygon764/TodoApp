@@ -10,7 +10,7 @@ import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { generateId } from "@/lib/generateId";
 import { parseTarget } from "@/lib/parseTarget";
 import { addClientIds, removeClientIds } from "@/lib/itemIds";
-import { sortItemsByCompletion, regroupByCompletion } from "@/lib/sortItems";
+import { sortItemsByCompletion } from "@/lib/sortItems";
 import { ReorderItem } from "@/components/shared/ReorderItem";
 import { DayTodoItem as DayTodoItemRow } from "@/components/DayTodoItem";
 import type { DayTodoItemView as DayTodoItemWithId } from "@/components/DayTodoItem";
@@ -40,7 +40,6 @@ export function DayTodoList({
   const isMobile = useIsMobile();
   const [newTitle, setNewTitle] = useState("");
   const [items, setItems] = useState<DayTodoItemWithId[]>([]);
-  const [pendingToggle, setPendingToggle] = useState<string | null>(null);
   const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
@@ -82,9 +81,6 @@ export function DayTodoList({
   };
 
   const handleToggle = (id: string) => {
-    if (pendingToggle) return;
-    setPendingToggle(id);
-
     const toggled = items.map((item) => {
       if (item.id !== id) return item;
       const nextCompleted = !item.completed;
@@ -106,14 +102,9 @@ export function DayTodoList({
       }
       return { ...item, completed: nextCompleted };
     });
-    setItems(toggled);
-
-    setTimeout(() => {
-      const reordered = regroupByCompletion(toggled);
-      setItems(reordered);
-      onUpdateItems(removeIdsFromItems(reordered));
-      setPendingToggle(null);
-    }, 400);
+    const reordered = sortItemsByCompletion(toggled);
+    setItems(reordered);
+    onUpdateItems(removeIdsFromItems(toggled));
   };
 
   // A counter tap adds one (or resets a full counter to zero). The UI updates
@@ -126,13 +117,13 @@ export function DayTodoList({
       const next = current >= target ? 0 : current + 1;
       return { ...item, count: next, completed: next >= target };
     });
-    // Regroup only shifts an item between the incomplete/complete sections when
-    // its completion actually flips (at the last tap or on reset).
-    const reordered = regroupByCompletion(updated);
+    // Sort completed to the bottom in the UI; persist the in-place toggle so
+    // client ids stay stable and the row can layout-animate.
+    const reordered = sortItemsByCompletion(updated);
     setItems(reordered);
     if (counterDebounceRef.current) clearTimeout(counterDebounceRef.current);
     counterDebounceRef.current = setTimeout(() => {
-      onUpdateItems(removeIdsFromItems(reordered));
+      onUpdateItems(removeIdsFromItems(updated));
       counterDebounceRef.current = null;
     }, COUNTER_DEBOUNCE_MS);
   };
@@ -311,7 +302,6 @@ export function DayTodoList({
                       <DayTodoItemRow
                         item={item}
                         isMobile={isMobile}
-                        pendingToggle={pendingToggle}
                         expanded={expandedId === item.id}
                         editing={editingId === item.id}
                         editValue={editValue}

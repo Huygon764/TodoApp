@@ -32,14 +32,8 @@ function ReorderItemInner<T>(
     <Reorder.Item
       ref={ref}
       value={item}
-      initial={{ opacity: 0, y: isMobile ? -8 : -20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        transition: isMobile
-          ? { duration: 0.16, ease: "easeOut" }
-          : { type: "spring", stiffness: 100, damping: 25 },
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{
         opacity: 0,
         x: isMobile ? -40 : -100,

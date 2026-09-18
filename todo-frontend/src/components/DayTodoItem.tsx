@@ -24,7 +24,6 @@ function formatCarriedFrom(date?: string): string {
 interface DayTodoItemProps {
   item: DayTodoItemView;
   isMobile: boolean;
-  pendingToggle: string | null;
   expanded: boolean;
   editing: boolean;
   editValue: string;
@@ -51,7 +50,6 @@ interface DayTodoItemProps {
 export function DayTodoItem({
   item,
   isMobile,
-  pendingToggle,
   expanded,
   editing,
   editValue,
@@ -89,24 +87,16 @@ export function DayTodoItem({
             ? "bg-accent-primary/5 border-accent-primary/20"
             : "bg-bg-surface border-border-subtle hover:bg-bg-surface/80 hover:border-border-strong"
         }`}
-        animate={{
-          scale: pendingToggle === item.id ? 0.98 : 1,
-        }}
-        transition={{
-          duration: isMobile ? 0.1 : 0.15,
-          ease: "easeOut",
-        }}
       >
         <motion.button
           type="button"
           whileTap={controlTap}
           onClick={() => onToggle(item.id)}
-          disabled={pendingToggle !== null}
           className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
             item.completed
               ? "bg-accent-primary border-accent-primary"
               : "border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
-          } disabled:cursor-not-allowed`}
+          }`}
         >
           <AnimatePresence mode="wait">
             {item.completed && (

@@ -216,11 +216,11 @@ export function HomePage() {
             </div>
           }
         >
-          <motion.section {...getSectionMotion(0.05)}>
+          <motion.section
+            {...getSectionMotion(0.05)}
+            className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
+          >
             <DayGoalsPanel date={selectedDate} />
-          </motion.section>
-
-          <motion.section {...getSectionMotion(0.06)}>
             <HabitPanel
               date={selectedDate}
               onManage={() => openM("habits")}

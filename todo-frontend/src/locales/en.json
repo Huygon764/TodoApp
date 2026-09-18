@@ -40,7 +40,8 @@
   "dayGoals": {
     "title": "Focus",
     "weekLabel": "This week",
-    "monthLabel": "This month"
+    "monthLabel": "This month",
+    "empty": "No goals this week or month"
   },
   "defaultModal": {
     "title": "Default template",

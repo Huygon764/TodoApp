@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -12,22 +12,55 @@ import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayGoalsPanel } from "@/components/DayGoalsPanel";
 import { HabitPanel } from "@/components/HabitPanel";
-import { HabitModal } from "@/components/HabitModal";
-import { HabitStatsModal } from "@/components/HabitStatsModal";
-import { SettingsModal } from "@/components/SettingsModal";
 import { DayTodoList } from "@/components/DayTodoList";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { type DefaultOrderUpdate } from "@/components/DefaultListModal";
-import { TemplatesHubModal } from "@/components/TemplatesHubModal";
-import { GoalModal } from "@/components/GoalModal";
-import { ReviewModal } from "@/components/ReviewModal";
-import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
-import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
-import { PeopleNotesModal } from "@/components/PeopleNotesModal";
-import { ExpenseModal } from "@/components/ExpenseModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { Header, type ModalKey } from "@/components/Header";
 import { useIsMobile } from "@/hooks/useIsMobile";
+
+const TemplatesHubModal = lazy(() =>
+  import("@/components/TemplatesHubModal").then((m) => ({
+    default: m.TemplatesHubModal,
+  })),
+);
+const FreetimeTodoModal = lazy(() =>
+  import("@/components/FreetimeTodoModal").then((m) => ({
+    default: m.FreetimeTodoModal,
+  })),
+);
+const GoalModal = lazy(() =>
+  import("@/components/GoalModal").then((m) => ({ default: m.GoalModal })),
+);
+const ReviewModal = lazy(() =>
+  import("@/components/ReviewModal").then((m) => ({ default: m.ReviewModal })),
+);
+const ReviewHistoryModal = lazy(() =>
+  import("@/components/ReviewHistoryModal").then((m) => ({
+    default: m.ReviewHistoryModal,
+  })),
+);
+const PeopleNotesModal = lazy(() =>
+  import("@/components/PeopleNotesModal").then((m) => ({
+    default: m.PeopleNotesModal,
+  })),
+);
+const HabitModal = lazy(() =>
+  import("@/components/HabitModal").then((m) => ({ default: m.HabitModal })),
+);
+const HabitStatsModal = lazy(() =>
+  import("@/components/HabitStatsModal").then((m) => ({
+    default: m.HabitStatsModal,
+  })),
+);
+const ExpenseModal = lazy(() =>
+  import("@/components/ExpenseModal").then((m) => ({ default: m.ExpenseModal })),
+);
+const SettingsModal = lazy(() =>
+  import("@/components/SettingsModal").then((m) => ({
+    default: m.SettingsModal,
+  })),
+);
 
 function AnimatedBackground() {
   return (
@@ -69,7 +102,13 @@ export function HomePage() {
   }, [user]);
 
   const [openModal, setOpenModal] = useState<ModalKey | null>(null);
-  const openM = (key: ModalKey) => setOpenModal(key);
+  const [loadedModals, setLoadedModals] = useState<Partial<Record<ModalKey, true>>>(
+    {},
+  );
+  const openM = (key: ModalKey) => {
+    setLoadedModals((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+    setOpenModal(key);
+  };
   const closeM = () => setOpenModal(null);
   const [reviewModalSlot, setReviewModalSlot] = useState<{
     type: "week" | "month";
@@ -279,49 +318,79 @@ export function HomePage() {
         </motion.section>
       </main>
 
-      {/* Modals */}
-      <TemplatesHubModal
-        isOpen={openModal === "templates"}
-        onClose={closeM}
-        defaultItems={defaultItems}
-        defaultLoading={defaultPending}
-        onAddItem={(title, target) => addDefaultMutation.mutate({ title, target })}
-        onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
-        onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
-        onDateSaved={(date) => {
-          if (date === selectedDate) {
-            queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
-          }
-        }}
-      />
-      <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
-      <GoalModal isOpen={openModal === "goal"} onClose={closeM} />
-      <ReviewModal
-        isOpen={openModal === "review"}
-        onClose={() => {
-          closeM();
-          setReviewModalSlot(null);
-        }}
-        type={reviewModalSlot?.type}
-        period={reviewModalSlot?.period}
-        onOpenHistory={() => {
-          setReviewModalSlot(null);
-          openM("reviewHistory");
-        }}
-      />
-      <PeopleNotesModal isOpen={openModal === "peopleNotes"} onClose={closeM} />
-      <HabitModal isOpen={openModal === "habits"} onClose={closeM} />
-      <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
-      <ExpenseModal isOpen={openModal === "expense"} onClose={closeM} />
-      <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />
-      <ReviewHistoryModal
-        isOpen={openModal === "reviewHistory"}
-        onClose={closeM}
-        onOpenSlot={(type, period) => {
-          setReviewModalSlot({ type, period });
-          openM("review");
-        }}
-      />
+      <Suspense fallback={null}>
+        {loadedModals.templates && (
+          <TemplatesHubModal
+            isOpen={openModal === "templates"}
+            onClose={closeM}
+            defaultItems={defaultItems}
+            defaultLoading={defaultPending}
+            onAddItem={(title, target) =>
+              addDefaultMutation.mutate({ title, target })
+            }
+            onInvalidate={() =>
+              queryClient.invalidateQueries({ queryKey: ["default"] })
+            }
+            onReorder={(updates) =>
+              updates.length > 0 && reorderDefaultMutation.mutate(updates)
+            }
+            onDateSaved={(date) => {
+              if (date === selectedDate) {
+                queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
+              }
+            }}
+          />
+        )}
+        {loadedModals.freetime && (
+          <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
+        )}
+        {loadedModals.goal && (
+          <GoalModal isOpen={openModal === "goal"} onClose={closeM} />
+        )}
+        {loadedModals.review && (
+          <ReviewModal
+            isOpen={openModal === "review"}
+            onClose={() => {
+              closeM();
+              setReviewModalSlot(null);
+            }}
+            type={reviewModalSlot?.type}
+            period={reviewModalSlot?.period}
+            onOpenHistory={() => {
+              setReviewModalSlot(null);
+              openM("reviewHistory");
+            }}
+          />
+        )}
+        {loadedModals.peopleNotes && (
+          <PeopleNotesModal
+            isOpen={openModal === "peopleNotes"}
+            onClose={closeM}
+          />
+        )}
+        {loadedModals.habits && (
+          <HabitModal isOpen={openModal === "habits"} onClose={closeM} />
+        )}
+        {loadedModals.habitStats && (
+          <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
+        )}
+        {loadedModals.expense && (
+          <ExpenseModal isOpen={openModal === "expense"} onClose={closeM} />
+        )}
+        {loadedModals.settings && (
+          <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />
+        )}
+        {loadedModals.reviewHistory && (
+          <ReviewHistoryModal
+            isOpen={openModal === "reviewHistory"}
+            onClose={closeM}
+            onOpenSlot={(type, period) => {
+              setReviewModalSlot({ type, period });
+              openM("review");
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

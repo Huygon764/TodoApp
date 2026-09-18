@@ -288,7 +288,7 @@ export function DefaultListModal({
                 {/* Footer */}
                 <div className="p-4 border-t border-border-default bg-bg-page/30">
                   <p className="text-xs text-text-muted text-center">
-                    💡 {t("defaultModal.footerTip")}
+                    {t("defaultModal.footerTip")}
                   </p>
                 </div>
     </ModalContainer>

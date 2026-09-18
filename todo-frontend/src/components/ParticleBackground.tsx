@@ -1,18 +1,45 @@
-import { lazy, memo, Suspense } from "react";
+import { lazy, memo, Suspense, useEffect, useState } from "react";
 
-const ParticleBackgroundImpl = lazy(
-  () => import("./ParticleBackgroundImpl")
-);
+const ParticleBackgroundImpl = lazy(() => import("./ParticleBackgroundImpl"));
 
 /**
- * Public particles background.
- * - Lazy: @tsparticles is split into an async chunk so it does not
- *   bloat the initial/login bundle (fallback is null - it is a
- *   non-blocking decorative background).
- * - Memo: takes no props, so it never re-renders when a parent does
- *   (typing in a form, toggling a task).
+ * Decorative particles. The tsparticles chunk is not imported until after
+ * first paint so login LCP is the form, not this background.
  */
 function ParticleBackgroundWrapper() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let idleId = 0;
+    let timeoutId = 0;
+    let cancelled = false;
+
+    const enable = () => {
+      if (!cancelled) setReady(true);
+    };
+
+    const afterPaint = () => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(enable, { timeout: 1500 });
+        return;
+      }
+      timeoutId = window.setTimeout(enable, 200);
+    };
+
+    const raf2 = requestAnimationFrame(() => {
+      requestAnimationFrame(afterPaint);
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf2);
+      if (idleId) window.cancelIdleCallback(idleId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  if (!ready) return null;
+
   return (
     <Suspense fallback={null}>
       <ParticleBackgroundImpl />

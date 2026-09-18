@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ListTodo, CalendarRange, Calendar, Circle, Wallet } from "lucide-react";
+import { DefaultListIcon } from "@/components/icons/DefaultListIcon";
+import { DateTemplateIcon } from "@/components/icons/DateTemplateIcon";
+import { ExpenseIcon } from "@/components/icons/ExpenseIcon";
+import { FreetimeIcon } from "@/components/icons/FreetimeIcon";
+import { RecurringIcon } from "@/components/icons/RecurringIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
@@ -224,7 +228,7 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.1)}>
           <SectionCard
-            icon={ListTodo}
+            icon={DefaultListIcon}
             title={t("home.templateDefault")}
             description={t("home.defaultTemplateDesc", { count: defaultItems.length })}
             onClick={() => openM("default")}
@@ -233,7 +237,7 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.12)}>
           <SectionCard
-            icon={Calendar}
+            icon={DateTemplateIcon}
             title={t("home.dateTemplateTitle")}
             description={t("home.dateTemplateDesc")}
             onClick={() => openM("dateTemplate")}
@@ -242,7 +246,7 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.14)}>
           <SectionCard
-            icon={Circle}
+            icon={FreetimeIcon}
             title={t("freetimeModal.title", "Freetime list")}
             description={t("freetimeModal.subtitle", "Things you want to do when you have free time")}
             onClick={() => openM("freetime")}
@@ -251,7 +255,7 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.15)}>
           <SectionCard
-            icon={Wallet}
+            icon={ExpenseIcon}
             title={t("expense.title")}
             description={t("expense.sectionDesc")}
             onClick={() => openM("expense")}
@@ -260,7 +264,7 @@ export function HomePage() {
 
         <motion.section {...getSectionMotion(0.16)}>
           <SectionCard
-            icon={CalendarRange}
+            icon={RecurringIcon}
             title={t("home.recurringTemplateTitle")}
             description={t("home.recurringTemplateDesc")}
             onClick={() => openM("recurring")}

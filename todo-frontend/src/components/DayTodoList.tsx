@@ -214,9 +214,7 @@ export function DayTodoList({
         <div className="p-6 pb-4 border-b border-border-subtle">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-accent-primary/10">
-                <TrendingUp className="w-5 h-5 text-accent-hover" />
-              </div>
+              <TrendingUp className="w-5 h-5 text-accent-hover" />
               <div>
                 <h2 className="text-lg font-semibold text-white">
                   {t("dayTodo.title")}

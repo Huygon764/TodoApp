@@ -1,7 +1,8 @@
 import { useRef, useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Wallet, Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Pencil, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ExpenseIcon } from "@/components/icons/ExpenseIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 import type { Expense, ExpenseSummary } from "@/types";
@@ -235,7 +236,7 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} scrollable={false}>
       <div className="shrink-0">
         <ModalHeader
-          icon={<Wallet className="w-5 h-5 text-accent-hover" />}
+          icon={<ExpenseIcon className="w-5 h-5 text-accent-hover" />}
           title={t("expense.title")}
           subtitle={t("expense.subtitle")}
           onClose={onClose}

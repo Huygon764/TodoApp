@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Flag on a pole: a goal, not a target ring. -->
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M6.5 20.25V4.75l12 4.35-12 4.35"
+  />
+</svg>

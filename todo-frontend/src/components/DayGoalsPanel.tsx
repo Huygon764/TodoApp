@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Target, ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
+import { GoalsIcon } from "@/components/icons/GoalsIcon";
 import type { Goal, GoalItem } from "@/types";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
@@ -114,9 +115,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
         className="w-full flex items-center justify-between p-4 cursor-pointer hover:bg-bg-card/80 transition-colors duration-200"
       >
         <span className="flex items-center gap-3">
-          <span className="p-2 rounded-lg bg-accent-primary/10">
-            <Target className="w-4 h-4 text-accent-hover" />
-          </span>
+          <GoalsIcon className="w-4 h-4 text-accent-hover" />
           <span className="text-base font-semibold text-white">
             {t("dayGoals.title")}
           </span>

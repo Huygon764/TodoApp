@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Tile that comes back: a repeating item, not a date range. -->
+  <rect
+    x="4"
+    y="4"
+    width="10.25"
+    height="10.25"
+    rx="2"
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    d="M7 8h4.25M7 10.75h2.75"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M19.5 11.25A6.25 6.25 0 1 1 14.75 8.1"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M14.75 5.4v2.85h2.85"
+  />
+</svg>

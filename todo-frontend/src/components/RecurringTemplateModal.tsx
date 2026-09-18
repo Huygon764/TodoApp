@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, ListTodo } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { RecurringIcon } from "@/components/icons/RecurringIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
@@ -213,7 +214,7 @@ export function RecurringTemplateModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<ListTodo className="w-5 h-5 text-accent-hover" />}
+                  icon={<RecurringIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("recurringModal.title")}
                   subtitle={t("recurringModal.subtitle")}
                   onClose={onClose}
@@ -356,7 +357,7 @@ export function RecurringTemplateModal({
                 <div className="p-4 max-h-[300px] overflow-y-auto">
                   {visibleItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
-                      <ListTodo className="w-10 h-10 mb-2 opacity-30" />
+                      <RecurringIcon className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("recurringModal.empty")}</p>
                     </div>
                   ) : (

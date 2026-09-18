@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Repeat, Trash2, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { HabitsIcon } from "@/components/icons/HabitsIcon";
 import type { Habit } from "@/types";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
@@ -123,7 +124,7 @@ export function HabitModal({ isOpen, onClose }: HabitModalProps) {
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
       <ModalHeader
-        icon={<Repeat className="w-5 h-5 text-accent-hover" />}
+        icon={<HabitsIcon className="w-5 h-5 text-accent-hover" />}
         title={t("habitModal.title", "Habits")}
         subtitle={t("habitModal.subtitle", "Things you must do, tracked daily")}
         onClose={onClose}

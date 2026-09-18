@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- One sticky with a dog-ear: notes, not a stacked template. -->
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linejoin="round"
+    d="M6 4.75h8.5L18.75 8.9v9.85A1.75 1.75 0 0 1 17 20.5H6A1.75 1.75 0 0 1 4.25 18.75V6.5A1.75 1.75 0 0 1 6 4.75z"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linejoin="round"
+    d="M14.5 4.75V8.9h4.25"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    d="M7.75 12.5h7.5M7.75 16h5"
+  />
+</svg>

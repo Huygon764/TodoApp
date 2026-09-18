@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Banknote: spending, not a wallet. -->
+  <rect
+    x="3.25"
+    y="6.75"
+    width="17.5"
+    height="10.5"
+    rx="2"
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+  />
+  <circle cx="8.75" cy="12" r="2.15" stroke="#A5B4FC" stroke-width="1.75" />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    d="M13.25 10.25h5M13.25 13.75h3.5"
+  />
+</svg>

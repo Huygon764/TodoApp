@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Two chain links: a streak you keep attached. -->
+  <rect
+    x="3.4"
+    y="8.15"
+    width="10.2"
+    height="6.4"
+    rx="3.2"
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    transform="rotate(-30 8.5 11.35)"
+  />
+  <rect
+    x="10.4"
+    y="9.35"
+    width="10.2"
+    height="6.4"
+    rx="3.2"
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    transform="rotate(-30 15.5 12.55)"
+  />
+</svg>

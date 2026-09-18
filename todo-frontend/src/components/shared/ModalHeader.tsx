@@ -21,7 +21,7 @@ export function ModalHeader({
   return (
     <div className="flex items-center justify-between p-6 border-b border-border-default">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-accent-primary/10">{icon}</div>
+        {icon}
         <div>
           <h2 className="text-xl font-semibold text-white">{title}</h2>
           {subtitle && <p className="text-sm text-text-muted">{subtitle}</p>}

@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, StickyNote, Users, Package, ChevronDown, ChevronRight } from "lucide-react";
+import { Trash2, Users, Package, ChevronDown, ChevronRight } from "lucide-react";
+import { NotesIcon } from "@/components/icons/NotesIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/api";
 import type { PersonNote } from "@/types";
@@ -132,7 +133,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<StickyNote className="w-5 h-5 text-accent-hover" />}
+                  icon={<NotesIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("peopleNotesModal.title")}
                   subtitle={t("peopleNotesModal.subtitle")}
                   onClose={onClose}

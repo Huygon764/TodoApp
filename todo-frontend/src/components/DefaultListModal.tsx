@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Trash2, ListTodo } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { DefaultListIcon } from "@/components/icons/DefaultListIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiDelete, apiPatch } from "@/lib/api";
 import type { DefaultItem } from "@/types";
@@ -173,7 +174,7 @@ export function DefaultListModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={handleClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
                 <ModalHeader
-                  icon={<ListTodo className="w-5 h-5 text-accent-hover" />}
+                  icon={<DefaultListIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("defaultModal.title")}
                   subtitle={t("defaultModal.subtitle")}
                   onClose={handleClose}
@@ -191,7 +192,7 @@ export function DefaultListModal({
                 <div className="p-4 max-h-[300px] overflow-y-auto">
                   {localItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
-                      <ListTodo className="w-10 h-10 mb-2 opacity-30" />
+                      <DefaultListIcon className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("defaultModal.empty")}</p>
                     </div>
                   ) : (

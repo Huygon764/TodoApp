@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { X, Trash2, Check, Circle, Target } from "lucide-react";
+import { X, Trash2, Check, Circle } from "lucide-react";
+import { GoalsIcon } from "@/components/icons/GoalsIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
@@ -476,9 +477,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     >
       <div className="flex items-center justify-between p-6 border-b border-border-default">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-accent-primary/10">
-            <Target className="w-5 h-5 text-accent-hover" />
-          </div>
+          <GoalsIcon className="w-5 h-5 text-accent-hover" />
           <div>
             <h2 className="text-xl font-semibold text-white">
               {t("goalModal.title")}

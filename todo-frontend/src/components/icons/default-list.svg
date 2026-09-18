@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Two stacked sheets: the daily list that copies onto each day. -->
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linejoin="round"
+    d="M8 4.75h8.5A2 2 0 0 1 18.5 6.75V16"
+  />
+  <rect
+    x="4.25"
+    y="7.25"
+    width="13.5"
+    height="12"
+    rx="2"
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    d="M7.5 12h7.5M7.5 15.75h5"
+  />
+</svg>

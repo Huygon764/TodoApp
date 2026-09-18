@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { FileText, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import { ReviewIcon } from "@/components/icons/ReviewIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
 import { getMonthPeriod, getWeekRangeForMonth, getMonthOptions, getWeekPeriodsInRange, getMonthsInRange, formatWeekPeriodLabel } from "@/lib/datePeriod";
@@ -151,7 +152,7 @@ export function ReviewHistoryModal({
     <>
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<FileText className="w-5 h-5 text-accent-hover" />}
+                  icon={<ReviewIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("reviewHistory.title")}
                   subtitle={t("reviewHistory.subtitle")}
                   onClose={onClose}

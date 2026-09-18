@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { Settings, Download, Upload, Check } from "lucide-react";
+import { Download, Upload, Check } from "lucide-react";
+import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
@@ -88,7 +89,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     <>
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
       <ModalHeader
-        icon={<Settings className="w-5 h-5 text-accent-hover" />}
+        icon={<SettingsIcon className="w-5 h-5 text-accent-hover" />}
         title={t("settings.title")}
         subtitle={t("settings.subtitle")}
         onClose={onClose}

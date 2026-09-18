@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Open journal: looking back, not a document page. -->
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linejoin="round"
+    d="M12 6.2C9.4 4.85 6.6 4.55 4.25 5v11.1c2.5.55 5.4.9 7.75 2.2"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linejoin="round"
+    d="M12 6.2c2.6-1.35 5.4-1.65 7.75-1.2v11.1c-2.5.55-5.4.9-7.75 2.2"
+  />
+  <path
+    stroke="#A5B4FC"
+    stroke-width="1.75"
+    stroke-linecap="round"
+    d="M12 6.2v12.1"
+  />
+</svg>

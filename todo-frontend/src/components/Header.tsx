@@ -1,22 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import {
-  Settings,
-  Target,
-  FileText,
-  StickyNote,
-  Menu,
-  X,
-} from "lucide-react";
+import type { ComponentType } from "react";
+import { Menu, X } from "lucide-react";
+import { GoalsIcon } from "@/components/icons/GoalsIcon";
+import { NotesIcon } from "@/components/icons/NotesIcon";
+import { ReviewIcon } from "@/components/icons/ReviewIcon";
+import { SettingsIcon } from "@/components/icons/SettingsIcon";
 import { LogoutButton } from "@/components/LogoutButton";
 import { OrbitLockup } from "@/components/shared/OrbitLockup";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useModalClose } from "@/hooks/useModalClose";
 
 interface HeaderMenuItemProps {
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
 }
@@ -88,7 +85,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("home.goalsTitle")}
             >
-              <Target className="w-5 h-5" />
+              <GoalsIcon className="w-5 h-5" />
             </motion.button>
             <motion.button
               type="button"
@@ -98,7 +95,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("peopleNotesModal.title")}
             >
-              <StickyNote className="w-5 h-5" />
+              <NotesIcon className="w-5 h-5" />
             </motion.button>
             <motion.button
               type="button"
@@ -108,7 +105,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("dayTodo.reviewMyself")}
             >
-              <FileText className="w-5 h-5" />
+              <ReviewIcon className="w-5 h-5" />
             </motion.button>
             <motion.button
               whileHover={iconHover}
@@ -117,7 +114,7 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
               className="p-2.5 rounded-xl bg-bg-card border border-border-default text-text-tertiary hover:text-accent-hover hover:border-accent-primary/30 transition-all duration-200 cursor-pointer"
               title={t("settings.title")}
             >
-              <Settings className="w-5 h-5" />
+              <SettingsIcon className="w-5 h-5" />
             </motion.button>
             <LogoutButton />
           </div>
@@ -147,22 +144,22 @@ export function Header({ onOpenModal, onOpenReview }: HeaderProps) {
                   className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-2xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
                 >
                   <HeaderMenuItem
-                    icon={Target}
+                    icon={GoalsIcon}
                     label={t("home.goalsTitle")}
                     onClick={() => menuAction(() => onOpenModal("goal"))}
                   />
                   <HeaderMenuItem
-                    icon={StickyNote}
+                    icon={NotesIcon}
                     label={t("peopleNotesModal.title")}
                     onClick={() => menuAction(() => onOpenModal("peopleNotes"))}
                   />
                   <HeaderMenuItem
-                    icon={FileText}
+                    icon={ReviewIcon}
                     label={t("dayTodo.reviewMyself")}
                     onClick={() => menuAction(onOpenReview)}
                   />
                   <HeaderMenuItem
-                    icon={Settings}
+                    icon={SettingsIcon}
                     label={t("settings.title")}
                     onClick={() => menuAction(() => onOpenModal("settings"))}
                   />

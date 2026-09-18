@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { DayPicker } from "react-day-picker";
-import { Trash2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { DateTemplateIcon } from "@/components/icons/DateTemplateIcon";
 import { enUS, vi } from "react-day-picker/locale";
 import { API_PATHS } from "@/constants/api";
 import { DAY_PICKER_CLASS_NAMES } from "@/constants/dayPickerStyles";
@@ -219,7 +220,7 @@ export function DateTemplateModal({
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
                 <ModalHeader
-                  icon={<Calendar className="w-5 h-5 text-accent-hover" />}
+                  icon={<DateTemplateIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("dateTemplateModal.title")}
                   subtitle={t("dateTemplateModal.subtitle")}
                   onClose={onClose}
@@ -275,7 +276,7 @@ export function DateTemplateModal({
                     </div>
                   ) : items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
-                      <Calendar className="w-10 h-10 mb-2 opacity-30" />
+                      <DateTemplateIcon className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("dateTemplateModal.empty")}</p>
                     </div>
                   ) : (

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Trash2, Check, Circle } from "lucide-react";
+import { FreetimeIcon } from "@/components/icons/FreetimeIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPatch } from "@/lib/api";
 import type { FreetimeTodo, FreetimeTodoItem, FreetimeSubTask } from "@/types";
@@ -204,7 +205,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
   return (
     <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef} maxWidth="max-w-xl">
                 <ModalHeader
-                  icon={<Circle className="w-5 h-5 text-accent-hover" />}
+                  icon={<FreetimeIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("freetimeModal.title", "Freetime list")}
                   subtitle={t("freetimeModal.subtitle", "Things you want to do when you have time")}
                   onClose={onClose}

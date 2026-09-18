@@ -174,8 +174,8 @@ export function HomePage() {
   const defaultItems = defaultData ?? [];
 
   const getSectionMotion = (desktopDelay = 0) => ({
-    initial: isMobile ? { opacity: 0, y: 4 } : { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
     transition: isMobile
       ? { duration: 0.18, ease: "easeOut" }
       : { duration: 0.3, delay: desktopDelay },

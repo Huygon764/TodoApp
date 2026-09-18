@@ -34,6 +34,7 @@ import {
 } from "@/lib/datePeriod";
 import { stepPeriod } from "@/lib/periodStep";
 import { isSpuriousReorder, shouldPersistGoalItemsOnClose } from "@/lib/goalDraft";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 import type { Goal, GoalItem } from "@/types";
 
 export type GoalPeriodType = "week" | "month" | "year";
@@ -527,11 +528,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       {/* List */}
       <div className="p-4 max-h-[300px] overflow-y-auto">
         {isLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 rounded-xl bg-bg-surface animate-pulse" />
-            ))}
-          </div>
+          <ListSkeleton />
         ) : sortedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-text-muted">
             <Circle className="w-10 h-10 mb-2 opacity-30" />

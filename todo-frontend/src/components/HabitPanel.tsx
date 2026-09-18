@@ -7,6 +7,7 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost } from "@/lib/api";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 const WEEKDAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -197,11 +198,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
           >
             <div className="px-3 pb-3">
           {isLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 rounded-xl bg-bg-surface animate-pulse" />
-              ))}
-            </div>
+            <ListSkeleton rowClassName="h-12" />
           ) : total === 0 ? (
             <button
               type="button"

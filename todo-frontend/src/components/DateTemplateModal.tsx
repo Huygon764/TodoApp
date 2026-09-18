@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 const DATE_PICKER_YEAR = new Date().getFullYear();
 const DATE_PICKER_START_MONTH = new Date(DATE_PICKER_YEAR - 10, 0);
@@ -56,7 +57,7 @@ export function DateTemplateModal({
   }, [isOpen]);
 
   const queryKey = ["dateTemplate", selectedDate];
-  const { data, isLoading } = useQuery({
+  const { data, isPending, isFetching } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ dateTemplate: DateTemplate }>(
@@ -67,7 +68,7 @@ export function DateTemplateModal({
     enabled: isOpen && !!selectedDate,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (data?.items) {
       const sorted = [...data.items].sort((a, b) => a.order - b.order);
       setItems(sorted);
@@ -289,10 +290,8 @@ export function DateTemplateModal({
                 />
 
                 <div className="p-4 max-h-[240px] overflow-y-auto">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-8 text-text-muted">
-                      <span className="text-sm">Loading...</span>
-                    </div>
+                  {isPending || (isFetching && items.length === 0) ? (
+                    <ListSkeleton />
                   ) : items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <DateTemplateIcon className="w-10 h-10 mb-2 opacity-30" />

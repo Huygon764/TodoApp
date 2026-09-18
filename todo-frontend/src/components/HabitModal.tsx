@@ -10,6 +10,7 @@ import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { useModalClose } from "@/hooks/useModalClose";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 const WEEKDAYS = [
   { value: 1, label: "M" },
@@ -76,7 +77,7 @@ export function HabitModal({ isOpen, onClose }: HabitModalProps) {
   const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } =
     useInlineEdit<string>();
 
-  const { data } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ["habits"],
     queryFn: async () => {
       const res = await apiGet<{ habits: Habit[] }>(API_PATHS.HABITS);
@@ -154,7 +155,9 @@ export function HabitModal({ isOpen, onClose }: HabitModalProps) {
       </div>
 
       <div className="p-4 max-h-[340px] overflow-y-auto space-y-2">
-        {habits.length === 0 ? (
+        {isPending ? (
+          <ListSkeleton />
+        ) : habits.length === 0 ? (
           <div className="py-8 text-center text-text-muted">
             {t("habitModal.empty", "No habits yet")}
           </div>

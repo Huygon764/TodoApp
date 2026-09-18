@@ -17,6 +17,7 @@ import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 import {
   isLegacyRecurringItem,
   isMonthItemVisible,
@@ -59,7 +60,7 @@ export function RecurringTemplateModal({
 
   const queryKey = ["recurringTemplate", activeTab];
 
-  const { data } = useQuery({
+  const { data, isPending, isFetching } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ template: RecurringTemplate }>(
@@ -72,6 +73,7 @@ export function RecurringTemplateModal({
 
   const template = data ?? null;
   const items = template?.items ?? [];
+  const listWaiting = isPending || (isFetching && items.length === 0);
 
   // Derive visible items for current context, but keep original index for API ops.
   // Include legacy items (no schedule) on their default day — mirrors backend merge rules.
@@ -361,7 +363,9 @@ export function RecurringTemplateModal({
                 />
 
                 <div className="p-4 max-h-[300px] overflow-y-auto">
-                  {visibleItems.length === 0 ? (
+                  {listWaiting ? (
+                    <ListSkeleton />
+                  ) : visibleItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <RecurringIcon className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("recurringModal.empty")}</p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Plus, Circle, TrendingUp } from "lucide-react";
@@ -15,6 +15,7 @@ import { ReorderItem } from "@/components/shared/ReorderItem";
 import { DayTodoItem as DayTodoItemRow } from "@/components/DayTodoItem";
 import type { DayTodoItemView as DayTodoItemWithId } from "@/components/DayTodoItem";
 import { DayReflectionPanel } from "@/components/DayReflectionPanel";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] =>
   addClientIds(items, "item") as DayTodoItemWithId[];
@@ -48,8 +49,8 @@ export function DayTodoList({
   const REORDER_DEBOUNCE_MS = 600;
   const COUNTER_DEBOUNCE_MS = 600;
 
-  // Sync items from props
-  useEffect(() => {
+  // Sync before paint so a loaded day never flashes the empty state.
+  useLayoutEffect(() => {
     const rawItems = dayTodo?.items ?? [];
     setItems(sortItemsByCompletion(addIdsToItems(rawItems)));
   }, [dayTodo]);
@@ -197,12 +198,8 @@ export function DayTodoList({
     return (
       <div className="relative">
         <div className="relative rounded-xl bg-bg-card border border-border-default p-6">
-          <div className="h-8 w-48 bg-bg-surface rounded-lg animate-pulse mb-6" />
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 rounded-xl bg-bg-surface animate-pulse" />
-            ))}
-          </div>
+          <div className="h-8 w-48 bg-bg-elevated rounded-lg animate-pulse mb-6" />
+          <ListSkeleton />
         </div>
       </div>
     );

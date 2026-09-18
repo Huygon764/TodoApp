@@ -9,6 +9,7 @@ import type { Expense, ExpenseSummary } from "@/types";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { useModalClose } from "@/hooks/useModalClose";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 import {
   getTodayInTimezone,
   getWeekDateRange,
@@ -149,7 +150,7 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
 
   const queryKey = ["expenses", from, to];
 
-  const { data: expenses = [] } = useQuery({
+  const { data: expenses, isPending: expensesPending, isFetching: expensesFetching } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ expenses: Expense[] }>(API_PATHS.EXPENSES(from, to));
@@ -157,6 +158,9 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
     },
     enabled: isOpen,
   });
+  const expenseList = expenses ?? [];
+  const expensesWaiting =
+    expensesPending || (expensesFetching && expenseList.length === 0);
 
   const summaryKey = ["expenses-summary", from, to];
   const { data: summary } = useQuery({
@@ -218,13 +222,13 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
 
   const grouped = useMemo(() => {
     const map = new Map<string, Expense[]>();
-    for (const e of expenses) {
+    for (const e of expenseList) {
       const list = map.get(e.date) ?? [];
       list.push(e);
       map.set(e.date, list);
     }
     return Array.from(map.entries());
-  }, [expenses]);
+  }, [expenseList]);
 
   const tabs: { key: PeriodTab; label: string }[] = [
     { key: "day", label: t("expense.tabDay") },
@@ -394,7 +398,9 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
 
       {/* Expense list — only this scrolls */}
       <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-3">
-          {grouped.length === 0 && (
+          {expensesWaiting ? (
+            <ListSkeleton rows={4} rowClassName="h-12" />
+          ) : grouped.length === 0 && (
             <p className="text-center text-text-muted text-sm py-6">{t("expense.empty")}</p>
           )}
           {grouped.map(([date, items]) => {

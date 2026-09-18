@@ -14,6 +14,7 @@ import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 interface PeopleNotesModalProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
 
   const queryKey = ["peopleNotes"];
 
-  const { data } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ items: PersonNote[] }>(API_PATHS.PEOPLE_NOTES);
@@ -184,7 +185,9 @@ export function PeopleNotesModal({ isOpen, onClose }: PeopleNotesModalProps) {
 
                 {/* People List */}
                 <div className="p-4 max-h-[400px] overflow-y-auto">
-                  {visible.length === 0 ? (
+                  {isPending ? (
+                    <ListSkeleton />
+                  ) : visible.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       {activeTab === "person" ? (
                         <Users className="w-10 h-10 mb-2 opacity-30" />

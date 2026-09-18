@@ -77,7 +77,11 @@ export function HomePage() {
   } | null>(null);
 
   // Queries
-  const { data: dayData, isLoading: dayLoading } = useQuery({
+  const {
+    data: dayData,
+    isPending: dayPending,
+    isFetching: dayFetching,
+  } = useQuery({
     queryKey: ["day", selectedDate],
     queryFn: async () => {
       const res = await apiGet<{ dayTodo: DayTodo }>(API_PATHS.DAY(selectedDate));
@@ -85,7 +89,7 @@ export function HomePage() {
     },
   });
 
-  const { data: defaultData } = useQuery({
+  const { data: defaultData, isPending: defaultPending } = useQuery({
     queryKey: ["default"],
     queryFn: async () => {
       const res = await apiGet<{ items: DefaultItem[] }>(API_PATHS.DEFAULT);
@@ -165,6 +169,8 @@ export function HomePage() {
   });
 
   const dayTodo = dayData ?? null;
+  const dayListWaiting =
+    dayPending || (dayFetching && !(dayTodo?.items?.length));
   const defaultItems = defaultData ?? [];
 
   const getSectionMotion = (desktopDelay = 0) => ({
@@ -225,7 +231,7 @@ export function HomePage() {
           <motion.section {...getSectionMotion(0.08)} className="flex-1">
             <DayTodoList
               dayTodo={dayTodo}
-              isLoading={dayLoading}
+              isLoading={dayListWaiting}
               onUpdateItems={(items) => patchDayMutation.mutate(items)}
               onUpdateMeta={(meta) => patchDayMetaMutation.mutate(meta)}
             />
@@ -278,6 +284,7 @@ export function HomePage() {
         isOpen={openModal === "templates"}
         onClose={closeM}
         defaultItems={defaultItems}
+        defaultLoading={defaultPending}
         onAddItem={(title, target) => addDefaultMutation.mutate({ title, target })}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
         onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}

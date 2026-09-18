@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -23,6 +23,7 @@ import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { CounterChip } from "@/components/shared/CounterChip";
 import { parseTarget } from "@/lib/parseTarget";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 interface FreetimeTodoModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
 
   const queryKey = ["freetime-todo"];
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending, isFetching } = useQuery({
     queryKey,
     queryFn: async () => {
       const res = await apiGet<{ freetimeTodo: FreetimeTodo }>(API_PATHS.FREETIME_TODO);
@@ -69,8 +70,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     enabled: isOpen,
   });
 
-  useEffect(() => {
-    if (!isOpen) return;
+  useLayoutEffect(() => {
+    if (!isOpen || data === undefined) return;
     const rawItems = data?.items ?? [];
     setItems(sortItemsByCompletion(addIdsToItems(rawItems)));
   }, [isOpen, data]);
@@ -242,11 +243,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                 </div>
 
                 <div className="p-4 pt-2 min-h-[200px] max-h-[400px] overflow-y-auto">
-                  {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-10 text-text-muted">
-                      <Circle className="w-10 h-10 mb-3 animate-spin opacity-40" />
-                      <p className="text-sm">Loading freetime tasks...</p>
-                    </div>
+                  {isPending || (isFetching && items.length === 0) ? (
+                    <ListSkeleton />
                   ) : items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 text-text-muted">
                       <Circle className="w-10 h-10 mb-3 opacity-30" />

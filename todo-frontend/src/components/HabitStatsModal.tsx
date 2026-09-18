@@ -8,6 +8,7 @@ import { apiGet } from "@/lib/api";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { useModalClose } from "@/hooks/useModalClose";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 interface HabitStatsModalProps {
   isOpen: boolean;
@@ -80,10 +81,8 @@ export function HabitStatsModal({ isOpen, onClose }: HabitStatsModalProps) {
       />
 
       {isLoading || !data ? (
-        <div className="p-6 space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 rounded-xl bg-bg-surface animate-pulse" />
-          ))}
+        <div className="p-6">
+          <ListSkeleton rows={3} rowClassName="h-16" />
         </div>
       ) : data.habits.length === 0 ? (
         <div className="p-10 text-center text-text-muted">

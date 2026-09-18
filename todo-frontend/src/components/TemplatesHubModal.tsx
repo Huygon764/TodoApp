@@ -15,6 +15,7 @@ interface TemplatesHubModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultItems: DefaultItem[];
+  defaultLoading?: boolean;
   onAddItem: (title: string, target?: number) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
@@ -25,6 +26,7 @@ export function TemplatesHubModal({
   isOpen,
   onClose,
   defaultItems,
+  defaultLoading = false,
   onAddItem,
   onInvalidate,
   onReorder,
@@ -77,6 +79,7 @@ export function TemplatesHubModal({
           isOpen={isOpen}
           onClose={onClose}
           items={defaultItems}
+          isLoading={defaultLoading}
           onAddItem={onAddItem}
           onInvalidate={onInvalidate}
           onReorder={onReorder}

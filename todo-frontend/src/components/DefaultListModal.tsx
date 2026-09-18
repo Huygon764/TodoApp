@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -19,6 +19,7 @@ import { SubTaskToggle } from "@/components/shared/SubTaskToggle";
 import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
+import { ListSkeleton } from "@/components/shared/ListSkeleton";
 
 export type DefaultOrderUpdate = { id: string; order: number };
 
@@ -26,6 +27,7 @@ interface DefaultListModalProps {
   isOpen: boolean;
   onClose: () => void;
   items: DefaultItem[];
+  isLoading?: boolean;
   onAddItem: (title: string, target?: number) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
@@ -37,6 +39,7 @@ export function DefaultListModal({
   isOpen,
   onClose,
   items,
+  isLoading = false,
   onAddItem,
   onInvalidate,
   onReorder,
@@ -52,7 +55,7 @@ export function DefaultListModal({
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
   const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
   }, [isOpen, items]);
 
@@ -209,7 +212,9 @@ export function DefaultListModal({
 
                 {/* List */}
                 <div className="p-4 max-h-[300px] overflow-y-auto">
-                  {localItems.length === 0 ? (
+                  {isLoading ? (
+                    <ListSkeleton />
+                  ) : localItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-text-muted">
                       <DefaultListIcon className="w-10 h-10 mb-2 opacity-30" />
                       <p>{t("defaultModal.empty")}</p>

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ScreenFallback } from "@/components/shared/ScreenFallback";
 
 // Route-level code splitting: each page (and its heavy deps such as
 // framer-motion / tsparticles) loads on demand instead of all upfront.
@@ -30,19 +31,11 @@ const queryClient = new QueryClient({
   },
 });
 
-function RouteFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-page">
-      <div className="animate-pulse text-text-muted">Đang tải...</div>
-    </div>
-  );
-}
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Suspense fallback={<RouteFallback />}>
+        <Suspense fallback={<ScreenFallback />}>
           <Routes>
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ROUTES.REGISTER} element={<RegisterPage />} />

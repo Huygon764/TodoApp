@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { API_PATHS } from "@/constants/api";
 import { apiGet } from "@/lib/api";
 import type { User } from "@/types";
+import { ScreenFallback } from "@/components/shared/ScreenFallback";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -22,11 +23,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   });
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="animate-pulse text-slate-400">Đang tải...</div>
-      </div>
-    );
+    return <ScreenFallback />;
   }
 
   if (isError || !data) {

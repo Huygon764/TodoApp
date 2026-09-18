@@ -9,7 +9,7 @@ import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiDelete, apiPatch } from "@/lib/api";
 import type { RecurringTemplate } from "@/types";
 import { useModalClose } from "@/hooks/useModalClose";
-import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalFrame } from "@/components/shared/ModalFrame";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
@@ -31,12 +31,14 @@ interface RecurringTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: RecurringTab;
+  embedded?: boolean;
 }
 
 export function RecurringTemplateModal({
   isOpen,
   onClose,
   initialTab = "week",
+  embedded = false,
 }: RecurringTemplateModalProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<RecurringTab>(initialTab);
@@ -197,7 +199,7 @@ export function RecurringTemplateModal({
     patchItemMutation.mutate({ idx, subTasks });
   };
 
-  useModalClose(isOpen, onClose, contentRef);
+  useModalClose(!embedded && isOpen, onClose, contentRef);
 
   useEffect(() => {
     if (isOpen && initialTab) setActiveTab(initialTab as RecurringTab);
@@ -212,33 +214,37 @@ export function RecurringTemplateModal({
   };
 
   return (
-    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+    <ModalFrame embedded={embedded} isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+                {!embedded && (
                 <ModalHeader
                   icon={<RecurringIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("recurringModal.title")}
                   subtitle={t("recurringModal.subtitle")}
                   onClose={onClose}
                 />
+                )}
 
-                <div className="flex border-b border-border-subtle">
-                  {(["week", "month", "year"] as const).map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveTab(tab)}
-                      className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                        activeTab === tab
-                          ? "text-accent-hover border-b-2 border-accent-primary bg-accent-primary/5"
-                          : "text-text-muted hover:text-text-secondary"
-                      }`}
-                    >
-                      {tab === "week"
-                        ? t("recurringModal.tabWeek")
-                        : tab === "month"
-                        ? t("recurringModal.tabMonth")
-                        : t("recurringModal.tabYear")}
-                    </button>
-                  ))}
+                <div className="px-4 pt-3">
+                  <div className="flex rounded-lg bg-bg-surface border border-border-subtle p-1">
+                    {(["week", "month", "year"] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setActiveTab(tab)}
+                        className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          activeTab === tab
+                            ? "bg-bg-card text-accent-hover"
+                            : "text-text-muted hover:text-text-secondary"
+                        }`}
+                      >
+                        {tab === "week"
+                          ? t("recurringModal.tabWeek")
+                          : tab === "month"
+                          ? t("recurringModal.tabMonth")
+                          : t("recurringModal.tabYear")}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Context selector per tab (single-day context, like DateTemplateModal) */}
@@ -464,6 +470,6 @@ export function RecurringTemplateModal({
                     {t("recurringModal.footerTip")}
                   </p>
                 </div>
-    </ModalContainer>
+    </ModalFrame>
   );
 }

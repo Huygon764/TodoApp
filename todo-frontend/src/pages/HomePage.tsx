@@ -3,13 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { DefaultListIcon } from "@/components/icons/DefaultListIcon";
-import { DateTemplateIcon } from "@/components/icons/DateTemplateIcon";
 import { ExpenseIcon } from "@/components/icons/ExpenseIcon";
 import { FreetimeIcon } from "@/components/icons/FreetimeIcon";
-import { RecurringIcon } from "@/components/icons/RecurringIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
+import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, ExpenseSummary, User } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayGoalsPanel } from "@/components/DayGoalsPanel";
@@ -19,18 +17,16 @@ import { HabitStatsModal } from "@/components/HabitStatsModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { DayTodoList } from "@/components/DayTodoList";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { DefaultListModal, type DefaultOrderUpdate } from "@/components/DefaultListModal";
-import { RecurringTemplateModal } from "@/components/RecurringTemplateModal";
+import { type DefaultOrderUpdate } from "@/components/DefaultListModal";
+import { TemplatesHubModal } from "@/components/TemplatesHubModal";
 import { GoalModal } from "@/components/GoalModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import { ReviewHistoryModal } from "@/components/ReviewHistoryModal";
-import { DateTemplateModal } from "@/components/DateTemplateModal";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { PeopleNotesModal } from "@/components/PeopleNotesModal";
 import { ExpenseModal } from "@/components/ExpenseModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { Header, type ModalKey } from "@/components/Header";
-import { SectionCard } from "@/components/SectionCard";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 function AnimatedBackground() {
@@ -94,6 +90,16 @@ export function HomePage() {
     queryFn: async () => {
       const res = await apiGet<{ items: DefaultItem[] }>(API_PATHS.DEFAULT);
       return res.data?.items ?? [];
+    },
+  });
+
+  const { data: dayExpenseSummary } = useQuery({
+    queryKey: ["expenses-summary", selectedDate, selectedDate],
+    queryFn: async () => {
+      const res = await apiGet<ExpenseSummary>(
+        API_PATHS.EXPENSES_SUMMARY(selectedDate, selectedDate),
+      );
+      return res.data;
     },
   });
 
@@ -226,76 +232,62 @@ export function HomePage() {
           </motion.section>
         </ErrorBoundary>
 
-        <motion.section {...getSectionMotion(0.1)}>
-          <SectionCard
-            icon={DefaultListIcon}
-            title={t("home.templateDefault")}
-            description={t("home.defaultTemplateDesc", { count: defaultItems.length })}
-            onClick={() => openM("default")}
-          />
-        </motion.section>
-
-        <motion.section {...getSectionMotion(0.12)}>
-          <SectionCard
-            icon={DateTemplateIcon}
-            title={t("home.dateTemplateTitle")}
-            description={t("home.dateTemplateDesc")}
-            onClick={() => openM("dateTemplate")}
-          />
-        </motion.section>
-
-        <motion.section {...getSectionMotion(0.14)}>
-          <SectionCard
-            icon={FreetimeIcon}
-            title={t("freetimeModal.title", "Freetime list")}
-            description={t("freetimeModal.subtitle", "Things you want to do when you have free time")}
-            onClick={() => openM("freetime")}
-          />
-        </motion.section>
-
-        <motion.section {...getSectionMotion(0.15)}>
-          <SectionCard
-            icon={ExpenseIcon}
-            title={t("expense.title")}
-            description={t("expense.sectionDesc")}
+        <motion.section {...getSectionMotion(0.1)} className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => openM("templates")}
+              className="flex items-center gap-3 p-4 rounded-xl bg-bg-card/50 border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-colors text-left"
+            >
+              <DefaultListIcon className="w-5 h-5 shrink-0 text-accent-hover" />
+              <span className="font-medium text-text-secondary">
+                {t("home.templatesTitle", "Templates")}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => openM("freetime")}
+              className="flex items-center gap-3 p-4 rounded-xl bg-bg-card/50 border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-colors text-left"
+            >
+              <FreetimeIcon className="w-5 h-5 shrink-0 text-accent-hover" />
+              <span className="font-medium text-text-secondary">
+                {t("freetimeModal.title", "Freetime list")}
+              </span>
+            </button>
+          </div>
+          <button
+            type="button"
             onClick={() => openM("expense")}
-          />
-        </motion.section>
-
-        <motion.section {...getSectionMotion(0.16)}>
-          <SectionCard
-            icon={RecurringIcon}
-            title={t("home.recurringTemplateTitle")}
-            description={t("home.recurringTemplateDesc")}
-            onClick={() => openM("recurring")}
-          />
+            className="w-full flex items-center justify-between gap-3 p-4 rounded-xl bg-bg-card border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-colors text-left"
+          >
+            <span className="flex items-center gap-3 min-w-0">
+              <ExpenseIcon className="w-5 h-5 shrink-0 text-accent-hover" />
+              <span className="font-medium text-text-secondary">
+                {t("expense.title")}
+              </span>
+            </span>
+            <span className="shrink-0 text-lg font-semibold text-white tabular-nums">
+              {(dayExpenseSummary?.total ?? 0).toLocaleString("vi-VN")}đ
+            </span>
+          </button>
         </motion.section>
       </main>
 
       {/* Modals */}
-      <DefaultListModal
-        isOpen={openModal === "default"}
+      <TemplatesHubModal
+        isOpen={openModal === "templates"}
         onClose={closeM}
-        items={defaultItems}
+        defaultItems={defaultItems}
         onAddItem={(title, target) => addDefaultMutation.mutate({ title, target })}
         onInvalidate={() => queryClient.invalidateQueries({ queryKey: ["default"] })}
         onReorder={(updates) => updates.length > 0 && reorderDefaultMutation.mutate(updates)}
-      />
-      <DateTemplateModal
-        isOpen={openModal === "dateTemplate"}
-        onClose={closeM}
-        onSaved={(date) => {
+        onDateSaved={(date) => {
           if (date === selectedDate) {
             queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
           }
         }}
       />
       <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
-      <RecurringTemplateModal
-        isOpen={openModal === "recurring"}
-        onClose={closeM}
-        initialTab="week"
-      />
       <GoalModal isOpen={openModal === "goal"} onClose={closeM} />
       <ReviewModal
         isOpen={openModal === "review"}

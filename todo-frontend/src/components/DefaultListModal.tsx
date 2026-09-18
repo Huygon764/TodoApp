@@ -10,7 +10,7 @@ import type { DefaultItem } from "@/types";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
-import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalFrame } from "@/components/shared/ModalFrame";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { ReorderItem } from "@/components/shared/ReorderItem";
@@ -29,6 +29,8 @@ interface DefaultListModalProps {
   onAddItem: (title: string, target?: number) => void;
   onInvalidate: () => void;
   onReorder?: (updates: DefaultOrderUpdate[]) => void;
+  /** Skip overlay/header when nested in Templates hub. */
+  embedded?: boolean;
 }
 
 export function DefaultListModal({
@@ -38,6 +40,7 @@ export function DefaultListModal({
   onAddItem,
   onInvalidate,
   onReorder,
+  embedded = false,
 }: DefaultListModalProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -53,9 +56,9 @@ export function DefaultListModal({
     if (isOpen) setLocalItems([...items].sort((a, b) => a.order - b.order));
   }, [isOpen, items]);
 
-  useModalClose(isOpen, () => handleCloseRef.current(), contentRef);
+  useModalClose(!embedded && isOpen, () => handleCloseRef.current(), contentRef);
 
-  const handleClose = () => {
+  const flushReorder = () => {
     if (onReorder && localItems.length > 0) {
       const updates: DefaultOrderUpdate[] = [];
       localItems.forEach((item, idx) => {
@@ -66,8 +69,16 @@ export function DefaultListModal({
       });
       if (updates.length > 0) onReorder(updates);
     }
-    onClose();
   };
+
+  const handleClose = () => {
+    flushReorder();
+    if (!embedded) onClose();
+  };
+
+  const flushReorderRef = useRef(flushReorder);
+  flushReorderRef.current = flushReorder;
+  useEffect(() => () => flushReorderRef.current(), []);
 
   const handleReorder = (newOrder: DefaultItem[]) => {
     setLocalItems(newOrder.map((it, idx) => ({ ...it, order: idx })));
@@ -171,13 +182,22 @@ export function DefaultListModal({
   };
 
   return (
-    <ModalContainer isOpen={isOpen} onClose={handleClose} contentRef={contentRef} zBackdrop="z-40" zContent="z-50">
+    <ModalFrame
+      embedded={embedded}
+      isOpen={isOpen}
+      onClose={handleClose}
+      contentRef={contentRef}
+      zBackdrop="z-40"
+      zContent="z-50"
+    >
+                {!embedded && (
                 <ModalHeader
                   icon={<DefaultListIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("defaultModal.title")}
                   subtitle={t("defaultModal.subtitle")}
                   onClose={handleClose}
                 />
+                )}
 
                 <ItemAddInput
                   value={newTitle}
@@ -291,6 +311,6 @@ export function DefaultListModal({
                     {t("defaultModal.footerTip")}
                   </p>
                 </div>
-    </ModalContainer>
+    </ModalFrame>
   );
 }

@@ -1,7 +1,13 @@
 export const DAY_PICKER_CLASS_NAMES = {
   root: "p-3",
   month_caption: "flex items-center justify-between mb-3",
-  caption_label: "text-text-secondary font-medium text-sm",
+  caption_label:
+    "flex items-center gap-1 text-text-secondary font-medium text-sm peer-focus-visible:text-accent-hover",
+  dropdowns: "relative inline-flex items-center gap-2",
+  dropdown_root:
+    "relative inline-flex items-center rounded-lg border border-border-subtle bg-bg-card px-2 py-1.5 hover:border-accent-primary/30 transition-all",
+  dropdown:
+    "peer absolute inset-0 z-10 m-0 w-full cursor-pointer appearance-none opacity-0",
   nav: "flex items-center gap-1",
   button_previous:
     "p-2 rounded-lg bg-bg-card hover:bg-bg-card/80 text-text-tertiary hover:text-accent-hover border border-border-subtle hover:border-accent-primary/30 transition-all cursor-pointer",

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { DayPicker } from "react-day-picker";
-import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateTemplateIcon } from "@/components/icons/DateTemplateIcon";
 import { enUS, vi } from "react-day-picker/locale";
 import { API_PATHS } from "@/constants/api";
@@ -13,7 +13,7 @@ import type { DateTemplate, DateTemplateItem } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
-import { ModalContainer } from "@/components/shared/ModalContainer";
+import { ModalFrame } from "@/components/shared/ModalFrame";
 import { ModalHeader } from "@/components/shared/ModalHeader";
 import { ItemAddInput } from "@/components/shared/ItemAddInput";
 import { SubTaskSection } from "@/components/shared/SubTaskSection";
@@ -22,17 +22,23 @@ import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 
+const DATE_PICKER_YEAR = new Date().getFullYear();
+const DATE_PICKER_START_MONTH = new Date(DATE_PICKER_YEAR - 10, 0);
+const DATE_PICKER_END_MONTH = new Date(DATE_PICKER_YEAR + 10, 11);
+
 interface DateTemplateModalProps {
   isOpen: boolean;
   onClose: () => void;
   /** Optional: e.g. invalidate day query when saved for the selected date */
   onSaved?: (date: string) => void;
+  embedded?: boolean;
 }
 
 export function DateTemplateModal({
   isOpen,
   onClose,
   onSaved,
+  embedded = false,
 }: DateTemplateModalProps) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -71,18 +77,35 @@ export function DateTemplateModal({
   }, [data, selectedDate]);
 
   const patchMutation = useMutation({
-    mutationFn: (payload: { items: DateTemplateItem[] }) =>
-      apiPatch<{ dateTemplate: DateTemplate }>(
-        API_PATHS.DATE_TEMPLATE(selectedDate),
-        payload
-      ),
+    mutationFn: ({
+      date,
+      items: nextItems,
+    }: {
+      date: string;
+      items: DateTemplateItem[];
+    }) =>
+      apiPatch<{ dateTemplate: DateTemplate }>(API_PATHS.DATE_TEMPLATE(date), {
+        items: nextItems,
+      }),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey });
-      queryClient.invalidateQueries({ queryKey: ["day", selectedDate] });
-      setItems(variables.items);
-      onSaved?.(selectedDate);
+      queryClient.invalidateQueries({ queryKey: ["dateTemplate", variables.date] });
+      queryClient.invalidateQueries({ queryKey: ["day", variables.date] });
+      onSaved?.(variables.date);
     },
   });
+
+  const persist = (next: DateTemplateItem[]) => {
+    const normalized = next
+      .map((it, i) => ({
+        title: it.title.trim(),
+        order: i,
+        ...(it.target ? { target: it.target } : {}),
+        ...(it.subTasks && it.subTasks.length > 0 ? { subTasks: it.subTasks } : {}),
+      }))
+      .filter((it) => it.title.length > 0);
+    setItems(normalized);
+    patchMutation.mutate({ date: selectedDate, items: normalized });
+  };
 
   const handleSelectDay = (date: Date | undefined) => {
     if (!date) return;
@@ -96,19 +119,19 @@ export function DateTemplateModal({
     const trimmed = newTitle.trim();
     if (!trimmed) return;
     const { title, target } = parseTarget(trimmed);
-    const next = [
+    persist([
       ...items,
       { title, order: items.length, ...(target ? { target } : {}) },
-    ];
-    setItems(next);
+    ]);
     setNewTitle("");
   };
 
   const removeItem = (index: number) => {
-    const next = items
-      .filter((_, i) => i !== index)
-      .map((item, i) => ({ ...item, order: i }));
-    setItems(next);
+    persist(
+      items
+        .filter((_, i) => i !== index)
+        .map((item, i) => ({ ...item, order: i })),
+    );
   };
 
   const handleTitleClick = (index: number) => {
@@ -119,10 +142,9 @@ export function DateTemplateModal({
   const saveTitleEdit = (index: number) => {
     const value = finishEdit();
     if (!value || value === items[index]?.title) return;
-    const next = items.map((it, i) =>
-      i === index ? { ...it, title: value } : it
+    persist(
+      items.map((it, i) => (i === index ? { ...it, title: value } : it)),
     );
-    setItems(next);
   };
 
   const addSubTask = (index: number, title: string) => {
@@ -132,35 +154,38 @@ export function DateTemplateModal({
     const newSub = parsed.target
       ? { title: parsed.title, target: parsed.target }
       : { title: parsed.title };
-    const next = items.map((it, i) =>
-      i === index
-        ? { ...it, subTasks: [...(it.subTasks ?? []), newSub] }
-        : it
+    persist(
+      items.map((it, i) =>
+        i === index
+          ? { ...it, subTasks: [...(it.subTasks ?? []), newSub] }
+          : it,
+      ),
     );
-    setItems(next);
     setNewSubTaskTitle((prev) => ({ ...prev, [index]: "" }));
   };
 
   const deleteSubTask = (index: number, subIndex: number) => {
-    const next = items.map((it, i) => {
-      if (i !== index) return it;
-      const subTasks = (it.subTasks ?? []).filter((_, si) => si !== subIndex);
-      return { ...it, subTasks: subTasks.length > 0 ? subTasks : undefined };
-    });
-    setItems(next);
+    persist(
+      items.map((it, i) => {
+        if (i !== index) return it;
+        const subTasks = (it.subTasks ?? []).filter((_, si) => si !== subIndex);
+        return { ...it, subTasks: subTasks.length > 0 ? subTasks : undefined };
+      }),
+    );
   };
 
   const editSubTask = (index: number, subIndex: number, newTitle: string) => {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
-    const next = items.map((it, i) => {
-      if (i !== index) return it;
-      const subTasks = (it.subTasks ?? []).map((st, si) =>
-        si === subIndex ? { ...st, title: trimmed } : st,
-      );
-      return { ...it, subTasks };
-    });
-    setItems(next);
+    persist(
+      items.map((it, i) => {
+        if (i !== index) return it;
+        const subTasks = (it.subTasks ?? []).map((st, si) =>
+          si === subIndex ? { ...st, title: trimmed } : st,
+        );
+        return { ...it, subTasks };
+      }),
+    );
   };
 
   const moveSubTask = (
@@ -168,49 +193,22 @@ export function DateTemplateModal({
     subIndex: number,
     direction: "up" | "down",
   ) => {
-    const next = items.map((it, i) => {
-      if (i !== index) return it;
-      const subTasks = [...(it.subTasks ?? [])];
-      const target = direction === "up" ? subIndex - 1 : subIndex + 1;
-      if (target < 0 || target >= subTasks.length) return it;
-      [subTasks[subIndex], subTasks[target]] = [
-        subTasks[target]!,
-        subTasks[subIndex]!,
-      ];
-      return { ...it, subTasks };
-    });
-    setItems(next);
+    persist(
+      items.map((it, i) => {
+        if (i !== index) return it;
+        const subTasks = [...(it.subTasks ?? [])];
+        const target = direction === "up" ? subIndex - 1 : subIndex + 1;
+        if (target < 0 || target >= subTasks.length) return it;
+        [subTasks[subIndex], subTasks[target]] = [
+          subTasks[target]!,
+          subTasks[subIndex]!,
+        ];
+        return { ...it, subTasks };
+      }),
+    );
   };
 
-  const handleSave = () => {
-    const normalized = items
-      .map((it, i) => ({
-        title: it.title.trim(),
-        order: i,
-        ...(it.target ? { target: it.target } : {}),
-        ...(it.subTasks && it.subTasks.length > 0 ? { subTasks: it.subTasks } : {}),
-      }))
-      .filter((it) => it.title.length > 0);
-    patchMutation.mutate({ items: normalized });
-  };
-
-  const normalizeForCompare = (arr: DateTemplateItem[]) =>
-    arr
-      .sort((a, b) => a.order - b.order)
-      .map((it, i) => ({
-        title: it.title.trim(),
-        order: i,
-        subTasks: it.subTasks ?? [],
-      }))
-      .filter((it) => it.title);
-
-  const serverItems = normalizeForCompare(data?.items ?? []);
-  const localNormalized = normalizeForCompare(items);
-  const isDirty =
-    !patchMutation.isPending &&
-    JSON.stringify(localNormalized) !== JSON.stringify(serverItems);
-
-  useModalClose(isOpen, onClose, contentRef);
+  useModalClose(!embedded && isOpen, onClose, contentRef);
 
   const locale = i18n.language === "vi" ? vi : enUS;
   const selectedDateObj = selectedDate
@@ -218,13 +216,15 @@ export function DateTemplateModal({
     : undefined;
 
   return (
-    <ModalContainer isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+    <ModalFrame embedded={embedded} isOpen={isOpen} onClose={onClose} contentRef={contentRef}>
+                {!embedded && (
                 <ModalHeader
                   icon={<DateTemplateIcon className="w-5 h-5 text-accent-hover" />}
                   title={t("dateTemplateModal.title")}
                   subtitle={t("dateTemplateModal.subtitle")}
                   onClose={onClose}
                 />
+                )}
 
                 <div className="p-4 border-b border-border-subtle">
                   <p className="text-sm text-text-tertiary mb-3">
@@ -236,10 +236,28 @@ export function DateTemplateModal({
                       locale={locale}
                       selected={selectedDateObj}
                       onSelect={handleSelectDay}
-                      classNames={DAY_PICKER_CLASS_NAMES}
+                      captionLayout="dropdown"
+                      navLayout="around"
+                      startMonth={DATE_PICKER_START_MONTH}
+                      endMonth={DATE_PICKER_END_MONTH}
+                      classNames={{
+                        ...DAY_PICKER_CLASS_NAMES,
+                        month: "relative",
+                        month_caption:
+                          "flex items-center justify-center mb-3 mx-10",
+                        button_previous: `${DAY_PICKER_CLASS_NAMES.button_previous} absolute left-0 top-0`,
+                        button_next: `${DAY_PICKER_CLASS_NAMES.button_next} absolute right-0 top-0`,
+                      }}
                       weekStartsOn={i18n.language === "vi" ? 1 : 0}
                       components={{
-                        Chevron: () => <span className="sr-only" />,
+                        Chevron: ({ orientation, className }) =>
+                          orientation === "down" ? (
+                            <ChevronDown
+                              className={`w-3.5 h-3.5 text-text-muted ${className ?? ""}`}
+                            />
+                          ) : (
+                            <span className="sr-only" />
+                          ),
                         PreviousMonthButton: (props) => (
                           <button
                             {...props}
@@ -267,6 +285,7 @@ export function DateTemplateModal({
                   onAdd={addItem}
                   placeholder={t("dateTemplateModal.addPlaceholder")}
                   addLabel={t("dateTemplateModal.add")}
+                  disabled={patchMutation.isPending}
                 />
 
                 <div className="p-4 max-h-[240px] overflow-y-auto">
@@ -363,21 +382,11 @@ export function DateTemplateModal({
                   )}
                 </div>
 
-                <div className="p-4 border-t border-border-default bg-bg-page/30 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!isDirty || patchMutation.isPending}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-success to-success-to hover:from-success hover:to-success-to text-white font-semibold transition-all duration-200 shadow-lg shadow-success/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {patchMutation.isPending
-                      ? t("dateTemplateModal.saving")
-                      : t("dateTemplateModal.save")}
-                  </button>
+                <div className="p-4 border-t border-border-default bg-bg-page/30">
                   <p className="text-xs text-text-muted text-center">
                     {t("dateTemplateModal.footerTip")}
                   </p>
                 </div>
-    </ModalContainer>
+    </ModalFrame>
   );
 }

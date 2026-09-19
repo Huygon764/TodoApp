@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { parseTarget } from "@/lib/parseTarget";
+import { sortItemsByCompletion } from "@/lib/sortItems";
 
 interface ManagedSubTask {
   title: string;
@@ -10,7 +11,8 @@ interface ManagedSubTask {
 
 interface ManagedItem {
   id: string;
-  completed?: boolean;
+  completed: boolean;
+  order: number;
   subTasks?: ManagedSubTask[];
 }
 
@@ -18,6 +20,13 @@ export function useSubTaskManager<T extends ManagedItem>(
   items: T[],
   onItemsChange: (next: T[]) => void,
 ) {
+  const emit = useCallback(
+    (next: T[]) => {
+      onItemsChange(sortItemsByCompletion(next));
+    },
+    [onItemsChange],
+  );
+
   const addSubTask = useCallback(
     (itemId: string, rawTitle: string) => {
       const trimmed = rawTitle.trim();
@@ -34,9 +43,9 @@ export function useSubTaskManager<T extends ManagedItem>(
           subTasks: [...subTasks, newSubTask],
         } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   const toggleSubTask = useCallback(
@@ -60,9 +69,9 @@ export function useSubTaskManager<T extends ManagedItem>(
           completed: allCompleted ? true : item.completed,
         } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   const incrementSubTask = useCallback(
@@ -84,9 +93,9 @@ export function useSubTaskManager<T extends ManagedItem>(
           completed: allCompleted ? true : item.completed,
         } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   const deleteSubTask = useCallback(
@@ -98,9 +107,9 @@ export function useSubTaskManager<T extends ManagedItem>(
         );
         return { ...item, subTasks } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   const editSubTask = useCallback(
@@ -114,9 +123,9 @@ export function useSubTaskManager<T extends ManagedItem>(
         );
         return { ...item, subTasks } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   const moveSubTask = useCallback(
@@ -132,9 +141,9 @@ export function useSubTaskManager<T extends ManagedItem>(
         ];
         return { ...item, subTasks } as T;
       });
-      onItemsChange(next);
+      emit(next);
     },
-    [items, onItemsChange],
+    [items, emit],
   );
 
   return {

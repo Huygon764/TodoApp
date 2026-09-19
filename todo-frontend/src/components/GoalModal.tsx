@@ -251,7 +251,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   };
 
   const subTaskManager = useSubTaskManager(localItems, (next) => {
-    setLocalItems(sortItemsByCompletion(next));
+    setLocalItems(next);
     patchMutation.mutate(removeIdsFromItems(next));
   });
 

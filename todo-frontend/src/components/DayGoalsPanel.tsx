@@ -109,7 +109,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
     },
   ].filter((g) => g.goal && g.goal.items.length > 0);
 
-  const showBody = !isMobile || expanded;
+  const showBody = expanded;
   const empty = groups.length === 0;
 
   if (empty && isMobile) return null;
@@ -146,6 +146,8 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
                       onClick={() =>
                         toggle(g.type, g.period, g.goal!, item.sourceIndex)
                       }
+                      aria-label={item.title}
+                      aria-pressed={item.completed}
                       className={`shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors duration-200 cursor-pointer ${
                         item.completed
                           ? "bg-accent-primary border-accent-primary text-white"
@@ -174,37 +176,35 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
   );
 
   return (
-    <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[30vh]">
-      {isMobile ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="shrink-0 w-full flex items-center justify-between p-4 cursor-pointer hover:bg-bg-card/80 transition-colors duration-200"
-        >
-          <span className="flex items-center gap-3">
-            <GoalsIcon className="w-4 h-4 text-accent-hover" />
-            <span className="text-base font-semibold text-white">
-              {t("dayGoals.title")}
-            </span>
-          </span>
-          <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
-            <ChevronDown className="w-4 h-4 text-text-tertiary" />
-          </motion.span>
-        </button>
-      ) : (
-        <div className="shrink-0 flex items-center gap-3 p-4">
+    <div
+      className={`relative rounded-xl bg-bg-card border border-border-default overflow-hidden flex flex-col ${
+        expanded ? "h-full min-h-0 md:max-h-[30vh]" : "self-start"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="shrink-0 w-full flex items-center justify-between p-4 cursor-pointer hover:bg-bg-card/80 transition-colors duration-200"
+      >
+        <span className="flex items-center gap-3">
           <GoalsIcon className="w-4 h-4 text-accent-hover" />
           <span className="text-base font-semibold text-white">
             {t("dayGoals.title")}
           </span>
-        </div>
-      )}
+        </span>
+        <motion.span animate={{ rotate: expanded ? 180 : 0 }}>
+          <ChevronDown className="w-4 h-4 text-text-tertiary" />
+        </motion.span>
+      </button>
 
-      {isMobile ? (
-        showBody ? list : null
-      ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto">{list}</div>
-      )}
+      {showBody ? (
+        isMobile ? (
+          list
+        ) : (
+          <div className="flex-1 min-h-0 overflow-y-auto">{list}</div>
+        )
+      ) : null}
     </div>
   );
 }

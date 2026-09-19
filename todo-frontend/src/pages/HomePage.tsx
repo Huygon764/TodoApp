@@ -16,17 +16,13 @@ import { DayTodoList } from "@/components/DayTodoList";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { type DefaultOrderUpdate } from "@/components/DefaultListModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { Header, type ModalKey } from "@/components/Header";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 const TemplatesHubModal = lazy(() =>
   import("@/components/TemplatesHubModal").then((m) => ({
     default: m.TemplatesHubModal,
-  })),
-);
-const FreetimeTodoModal = lazy(() =>
-  import("@/components/FreetimeTodoModal").then((m) => ({
-    default: m.FreetimeTodoModal,
   })),
 );
 const GoalModal = lazy(() =>
@@ -341,9 +337,7 @@ export function HomePage() {
             }}
           />
         )}
-        {loadedModals.freetime && (
-          <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
-        )}
+        <FreetimeTodoModal isOpen={openModal === "freetime"} onClose={closeM} />
         {loadedModals.goal && (
           <GoalModal isOpen={openModal === "goal"} onClose={closeM} />
         )}

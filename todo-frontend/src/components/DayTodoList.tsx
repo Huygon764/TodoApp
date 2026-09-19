@@ -23,6 +23,9 @@ const addIdsToItems = (items: DayTodoItem[]): DayTodoItemWithId[] =>
 const removeIdsFromItems = (items: DayTodoItemWithId[]): DayTodoItem[] =>
   removeClientIds(items);
 
+/** Hug the items; cap height so a long list scrolls instead of stretching Home. */
+const LIST_SCROLL_CLASS = "p-4 max-h-[400px] overflow-y-auto";
+
 interface DayTodoListProps {
   dayTodo: DayTodo | null;
   isLoading: boolean;
@@ -188,9 +191,29 @@ export function DayTodoList({
   if (isLoading) {
     return (
       <div className="relative">
-        <div className="relative rounded-xl bg-bg-card border border-border-default p-6">
-          <div className="h-8 w-48 bg-bg-elevated rounded-lg animate-pulse mb-6" />
-          <ListSkeleton />
+        <div className="relative rounded-xl bg-bg-card border border-border-default overflow-hidden">
+          <div className="p-6 pb-4 border-b border-border-subtle">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-5 h-5 rounded bg-bg-elevated animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-5 w-40 bg-bg-elevated rounded-lg animate-pulse" />
+                <div className="h-4 w-28 bg-bg-elevated rounded animate-pulse" />
+              </div>
+            </div>
+            <div className="h-2 bg-bg-elevated rounded-full animate-pulse" />
+          </div>
+          <div className="p-4 border-b border-border-subtle">
+            <div className="flex gap-3">
+              <div className="flex-1 h-[50px] rounded-xl bg-bg-elevated animate-pulse" />
+              <div className="w-20 h-[50px] rounded-xl bg-bg-elevated animate-pulse" />
+            </div>
+          </div>
+          <div className={LIST_SCROLL_CLASS}>
+            <ListSkeleton />
+          </div>
+          <div className="border-t border-border-subtle p-4">
+            <div className="h-5 w-36 bg-bg-elevated rounded animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -233,25 +256,26 @@ export function DayTodoList({
             )}
           </div>
 
-          {/* Progress Bar */}
-          {totalCount > 0 && (
-            <div className="relative h-2 bg-bg-surface rounded-full overflow-hidden">
-              {isMobile ? (
-                <div
-                  className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              ) : (
-                <motion.div
-                  className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            </div>
-          )}
+          <div className="relative h-2 bg-bg-surface rounded-full overflow-hidden">
+            {totalCount > 0 && (
+              <>
+                {isMobile ? (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                ) : (
+                  <motion.div
+                    className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Add Input */}
@@ -288,7 +312,7 @@ export function DayTodoList({
         </div>
 
         {/* Todo List with Reorder */}
-        <div className="p-4 min-h-[200px] max-h-[400px] overflow-y-auto">
+        <div className={LIST_SCROLL_CLASS}>
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-text-muted">
               <Circle className="w-12 h-12 mb-3 opacity-30" />

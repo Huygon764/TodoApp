@@ -283,6 +283,8 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                 type="button"
                                 whileTap={controlTap}
                                 onClick={() => handleToggle(item.id)}
+                                aria-label={item.title}
+                                aria-pressed={item.completed}
                                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                                   item.completed
                                     ? "bg-accent-primary border-accent-primary"

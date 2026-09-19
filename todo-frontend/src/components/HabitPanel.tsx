@@ -159,7 +159,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   const anySkipped = habits.some((h) => h.skippedToday);
   const needsSkip = habits.some((h) => !h.doneToday && !h.skippedToday);
   const maxDots = isMobile ? 5 : 7;
-  const showBody = !isMobile || expanded;
+  const showBody = expanded;
 
   const list = isLoading ? (
     <ListSkeleton rowClassName="h-12" />
@@ -193,38 +193,29 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   );
 
   return (
-    <div className="rounded-xl bg-bg-card border border-border-default overflow-hidden h-full min-h-0 flex flex-col md:max-h-[30vh]">
+    <div
+      className={`rounded-xl bg-bg-card border border-border-default overflow-hidden flex flex-col ${
+        expanded ? "h-full min-h-0 md:max-h-[30vh]" : "self-start"
+      }`}
+    >
       <div className="shrink-0 flex items-center gap-2 p-4 flex-wrap">
-        {isMobile ? (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
-            aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
-          >
-            <Ring pct={pct} isMobile={isMobile} />
-            <span className="min-w-0">
-              <span className="block text-base font-semibold text-white">
-                {t("habits.title", "Discipline")}
-              </span>
-              <span className="block text-sm text-text-muted">
-                {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
-              </span>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
+          aria-expanded={expanded}
+          aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
+        >
+          <Ring pct={pct} isMobile={isMobile} />
+          <span className="min-w-0">
+            <span className="block text-base font-semibold text-white">
+              {t("habits.title", "Discipline")}
             </span>
-          </button>
-        ) : (
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Ring pct={pct} isMobile={isMobile} />
-            <span className="min-w-0">
-              <span className="block text-base font-semibold text-white">
-                {t("habits.title", "Discipline")}
-              </span>
-              <span className="block text-sm text-text-muted">
-                {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
-              </span>
+            <span className="block text-sm text-text-muted">
+              {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
             </span>
-          </div>
-        )}
+          </span>
+        </button>
         {canMutate && total > 0 && (needsSkip || anySkipped) && (
           <div className="shrink-0 flex gap-1">
             {needsSkip && (
@@ -263,25 +254,25 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
         >
           <BarChart3 className="w-4 h-4" />
         </button>
-        {isMobile && (
-          <motion.button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            animate={{ rotate: expanded ? 0 : -90 }}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
-            aria-hidden="true"
-            tabIndex={-1}
-          >
-            <ChevronDown className="w-4 h-4" />
-          </motion.button>
-        )}
+        <motion.button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          animate={{ rotate: expanded ? 0 : -90 }}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </motion.button>
       </div>
 
-      {isMobile ? (
-        showBody ? <div className="px-3 pb-3">{list}</div> : null
-      ) : (
-        <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">{list}</div>
-      )}
+      {showBody ? (
+        isMobile ? (
+          <div className="px-3 pb-3">{list}</div>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">{list}</div>
+        )
+      ) : null}
     </div>
   );
 }

@@ -78,6 +78,8 @@ export function SubTaskSection({
               type="button"
               whileTap={{ scale: 0.9 }}
               onClick={() => onToggle?.(subIdx)}
+              aria-label={st.title}
+              aria-pressed={st.completed}
               className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
             >
               {st.completed && (

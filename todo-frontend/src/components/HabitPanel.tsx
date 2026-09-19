@@ -32,25 +32,40 @@ function scheduleLabel(daysOfWeek: number[]): string {
     .join(" · ");
 }
 
-function Ring({ pct }: { pct: number }) {
+function Ring({ pct, isMobile }: { pct: number; isMobile: boolean }) {
   const R = 17;
   const C = 2 * Math.PI * R;
+  const offset = C * (1 - pct / 100);
   return (
     <div className="relative shrink-0 w-[42px] h-[42px]">
       <svg width="42" height="42" className="-rotate-90">
         <circle cx="21" cy="21" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="4" />
-        <motion.circle
-          cx="21"
-          cy="21"
-          r={R}
-          fill="none"
-          stroke="var(--color-accent-primary)"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          animate={{ strokeDashoffset: C * (1 - pct / 100) }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        />
+        {isMobile ? (
+          <circle
+            cx="21"
+            cy="21"
+            r={R}
+            fill="none"
+            stroke="var(--color-accent-primary)"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={C}
+            strokeDashoffset={offset}
+          />
+        ) : (
+          <motion.circle
+            cx="21"
+            cy="21"
+            r={R}
+            fill="none"
+            stroke="var(--color-accent-primary)"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={C}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
+        )}
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[9.5px] font-bold text-accent-hover tabular-nums tracking-tight">
         {pct}%
@@ -187,7 +202,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
             className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
             aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
           >
-            <Ring pct={pct} />
+            <Ring pct={pct} isMobile={isMobile} />
             <span className="min-w-0">
               <span className="block text-base font-semibold text-white">
                 {t("habits.title", "Discipline")}
@@ -199,7 +214,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
           </button>
         ) : (
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Ring pct={pct} />
+            <Ring pct={pct} isMobile={isMobile} />
             <span className="min-w-0">
               <span className="block text-base font-semibold text-white">
                 {t("habits.title", "Discipline")}
@@ -263,19 +278,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
       </div>
 
       {isMobile ? (
-        <AnimatePresence initial={false}>
-          {showBody && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-            <div className="px-3 pb-3">{list}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        showBody ? <div className="px-3 pb-3">{list}</div> : null
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">{list}</div>
       )}

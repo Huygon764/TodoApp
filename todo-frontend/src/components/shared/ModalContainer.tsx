@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ReactNode, RefObject } from "react";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface ModalContainerProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export function ModalContainer({
   // Drive mount state from React, not framer-motion's AnimatePresence.
   // AnimatePresence can leave the backdrop stuck in the DOM (opacity: 0) when
   // nested layout-animated descendants disturb its exit tracking.
+  const isMobile = useIsMobile();
+  const durationMs = isMobile ? 120 : EXIT_DURATION_MS;
   const [shouldRender, setShouldRender] = useState(isOpen);
 
   useEffect(() => {
@@ -36,9 +39,9 @@ export function ModalContainer({
       setShouldRender(true);
       return;
     }
-    const timer = setTimeout(() => setShouldRender(false), EXIT_DURATION_MS);
+    const timer = setTimeout(() => setShouldRender(false), durationMs);
     return () => clearTimeout(timer);
-  }, [isOpen]);
+  }, [isOpen, durationMs]);
 
   if (!shouldRender) return null;
 
@@ -47,18 +50,22 @@ export function ModalContainer({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: EXIT_DURATION_MS / 1000 }}
+        transition={{ duration: durationMs / 1000 }}
         onClick={onClose}
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm ${zBackdrop}`}
+        className={`fixed inset-0 bg-black/60 ${isMobile ? "" : "backdrop-blur-sm"} ${zBackdrop}`}
       />
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={isMobile ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
         animate={
           isOpen
-            ? { opacity: 1, scale: 1, y: 0 }
-            : { opacity: 0, scale: 0.95, y: 20 }
+            ? isMobile
+              ? { opacity: 1 }
+              : { opacity: 1, scale: 1, y: 0 }
+            : isMobile
+              ? { opacity: 0 }
+              : { opacity: 0, scale: 0.95, y: 20 }
         }
-        transition={{ duration: EXIT_DURATION_MS / 1000 }}
+        transition={{ duration: durationMs / 1000 }}
         className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
       >
         <div

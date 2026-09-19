@@ -215,17 +215,20 @@ export function DayTodoList({
             </div>
             {totalCount > 0 && (
               <div className="text-right">
-                <motion.span 
-                  key={progressPercent}
-                  initial={isMobile ? { opacity: 0 } : { scale: 1.2, opacity: 0 }}
-                  animate={isMobile ? { opacity: 1 } : { scale: 1, opacity: 1 }}
-                  transition={
-                    isMobile ? { duration: 0.16, ease: "easeOut" } : undefined
-                  }
-                  className="text-2xl font-bold text-accent-hover"
-                >
-                  {progressPercent}%
-                </motion.span>
+                {isMobile ? (
+                  <span className="text-2xl font-bold text-accent-hover">
+                    {progressPercent}%
+                  </span>
+                ) : (
+                  <motion.span
+                    key={progressPercent}
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-2xl font-bold text-accent-hover"
+                  >
+                    {progressPercent}%
+                  </motion.span>
+                )}
               </div>
             )}
           </div>
@@ -233,15 +236,19 @@ export function DayTodoList({
           {/* Progress Bar */}
           {totalCount > 0 && (
             <div className="relative h-2 bg-bg-surface rounded-full overflow-hidden">
-              <motion.div
-                className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                transition={{
-                  duration: isMobile ? 0.25 : 0.5,
-                  ease: "easeOut",
-                }}
-              />
+              {isMobile ? (
+                <div
+                  className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              ) : (
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-accent-primary rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             </div>
           )}

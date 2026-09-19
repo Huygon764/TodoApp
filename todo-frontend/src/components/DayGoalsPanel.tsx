@@ -201,19 +201,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
       )}
 
       {isMobile ? (
-        <AnimatePresence initial={false}>
-          {showBody && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              {list}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        showBody ? list : null
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto">{list}</div>
       )}

@@ -181,7 +181,10 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
     syncItems(updated);
   };
 
-  const subTaskManager = useSubTaskManager(items, (next) => syncItems(next));
+  const subTaskManager = useSubTaskManager(items, (next) => {
+    setItems(sortItemsByCompletion(next));
+    patchMutation.mutate({ items: removeIdsFromItems(next) });
+  });
 
   const addSubTask = (itemId: string, title: string) => {
     subTaskManager.addSubTask(itemId, title);

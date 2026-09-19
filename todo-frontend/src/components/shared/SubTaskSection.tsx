@@ -3,6 +3,7 @@ import { Check, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { usePrimaryHover } from "@/hooks/usePrimaryHover";
+import { sortByCompletedLast } from "@/lib/sortItems";
 import { CounterChip } from "@/components/shared/CounterChip";
 import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
@@ -66,18 +67,23 @@ export function SubTaskSection({
     onEditTitle?.(idx, next);
   };
 
+  const visible = sortByCompletedLast(
+    subTasks.map((st, sourceIndex) => ({ ...st, sourceIndex })),
+  );
+
   return (
     <div className="px-4 pb-3 pt-1 space-y-1.5 border-t border-border-subtle">
-      {subTasks.map((st, subIdx) => (
-        <div
-          key={subIdx}
+      {visible.map((st) => (
+        <motion.div
+          key={st.sourceIndex}
+          layout
           className="flex items-center gap-3 py-1.5 pl-3 rounded-lg bg-bg-surface border border-border-subtle"
         >
           {showCheckbox ? (
             <motion.button
               type="button"
               whileTap={{ scale: 0.9 }}
-              onClick={() => onToggle?.(subIdx)}
+              onClick={() => onToggle?.(st.sourceIndex)}
               aria-label={st.title}
               aria-pressed={st.completed}
               className="shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all cursor-pointer border-text-muted hover:border-accent-hover hover:bg-accent-primary/10"
@@ -89,26 +95,26 @@ export function SubTaskSection({
           ) : (
             <span className="text-text-muted shrink-0">•</span>
           )}
-          {editingIdx === subIdx && onEditTitle ? (
+          {editingIdx === st.sourceIndex && onEditTitle ? (
             <input
               ref={editInputRef}
               type="text"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSave(subIdx, st.title);
+                if (e.key === "Enter") handleSave(st.sourceIndex, st.title);
                 if (e.key === "Escape") cancelEdit();
               }}
-              onBlur={() => handleSave(subIdx, st.title)}
+              onBlur={() => handleSave(st.sourceIndex, st.title)}
               className="flex-1 min-w-0 px-0 py-0.5 bg-transparent border-none outline-none text-text-secondary text-sm focus:ring-0"
             />
           ) : (
             <span
               role={onEditTitle ? "button" : undefined}
               tabIndex={onEditTitle ? 0 : undefined}
-              onClick={() => handleTitleClick(subIdx, st.title)}
+              onClick={() => handleTitleClick(st.sourceIndex, st.title)}
               onKeyDown={(e) =>
-                e.key === "Enter" && handleTitleClick(subIdx, st.title)
+                e.key === "Enter" && handleTitleClick(st.sourceIndex, st.title)
               }
               className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${onEditTitle ? "cursor-text" : ""} ${
                 showCheckbox && st.completed
@@ -125,7 +131,7 @@ export function SubTaskSection({
                 count={st.count ?? 0}
                 target={st.target}
                 size="sm"
-                onIncrement={() => onIncrement(subIdx)}
+                onIncrement={() => onIncrement(st.sourceIndex)}
               />
             ) : (
               <TargetBadge target={st.target} />
@@ -135,8 +141,8 @@ export function SubTaskSection({
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.9 }}
-                onClick={() => onMove(subIdx, "up")}
-                disabled={subIdx === 0}
+                onClick={() => onMove(st.sourceIndex, "up")}
+                disabled={st.sourceIndex === 0}
                 className="p-1 rounded text-text-muted hover:text-accent-hover hover:bg-bg-surface disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 aria-label={t("common.moveUpAria", "Move up")}
               >
@@ -145,8 +151,8 @@ export function SubTaskSection({
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.9 }}
-                onClick={() => onMove(subIdx, "down")}
-                disabled={subIdx === subTasks.length - 1}
+                onClick={() => onMove(st.sourceIndex, "down")}
+                disabled={st.sourceIndex === subTasks.length - 1}
                 className="p-1 rounded text-text-muted hover:text-accent-hover hover:bg-bg-surface disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 aria-label={t("common.moveDownAria", "Move down")}
               >
@@ -157,13 +163,13 @@ export function SubTaskSection({
           <motion.button
             type="button"
             whileTap={{ scale: 0.9 }}
-            onClick={() => onDelete(subIdx)}
+            onClick={() => onDelete(st.sourceIndex)}
             className="p-1.5 rounded text-text-muted hover:text-danger hover:bg-danger-bg cursor-pointer"
             aria-label={t("common.deleteSubTaskAria", "Delete sub-task")}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </motion.button>
-        </div>
+        </motion.div>
       ))}
       <div className="flex gap-2 pt-1">
         <input

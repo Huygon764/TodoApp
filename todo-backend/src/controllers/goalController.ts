@@ -6,14 +6,14 @@ import type { IGoalItem } from "../types/index.js";
 import { normalizeItems } from "../utils/normalizeItem.js";
 
 /**
- * GET /api/goals?type=week|month|year&period=...
+ * GET /api/goals?type=week|month|year|life&period=...
  * Returns the goal doc for the period, or null if none exists yet. Read-only:
  * the doc is created lazily on first POST/PATCH, so merely viewing a day does
- * not litter the DB with empty goals.
+ * not litter the DB with empty goals. Life goals use period "life".
  */
 export const getGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const type = req.query.type as "week" | "month" | "year";
+  const type = req.query.type as "week" | "month" | "year" | "life";
   const period = req.query.period as string;
 
   const goal = await Goal.findOne({ userId, type, period });
@@ -28,7 +28,7 @@ export const getGoal = catchAsync(async (req: Request, res: Response) => {
 export const createGoal = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { type, period, items } = req.body as {
-    type: "week" | "month" | "year";
+    type: "week" | "month" | "year" | "life";
     period: string;
     items?: IGoalItem[];
   };

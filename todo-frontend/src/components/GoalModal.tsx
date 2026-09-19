@@ -35,9 +35,10 @@ import {
 import { stepPeriod } from "@/lib/periodStep";
 import { isSpuriousReorder, shouldPersistGoalItemsOnClose } from "@/lib/goalDraft";
 import { ListSkeleton } from "@/components/shared/ListSkeleton";
+import { LIFE_GOAL_PERIOD, type GoalType } from "@/constants/goals";
 import type { Goal, GoalItem } from "@/types";
 
-export type GoalPeriodType = "week" | "month" | "year";
+export type GoalPeriodType = GoalType;
 
 interface GoalModalProps {
   isOpen: boolean;
@@ -77,7 +78,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       ? selectedWeekPeriod
       : activeTab === "month"
         ? selectedMonthPeriod
-        : selectedYearPeriod;
+        : activeTab === "year"
+          ? selectedYearPeriod
+          : LIFE_GOAL_PERIOD;
   const queryKey = ["goal", activeTab, period];
 
   // Reset to current periods when modal opens
@@ -103,8 +106,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const goal = data ?? null;
   const sortedItemsFromGoal = sortItemsByCompletion(addIdsToItems(goal?.items ?? []));
 
+  // Reload when the modal opens or the tab/period changes. Do not depend on
+  // `goal`: optimistic cache writes would reset localItems and kill the
+  // completed-to-bottom layout animation.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || isLoading) return;
     if (goal != null) {
       const next = sortItemsByCompletion(addIdsToItems(goal.items ?? []));
       setLocalItems(next);
@@ -113,7 +119,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       setLocalItems([]);
       initialOrderRef.current = "";
     }
-  }, [isOpen, goal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see comment above
+  }, [isOpen, isLoading, activeTab, period]);
 
   const sortedItems =
     localItems.length > 0 ? localItems : sortedItemsFromGoal;
@@ -138,6 +145,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     onError: (_err, _items, context) => {
       if (context?.previous != null) {
         queryClient.setQueryData(queryKey, context.previous);
+        const prev = context.previous as Goal | null;
+        if (prev) {
+          const next = sortItemsByCompletion(addIdsToItems(prev.items ?? []));
+          setLocalItems(next);
+        }
       }
     },
     onSettled: () => {
@@ -163,7 +175,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       setSelectedWeekPeriod((p) => stepPeriod("week", p, direction));
     } else if (activeTab === "month") {
       setSelectedMonthPeriod((p) => stepPeriod("month", p, direction));
-    } else {
+    } else if (activeTab === "year") {
       setSelectedYearPeriod((p) => stepPeriod("year", p, direction));
     }
   };
@@ -239,7 +251,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   };
 
   const subTaskManager = useSubTaskManager(localItems, (next) => {
-    setLocalItems(next);
+    setLocalItems(sortItemsByCompletion(next));
     patchMutation.mutate(removeIdsFromItems(next));
   });
 
@@ -264,7 +276,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const handleSelectPeriod = (p: string) => {
     if (activeTab === "week") setSelectedWeekPeriod(p);
     else if (activeTab === "month") setSelectedMonthPeriod(p);
-    else setSelectedYearPeriod(p);
+    else if (activeTab === "year") setSelectedYearPeriod(p);
     setPickerOpen(false);
   };
 
@@ -449,7 +461,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             <h2 className="text-xl font-semibold text-white">
               {t("goalModal.title")}
             </h2>
-            {periodSelector}
+            {activeTab === "life" ? (
+              <p className="text-sm text-text-muted">{t("goalModal.lifeHint")}</p>
+            ) : (
+              periodSelector
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -466,12 +482,15 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
 
       {/* Tabs */}
       <div className="flex border-b border-border-subtle">
-        {(["week", "month", "year"] as const).map((tab) => (
+        {(["week", "month", "year", "life"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-sm font-medium transition-colors cursor-pointer ${
+            onClick={() => {
+              setPickerOpen(false);
+              setActiveTab(tab);
+            }}
+            className={`flex-1 min-w-0 py-3 px-1 text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
               activeTab === tab
                 ? "text-accent-hover border-b-2 border-accent-primary bg-accent-primary/5"
                 : "text-text-muted hover:text-text-secondary"
@@ -481,7 +500,9 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
               ? t("goalModal.tabWeek")
               : tab === "month"
                 ? t("goalModal.tabMonth")
-                : t("goalModal.tabYear")}
+                : tab === "year"
+                  ? t("goalModal.tabYear")
+                  : t("goalModal.tabLife")}
           </button>
         ))}
       </div>

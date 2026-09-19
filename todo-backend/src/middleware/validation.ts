@@ -107,8 +107,8 @@ export const validateMongoIdParam = [
 
 export const validateGetGoalsQuery = [
   query("type")
-    .isIn(["week", "month", "year"])
-    .withMessage("type must be week, month or year"),
+    .isIn(["week", "month", "year", "life"])
+    .withMessage("type must be week, month, year or life"),
   query("period")
     .notEmpty()
     .withMessage("period is required")
@@ -117,8 +117,8 @@ export const validateGetGoalsQuery = [
 
 export const validatePostGoalBody = [
   body("type")
-    .isIn(["week", "month", "year"])
-    .withMessage("type must be week, month or year"),
+    .isIn(["week", "month", "year", "life"])
+    .withMessage("type must be week, month, year or life"),
   body("period")
     .notEmpty()
     .withMessage("period is required")

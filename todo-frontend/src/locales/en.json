@@ -72,6 +72,8 @@
     "tabWeek": "Week",
     "tabMonth": "Month",
     "tabYear": "Year",
+    "tabLife": "Life",
+    "lifeHint": "Does not expire",
     "deleteAria": "Delete"
   },
   "goalTemplateModal": {

@@ -132,7 +132,7 @@ export function DayTodoList({
   };
 
   const handleSubTasksChange = (next: DayTodoItemWithId[]) => {
-    setItems(next);
+    setItems(sortItemsByCompletion(next));
     onUpdateItems(removeIdsFromItems(next));
   };
 

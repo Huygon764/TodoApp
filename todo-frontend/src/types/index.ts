@@ -100,7 +100,7 @@ export interface GoalItem {
 export interface Goal {
   _id: string;
   userId: string;
-  type: "week" | "month" | "year";
+  type: "week" | "month" | "year" | "life";
   period: string;
   items: GoalItem[];
   createdAt: string;

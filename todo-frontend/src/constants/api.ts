@@ -13,7 +13,7 @@ export const API_PATHS = {
   DEFAULT: "/api/default",
   DEFAULT_BY_ID: (id: string) => `/api/default/${id}`,
   GOALS: "/api/goals",
-  GOALS_QUERY: (type: "week" | "month" | "year", period: string) =>
+  GOALS_QUERY: (type: "week" | "month" | "year" | "life", period: string) =>
     `/api/goals?type=${type}&period=${encodeURIComponent(period)}`,
   GOAL: (id: string) => `/api/goals/${id}`,
   GOAL_ITEM: (id: string, idx: number) => `/api/goals/${id}/items/${idx}`,

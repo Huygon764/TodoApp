@@ -72,6 +72,8 @@
     "tabWeek": "Tuần",
     "tabMonth": "Tháng",
     "tabYear": "Năm",
+    "tabLife": "Cả đời",
+    "lifeHint": "Không hết hạn",
     "deleteAria": "Xóa"
   },
   "goalTemplateModal": {

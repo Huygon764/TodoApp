@@ -7,9 +7,8 @@ import {
   MAX_DAY_OF_MONTH,
   MIN_MONTH,
   MAX_MONTH,
-  periodWeekRegex,
-  periodMonthRegex,
-  periodYearRegex,
+  LIFE_GOAL_PERIOD,
+  periodMatchesGoalType,
 } from "../../constants/validation.js";
 
 export const requiredTitle = (): ValidationChain =>
@@ -203,14 +202,19 @@ export const validatePeriodFormat = (
 ): CustomValidator => {
   return (value, { req }) => {
     const type = getType(req as { body?: { type?: string }; query?: { type?: string } });
-    if (type === "week" && !periodWeekRegex.test(value)) {
-      throw new Error("period for week must be YYYY-Wnn (e.g. 2024-W03)");
-    }
-    if (type === "month" && !periodMonthRegex.test(value)) {
-      throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
-    }
-    if (type === "year" && !periodYearRegex.test(value)) {
-      throw new Error("period for year must be YYYY (e.g. 2024)");
+    if (type && !periodMatchesGoalType(type, value)) {
+      if (type === "week") {
+        throw new Error("period for week must be YYYY-Wnn (e.g. 2024-W03)");
+      }
+      if (type === "month") {
+        throw new Error("period for month must be YYYY-MM (e.g. 2024-01)");
+      }
+      if (type === "year") {
+        throw new Error("period for year must be YYYY (e.g. 2024)");
+      }
+      if (type === "life") {
+        throw new Error(`period for life must be "${LIFE_GOAL_PERIOD}"`);
+      }
     }
     return true;
   };

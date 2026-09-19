@@ -12,6 +12,15 @@ export function sortItemsByCompletion<T extends CompletableOrdered>(
   });
 }
 
+/** Completed rows last; keep relative order otherwise. Sub-tasks have no `order`. */
+export function sortByCompletedLast<T extends { completed?: boolean }>(
+  items: T[],
+): T[] {
+  return [...items].sort(
+    (a, b) => Number(Boolean(a.completed)) - Number(Boolean(b.completed)),
+  );
+}
+
 export function regroupByCompletion<T extends CompletableOrdered>(
   items: T[],
 ): T[] {

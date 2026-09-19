@@ -22,6 +22,7 @@ import {
   getPrevMonthPeriod,
   getNextMonthPeriod,
 } from "@/lib/datePeriod";
+import { formatAmountInput, parseAmountInput } from "@/lib/formatAmount";
 
 type PeriodTab = "day" | "week" | "month";
 
@@ -54,16 +55,6 @@ function shiftDay(day: string, delta: number): string {
 
 function formatVND(amount: number): string {
   return amount.toLocaleString("vi-VN") + "đ";
-}
-
-function formatAmountInput(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
-  if (!digits) return "";
-  return Number(digits).toLocaleString("vi-VN");
-}
-
-function parseAmountInput(formatted: string): number {
-  return Number(formatted.replace(/\D/g, "")) || 0;
 }
 
 const QUICK_AMOUNTS = [10_000, 25_000, 50_000, 100_000, 200_000];
@@ -415,7 +406,7 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
                   {items.map((e) => (
                     <div
                       key={e._id}
-                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-bg-surface border border-border-subtle group"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-bg-surface border border-border-subtle"
                     >
                       {editId === e._id ? (
                         <>
@@ -460,14 +451,16 @@ export function ExpenseModal({ isOpen, onClose }: ExpenseModalProps) {
                           <button
                             type="button"
                             onClick={() => startEdit(e)}
-                            className="p-1 text-text-faint opacity-0 group-hover:opacity-100 hover:text-text-secondary transition-opacity"
+                            className="p-1 text-text-muted hover:text-text-secondary"
+                            aria-label={t("expense.editAria", "Edit")}
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteMutation.mutate(e._id)}
-                            className="p-1 text-text-faint opacity-0 group-hover:opacity-100 hover:text-danger transition-opacity"
+                            className="p-1 text-text-muted hover:text-danger"
+                            aria-label={t("expense.deleteAria", "Delete")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

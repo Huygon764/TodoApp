@@ -34,11 +34,14 @@ export function ModalContainer({
   const durationMs = isMobile ? 120 : EXIT_DURATION_MS;
   const [shouldRender, setShouldRender] = useState(isOpen);
 
+  // Re-open after an exit unmount must not paint a blank frame. Setting state
+  // during render makes React retry before commit.
+  if (isOpen && !shouldRender) {
+    setShouldRender(true);
+  }
+
   useEffect(() => {
-    if (isOpen) {
-      setShouldRender(true);
-      return;
-    }
+    if (isOpen) return;
     const timer = setTimeout(() => setShouldRender(false), durationMs);
     return () => clearTimeout(timer);
   }, [isOpen, durationMs]);
@@ -48,14 +51,14 @@ export function ModalContainer({
   return (
     <>
       <motion.div
-        initial={{ opacity: 0 }}
+        initial={isMobile ? false : { opacity: 0 }}
         animate={{ opacity: isOpen ? 1 : 0 }}
         transition={{ duration: durationMs / 1000 }}
         onClick={onClose}
         className={`fixed inset-0 bg-black/60 ${isMobile ? "" : "backdrop-blur-sm"} ${zBackdrop}`}
       />
       <motion.div
-        initial={isMobile ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
+        initial={isMobile ? false : { opacity: 0, scale: 0.95, y: 20 }}
         animate={
           isOpen
             ? isMobile

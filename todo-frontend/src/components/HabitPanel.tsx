@@ -198,7 +198,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
         expanded ? "h-full min-h-0 md:max-h-[30vh]" : "self-start"
       }`}
     >
-      <div className="shrink-0 flex items-center gap-2 p-4 flex-wrap">
+      <div className="shrink-0 flex items-center gap-2 p-4">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -207,58 +207,60 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
           aria-label={expanded ? t("common.collapse", "Collapse") : t("common.expand", "Expand")}
         >
           <Ring pct={pct} isMobile={isMobile} />
-          <span className="min-w-0">
-            <span className="block text-base font-semibold text-white">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-base font-semibold text-white">
               {t("habits.title", "Discipline")}
             </span>
-            <span className="block text-sm text-text-muted">
+            <span className="block truncate text-sm text-text-muted">
               {t("habits.doneToday", "{{done}}/{{total}} today", { done: doneCount, total: countable })}
             </span>
           </span>
         </button>
-        {canMutate && total > 0 && (needsSkip || anySkipped) && (
-          <div className="shrink-0 flex gap-1">
-            {needsSkip && (
-              <button
-                type="button"
-                onClick={() => skipDayMutation.mutate()}
-                className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer"
-              >
-                {t("habits.skipDay", "Skip day")}
-              </button>
-            )}
-            {anySkipped && (
-              <button
-                type="button"
-                onClick={() => unskipDayMutation.mutate()}
-                className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer"
-              >
-                {t("habits.unskipDay", "Unskip day")}
-              </button>
-            )}
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={onManage}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-accent-hover hover:border-accent-primary/40 transition-colors cursor-pointer"
-          aria-label={t("habits.manage", "Manage habits")}
-        >
-          <Settings2 className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={onStats}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-accent-hover hover:border-accent-primary/40 transition-colors cursor-pointer"
-          aria-label={t("habits.stats", "Stats")}
-        >
-          <BarChart3 className="w-4 h-4" />
-        </button>
+        <div className="shrink-0 flex items-center gap-1">
+          {canMutate && total > 0 && (needsSkip || anySkipped) && (
+            <>
+              {needsSkip && (
+                <button
+                  type="button"
+                  onClick={() => skipDayMutation.mutate()}
+                  className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {t("habits.skipDay", "Skip day")}
+                </button>
+              )}
+              {anySkipped && (
+                <button
+                  type="button"
+                  onClick={() => unskipDayMutation.mutate()}
+                  className="px-2 h-8 text-[11px] font-medium rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-sky-300 hover:border-sky-400/40 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {t("habits.unskipDay", "Unskip day")}
+                </button>
+              )}
+            </>
+          )}
+          <button
+            type="button"
+            onClick={onManage}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-accent-hover hover:border-accent-primary/40 transition-colors cursor-pointer"
+            aria-label={t("habits.manage", "Manage habits")}
+          >
+            <Settings2 className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onStats}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-muted hover:text-accent-hover hover:border-accent-primary/40 transition-colors cursor-pointer"
+            aria-label={t("habits.stats", "Stats")}
+          >
+            <BarChart3 className="w-4 h-4" />
+          </button>
+        </div>
         <motion.button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          animate={{ rotate: expanded ? 0 : -90 }}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-accent-hover transition-colors cursor-pointer"
+          animate={{ rotate: expanded ? 180 : 0 }}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-text-tertiary hover:text-accent-hover transition-colors cursor-pointer"
           aria-hidden="true"
           tabIndex={-1}
         >
@@ -266,13 +268,25 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
         </motion.button>
       </div>
 
-      {showBody ? (
-        isMobile ? (
+      {isMobile ? (
+        showBody ? (
           <div className="px-3 pb-3">{list}</div>
-        ) : (
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">{list}</div>
-        )
-      ) : null}
+        ) : null
+      ) : (
+        <motion.div
+          initial={false}
+          animate={
+            expanded
+              ? { height: "auto", opacity: 1 }
+              : { height: 0, opacity: 0 }
+          }
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+          className={`min-h-0 overflow-hidden ${expanded ? "" : "pointer-events-none"}`}
+          aria-hidden={!expanded}
+        >
+          <div className="overflow-y-auto px-3 pb-3 md:max-h-[calc(30vh-3.5rem)]">{list}</div>
+        </motion.div>
+      )}
     </div>
   );
 }

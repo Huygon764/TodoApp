@@ -198,13 +198,25 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
         </motion.span>
       </button>
 
-      {showBody ? (
-        isMobile ? (
+      {isMobile ? (
+        showBody ? (
           list
-        ) : (
-          <div className="flex-1 min-h-0 overflow-y-auto">{list}</div>
-        )
-      ) : null}
+        ) : null
+      ) : (
+        <motion.div
+          initial={false}
+          animate={
+            expanded
+              ? { height: "auto", opacity: 1 }
+              : { height: 0, opacity: 0 }
+          }
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+          className={`min-h-0 overflow-hidden ${expanded ? "" : "pointer-events-none"}`}
+          aria-hidden={!expanded}
+        >
+          <div className="overflow-y-auto md:max-h-[calc(30vh-3.5rem)]">{list}</div>
+        </motion.div>
+      )}
     </div>
   );
 }

@@ -368,7 +368,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
             onClick={() => handleTitleClick(item.id)}
             onKeyDown={(e) => e.key === "Enter" && handleTitleClick(item.id)}
             className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] cursor-text ${
-              item.completed ? "line-through text-text-muted" : "text-text-secondary"
+              item.completed ? "line-through text-text-tertiary" : "text-text-secondary"
             }`}
           >
             <LinkifiedText text={item.title} />

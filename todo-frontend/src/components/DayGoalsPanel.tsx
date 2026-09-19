@@ -159,7 +159,7 @@ export function DayGoalsPanel({ date }: DayGoalsPanelProps) {
                     <span
                       className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${
                         item.completed
-                          ? "line-through text-text-muted"
+                          ? "line-through text-text-tertiary"
                           : "text-text-secondary"
                       }`}
                     >

@@ -332,7 +332,7 @@ export function FreetimeTodoModal({ isOpen, onClose }: FreetimeTodoModalProps) {
                                   }
                                   className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] cursor-text text-sm ${
                                     item.completed
-                                      ? "line-through text-text-muted"
+                                      ? "line-through text-text-tertiary"
                                       : "text-text-secondary"
                                   }`}
                                 >

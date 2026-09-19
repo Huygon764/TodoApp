@@ -112,7 +112,7 @@ export function SubTaskSection({
               }
               className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm ${onEditTitle ? "cursor-text" : ""} ${
                 showCheckbox && st.completed
-                  ? "line-through text-text-muted"
+                  ? "line-through text-text-tertiary"
                   : "text-text-secondary"
               }`}
             >

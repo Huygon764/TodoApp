@@ -139,7 +139,7 @@ export function DayTodoItem({
             onKeyDown={(e) => e.key === "Enter" && onTitleClick(item.id)}
             className={`flex-1 min-w-0 break-words [overflow-wrap:anywhere] transition-all duration-300 cursor-text ${
               item.completed
-                ? "line-through text-text-muted"
+                ? "line-through text-text-tertiary"
                 : "text-text-secondary"
             }`}
             animate={isMobile ? undefined : { x: item.completed ? 4 : 0 }}

@@ -4,7 +4,7 @@ A dark-theme design system for a personal productivity app. Built with Tailwind 
 
 ## Visual Theme & Atmosphere
 
-Minimal, focused dark UI inspired by Linear. Soft purple accents against deep navy/charcoal backgrounds. No visual clutter. Subtle borders and layered surfaces create depth without heavy shadows. Particle background adds ambient energy.
+Minimal, focused dark UI inspired by Linear. Soft purple accents against deep navy/charcoal backgrounds. No visual clutter. Subtle borders and layered surfaces create depth without heavy shadows. Desktop loads a particle canvas after first paint; mobile skips it.
 
 ## Color Palette & Roles
 
@@ -86,7 +86,7 @@ Use opacity modifiers for accent variations: `accent-primary/10` for light backg
 | `rounded-lg` | 8px | Buttons, list items, inputs (small) |
 | `rounded-xl` | 12px | Inputs, icon buttons, todo items |
 | `rounded-2xl` | 16px | Section cards, popovers, dropdowns |
-| `rounded-3xl` | 24px | Modals, main containers |
+| `rounded-3xl` | 24px | Unused for chrome; do not add for new modals |
 
 ## Shadows & Elevation
 
@@ -150,11 +150,11 @@ Framer Motion: whileHover scale 1.01, whileTap scale 0.99
 ### Modal
 
 ```
-Backdrop: bg-black/60 backdrop-blur-sm
-Container: bg-bg-card rounded-3xl border border-border-default shadow-2xl
+Backdrop: bg-black/60; desktop adds backdrop-blur-sm, mobile does not
+Container: bg-bg-card rounded-xl border border-border-default shadow-2xl
 ```
 
-Framer Motion entry: opacity 0->1, scale 0.95->1, y 20->0, duration 0.2s
+Mount is React state + timeout (not AnimatePresence). Desktop enter/exit: opacity + scale 0.95 + y 20, 220ms. Mobile: opacity only, 120ms, no initial scale/y.
 
 ### Checkbox
 
@@ -162,9 +162,10 @@ Framer Motion entry: opacity 0->1, scale 0.95->1, y 20->0, duration 0.2s
 w-7 h-7 rounded-lg border-2 flex items-center justify-center
 Unchecked: border-text-muted hover:border-accent-hover hover:bg-accent-primary/10
 Checked: bg-accent-primary border-accent-primary
+Completed title: line-through text-text-tertiary
 ```
 
-Framer Motion: whileHover scale 1.15 (desktop only)
+Framer Motion: whileTap only (0.9 desktop, 0.96 mobile). No hover scale.
 
 ### Delete Action
 
@@ -182,27 +183,24 @@ rounded-lg p-3 text-sm
 
 ## Motion & Animation
 
-All interactive elements use Framer Motion. Animations are reduced on mobile.
+Framer Motion is used where it still earns the cost. Mobile drops hover, particles, modal scale, and progress-bar motion.
 
 ### Scale Patterns
 
 | Element | Hover | Tap | Mobile hover | Mobile tap |
 |---|---|---|---|---|
-| Primary button | 1.02 | 0.98 | disabled | 0.99 |
-| Icon button | 1.05 | 0.95 | disabled | 0.98 |
-| Card | 1.01 | 0.99 | disabled | 0.995 |
-| Checkbox | 1.15 | 0.9 | disabled | 0.96 |
-| Close button | 1.1 | 0.9 | same | same |
+| Primary button | 1.02 (`usePrimaryHover`) | none | disabled | none |
+| Checkbox / icon tap | none | 0.9 | disabled | 0.96 |
 
 ### Transition Patterns
 
 - **Standard:** duration-200 (CSS transitions for colors/borders)
-- **Modal enter/exit:** 0.2s, scale + opacity + y-offset
-- **Dropdown enter/exit:** 0.16s easeOut, opacity + y-offset
-- **List item enter:** spring (stiffness 100, damping 25) desktop; 0.16s easeOut mobile
+- **Modal enter/exit:** desktop 220ms opacity + scale + y; mobile 120ms opacity only, no blur
+- **List item enter:** opacity 0->1 (no spring offset)
 - **List item exit:** 0.2s desktop, 0.12s mobile, slide left (x: -100 / -40)
-- **Checkbox check:** spring (stiffness 500, damping 15) desktop; 0.12s easeOut mobile
-- **Progress bar:** 0.5s easeOut desktop, 0.25s mobile
+- **List complete-to-bottom:** `layout` on the row; keep client ids stable while sorting display
+- **Progress bar:** always reserve `h-2` track. Desktop fill 0.5s easeOut; mobile instant width. Percent pop is desktop-only
+- **Focus / Discipline collapse (desktop):** height auto + opacity, ~0.22s. Mobile unmounts the body
 
 ### Reorder
 
@@ -215,9 +213,10 @@ All interactive elements use Framer Motion. Animations are reduced on mobile.
 - **Detection:** `useIsMobile()` hook using `matchMedia`
 - **Mobile changes:**
   - Header: hamburger menu replaces inline buttons
-  - Hover animations: disabled (only tap animations)
-  - Particles: reduced from 200 to 30
-  - Spring animations: replaced with simple easeOut (shorter duration)
+  - Hover animations: disabled (tap only)
+  - Particles: not rendered (desktop lazy-loads ~200 after first paint)
+  - Modal: no backdrop blur, no scale/y enter
+  - Progress bar: no width animation
   - Touch targets: minimum p-2.5 (40px)
 
 ## Do's and Don'ts
@@ -228,7 +227,7 @@ All interactive elements use Framer Motion. Animations are reduced on mobile.
 - Use opacity modifiers on accent token (accent-primary/10, accent-primary/20)
 - Disable hover animations on mobile (check useIsMobile)
 - Use Framer Motion for all interactive scale animations
-- Use rounded-3xl for modals, rounded-2xl for cards, rounded-xl for inputs
+- Use rounded-xl for modals, rounded-2xl for cards, rounded-xl for inputs
 - Use border-border-default for container borders, border-border-subtle for internal dividers
 - Add cursor-pointer to all interactive elements
 

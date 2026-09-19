@@ -1,15 +1,19 @@
 import { lazy, memo, Suspense, useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const ParticleBackgroundImpl = lazy(() => import("./ParticleBackgroundImpl"));
 
 /**
- * Decorative particles. The tsparticles chunk is not imported until after
- * first paint so login LCP is the form, not this background.
+ * Decorative particles. Skipped on mobile (canvas + modal blur janks).
+ * On desktop the chunk waits until after first paint.
  */
 function ParticleBackgroundWrapper() {
+  const isMobile = useIsMobile();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (isMobile) return;
+
     let idleId = 0;
     let timeoutId = 0;
     let cancelled = false;
@@ -36,9 +40,9 @@ function ParticleBackgroundWrapper() {
       if (idleId) window.cancelIdleCallback(idleId);
       if (timeoutId) window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [isMobile]);
 
-  if (!ready) return null;
+  if (isMobile || !ready) return null;
 
   return (
     <Suspense fallback={null}>

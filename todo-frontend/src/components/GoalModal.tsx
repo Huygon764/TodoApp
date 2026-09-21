@@ -234,7 +234,10 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       order: sortedItems.length,
       ...(target ? { target, count: 0 } : {}),
     });
-    persistItems(addIdsToItems(newItems, activeTab), newItems);
+    persistItems(
+      sortItemsByCompletion(addIdsToItems(newItems, activeTab)),
+      newItems,
+    );
     setNewTitle("");
   };
 

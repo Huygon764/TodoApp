@@ -19,3 +19,13 @@ test("sortItemsByCompletion moves a newly completed parent last", () => {
     ]).map((s) => s.title),
   ).toEqual(["b", "a"]);
 });
+
+test("an appended incomplete item sorts after open items and before completed", () => {
+  expect(
+    sortItemsByCompletion([
+      { title: "open", completed: false, order: 0 },
+      { title: "done", completed: true, order: 1 },
+      { title: "new", completed: false, order: 2 },
+    ]).map((s) => s.title),
+  ).toEqual(["open", "new", "done"]);
+});

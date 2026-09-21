@@ -21,6 +21,7 @@ import { useInlineEdit } from "@/hooks/useInlineEdit";
 import { useModalClose } from "@/hooks/useModalClose";
 import { useSubTaskManager } from "@/hooks/useSubTaskManager";
 import { addClientIds, removeClientIds } from "@/lib/itemIds";
+import { generateId } from "@/lib/generateId";
 import { sortItemsByCompletion } from "@/lib/sortItems";
 import {
   getWeekPeriod,
@@ -228,16 +229,15 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     const raw = newTitle.trim();
     if (!raw) return;
     const { title, target } = parseTarget(raw);
-    const newItems = removeIdsFromItems(sortedItems).concat({
+    const newItem: GoalItemWithId = {
+      id: `goal-item-${activeTab}-${generateId()}`,
       title,
       completed: false,
       order: sortedItems.length,
       ...(target ? { target, count: 0 } : {}),
-    });
-    persistItems(
-      sortItemsByCompletion(addIdsToItems(newItems, activeTab)),
-      newItems,
-    );
+    };
+    const appended = [...sortedItems, newItem];
+    persistItems(sortItemsByCompletion(appended), removeIdsFromItems(appended));
     setNewTitle("");
   };
 

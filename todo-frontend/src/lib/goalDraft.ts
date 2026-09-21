@@ -12,6 +12,7 @@ export function shouldIgnoreGoalReorder<T extends { id: string }>(
   current: T[],
 ): boolean {
   if (isSpuriousReorder(next, current)) return true;
+  if (next.length !== current.length) return true;
   const currentIds = new Set(current.map((item) => item.id));
   return next.some((item) => !currentIds.has(item.id));
 }

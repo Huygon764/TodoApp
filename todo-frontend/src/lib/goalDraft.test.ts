@@ -82,6 +82,15 @@ describe("shouldIgnoreGoalReorder", () => {
     ).toBe(true);
   });
 
+  test("ignores a reorder that drops a newly added item", () => {
+    expect(
+      shouldIgnoreGoalReorder(
+        [{ id: "a" }, { id: "b" }],
+        [{ id: "a" }, { id: "b" }, { id: "new" }],
+      ),
+    ).toBe(true);
+  });
+
   test("allows a real reorder of the current items", () => {
     expect(
       shouldIgnoreGoalReorder(

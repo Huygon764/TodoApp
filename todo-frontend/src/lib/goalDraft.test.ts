@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { isSpuriousReorder, shouldPersistGoalItemsOnClose } from "./goalDraft.js";
+import {
+  isSpuriousReorder,
+  shouldIgnoreGoalReorder,
+  shouldPersistGoalItemsOnClose,
+} from "./goalDraft.js";
 
 describe("isSpuriousReorder", () => {
   test("ignores empty next when the list still had items", () => {
@@ -49,6 +53,41 @@ describe("shouldPersistGoalItemsOnClose", () => {
         currentOrder: "a,b",
         initialOrder: "a,b",
       }),
+    ).toBe(false);
+  });
+});
+
+describe("shouldIgnoreGoalReorder", () => {
+  test("ignores empty next when the list still had items", () => {
+    expect(
+      shouldIgnoreGoalReorder([], [{ id: "year-a" }, { id: "year-b" }]),
+    ).toBe(true);
+  });
+
+  test("ignores a previous tab's items leaked into the current list", () => {
+    expect(
+      shouldIgnoreGoalReorder(
+        [{ id: "month-a" }, { id: "month-b" }],
+        [{ id: "year-a" }, { id: "year-b" }],
+      ),
+    ).toBe(true);
+  });
+
+  test("ignores a longer previous-tab list after the current list shrank", () => {
+    expect(
+      shouldIgnoreGoalReorder(
+        [{ id: "a" }, { id: "b" }, { id: "c" }],
+        [{ id: "a" }, { id: "c" }],
+      ),
+    ).toBe(true);
+  });
+
+  test("allows a real reorder of the current items", () => {
+    expect(
+      shouldIgnoreGoalReorder(
+        [{ id: "year-b" }, { id: "year-a" }],
+        [{ id: "year-a" }, { id: "year-b" }],
+      ),
     ).toBe(false);
   });
 });

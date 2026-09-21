@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ import {
   getYearOptionsForPicker,
 } from "@/lib/datePeriod";
 import { stepPeriod } from "@/lib/periodStep";
-import { isSpuriousReorder, shouldPersistGoalItemsOnClose } from "@/lib/goalDraft";
+import { shouldIgnoreGoalReorder, shouldPersistGoalItemsOnClose } from "@/lib/goalDraft";
 import { ListSkeleton } from "@/components/shared/ListSkeleton";
 import { LIFE_GOAL_PERIOD, type GoalType } from "@/constants/goals";
 import type { Goal, GoalItem } from "@/types";
@@ -45,8 +45,20 @@ interface GoalModalProps {
   onClose: () => void;
 }
 
-function addIdsToItems(items: GoalItem[]): (GoalItem & { id: string })[] {
-  return addClientIds(items, "goal-item", 8) as (GoalItem & { id: string })[];
+type GoalItemWithId = GoalItem & { id: string };
+
+type GoalMutationVars = {
+  goalId?: string;
+  type: GoalPeriodType;
+  period: string;
+  items: GoalItem[];
+};
+
+function addIdsToItems(
+  items: GoalItem[],
+  tab: GoalPeriodType,
+): GoalItemWithId[] {
+  return addClientIds(items, `goal-item-${tab}`, 8) as GoalItemWithId[];
 }
 
 function removeIdsFromItems(
@@ -65,7 +77,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const [selectedYearPeriod, setSelectedYearPeriod] = useState(getYearPeriod());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [localItems, setLocalItems] = useState<(GoalItem & { id: string })[]>([]);
+  const [localItems, setLocalItems] = useState<GoalItemWithId[]>([]);
   const { editingId, editValue, setEditValue, editInputRef, startEdit, cancelEdit, finishEdit } = useInlineEdit<string>();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState<Record<string, string>>({});
@@ -104,15 +116,17 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   });
 
   const goal = data ?? null;
-  const sortedItemsFromGoal = sortItemsByCompletion(addIdsToItems(goal?.items ?? []));
 
   // Reload when the modal opens or the tab/period changes. Do not depend on
   // `goal`: optimistic cache writes would reset localItems and kill the
   // completed-to-bottom layout animation.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen || isLoading) return;
+    setExpandedId(null);
     if (goal != null) {
-      const next = sortItemsByCompletion(addIdsToItems(goal.items ?? []));
+      const next = sortItemsByCompletion(
+        addIdsToItems(goal.items ?? [], activeTab),
+      );
       setLocalItems(next);
       initialOrderRef.current = next.map((i) => i.id).join(",");
     } else {
@@ -122,50 +136,64 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see comment above
   }, [isOpen, isLoading, activeTab, period]);
 
-  const sortedItems =
-    localItems.length > 0 ? localItems : sortedItemsFromGoal;
+  const sortedItems = localItems;
 
   const patchMutation = useMutation({
-    mutationFn: (items: GoalItem[]) =>
-      goal
-        ? apiPatch<{ goal: Goal }>(API_PATHS.GOAL(goal._id), { items })
+    mutationFn: (vars: GoalMutationVars) =>
+      vars.goalId
+        ? apiPatch<{ goal: Goal }>(API_PATHS.GOAL(vars.goalId), {
+            items: vars.items,
+          })
         : apiPost<{ goal: Goal }>(API_PATHS.GOALS, {
-            type: activeTab,
-            period,
-            items,
+            type: vars.type,
+            period: vars.period,
+            items: vars.items,
           }),
-    onMutate: async (items: GoalItem[]) => {
-      await queryClient.cancelQueries({ queryKey });
-      const previous = queryClient.getQueryData(queryKey);
-      // The query stores the Goal (or null) directly; keep that shape so other
-      // readers of this key (e.g. DayGoalsPanel) don't get a wrapped object.
-      queryClient.setQueryData(queryKey, goal ? { ...goal, items } : null);
-      return { previous };
+    onMutate: async (vars) => {
+      const key = ["goal", vars.type, vars.period] as const;
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<Goal | null>(key);
+      if (previous) {
+        queryClient.setQueryData(key, { ...previous, items: vars.items });
+      }
+      return { previous, queryKey: key };
     },
-    onError: (_err, _items, context) => {
+    onError: (_err, vars, context) => {
       if (context?.previous != null) {
-        queryClient.setQueryData(queryKey, context.previous);
-        const prev = context.previous as Goal | null;
-        if (prev) {
-          const next = sortItemsByCompletion(addIdsToItems(prev.items ?? []));
-          setLocalItems(next);
-        }
+        queryClient.setQueryData(context.queryKey, context.previous);
+      }
+      if (
+        vars.type === activeTab &&
+        vars.period === period &&
+        context?.previous != null
+      ) {
+        setLocalItems(
+          sortItemsByCompletion(
+            addIdsToItems(context.previous.items ?? [], vars.type),
+          ),
+        );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+    onSettled: (_data, _err, vars) => {
+      queryClient.invalidateQueries({
+        queryKey: ["goal", vars.type, vars.period],
+      });
     },
   });
 
-  const deleteItemMutation = useMutation({
-    mutationFn: (items: GoalItem[]) =>
-      goal
-        ? apiPatch<{ goal: Goal }>(API_PATHS.GOAL(goal._id), { items })
-        : Promise.reject(new Error("No goal")),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-    },
-  });
+  const persistItems = (
+    local: GoalItemWithId[],
+    serverItems?: GoalItem[],
+  ) => {
+    setLocalItems(local);
+    const vars: GoalMutationVars = {
+      type: activeTab,
+      period,
+      items: serverItems ?? removeIdsFromItems(local),
+    };
+    if (goal?._id) vars.goalId = goal._id;
+    patchMutation.mutate(vars);
+  };
 
   const handleCloseRef = useRef<() => void>(onClose);
   useModalClose(isOpen, () => handleCloseRef.current(), contentRef);
@@ -206,8 +234,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       order: sortedItems.length,
       ...(target ? { target, count: 0 } : {}),
     });
-    setLocalItems(addIdsToItems(newItems));
-    patchMutation.mutate(newItems);
+    persistItems(addIdsToItems(newItems, activeTab), newItems);
     setNewTitle("");
   };
 
@@ -233,8 +260,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       return { ...item, completed: nextCompleted };
     });
     const reordered = sortItemsByCompletion(toggled);
-    setLocalItems(reordered);
-    patchMutation.mutate(removeIdsFromItems(toggled));
+    persistItems(reordered, removeIdsFromItems(toggled));
   };
 
   const handleCounterIncrement = (id: string) => {
@@ -246,14 +272,10 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       return { ...item, count: next, completed: next >= target };
     });
     const reordered = sortItemsByCompletion(updated);
-    setLocalItems(reordered);
-    patchMutation.mutate(removeIdsFromItems(updated));
+    persistItems(reordered, removeIdsFromItems(updated));
   };
 
-  const subTaskManager = useSubTaskManager(localItems, (next) => {
-    setLocalItems(next);
-    patchMutation.mutate(removeIdsFromItems(next));
-  });
+  const subTaskManager = useSubTaskManager(localItems, persistItems);
 
   const addSubTask = (itemId: string, title: string) => {
     subTaskManager.addSubTask(itemId, title);
@@ -266,11 +288,11 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
   const moveSubTask = subTaskManager.moveSubTask;
 
   const handleDelete = (clientId: string) => {
-    const filtered = sortedItems.filter((it) => it.id !== clientId);
-    const reordered = removeIdsFromItems(
-      filtered.map((it, i) => ({ ...it, order: i }))
-    );
-    if (goal) deleteItemMutation.mutate(reordered);
+    if (!goal) return;
+    const filtered = sortedItems
+      .filter((it) => it.id !== clientId)
+      .map((it, i) => ({ ...it, order: i }));
+    persistItems(filtered);
   };
 
   const handleSelectPeriod = (p: string) => {
@@ -280,8 +302,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     setPickerOpen(false);
   };
 
-  const handleReorder = (newOrder: (GoalItem & { id: string })[]) => {
-    if (isSpuriousReorder(newOrder, sortedItems)) return;
+  const handleReorder = (newOrder: GoalItemWithId[]) => {
+    if (shouldIgnoreGoalReorder(newOrder, sortedItems)) return;
     setLocalItems(newOrder.map((it, idx) => ({ ...it, order: idx })));
   };
 
@@ -296,8 +318,8 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
     const updated = localItems.map((it) =>
       it.id === id ? { ...it, title: value } : it
     );
-    setLocalItems(updated);
-    if (goal) patchMutation.mutate(removeIdsFromItems(updated));
+    if (goal) persistItems(updated);
+    else setLocalItems(updated);
   };
 
   const handleClose = () => {
@@ -313,16 +335,21 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
       const payload = [...localItems]
         .sort((a, b) => a.order - b.order)
         .map((it, idx) => ({ ...it, order: idx }));
-      const itemsToSave = removeIdsFromItems(payload);
+      const vars: GoalMutationVars = {
+        type: activeTab,
+        period,
+        items: removeIdsFromItems(payload),
+      };
+      if (goal?._id) vars.goalId = goal._id;
       onClose();
-      patchMutation.mutate(itemsToSave);
+      patchMutation.mutate(vars);
     } else {
       onClose();
     }
   };
   handleCloseRef.current = handleClose;
 
-  const renderGoalItem = (item: GoalItem & { id: string }, dragHandle: ReactNode) => (
+  const renderGoalItem = (item: GoalItemWithId, dragHandle: ReactNode) => (
     <>
       <motion.div
         className={`flex items-center gap-4 p-3 rounded-xl border transition-colors duration-200 ${
@@ -406,7 +433,7 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           type="button"
           whileTap={controlTap}
           onClick={() => handleDelete(item.id)}
-          disabled={deleteItemMutation.isPending}
+          disabled={patchMutation.isPending}
           className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-bg transition-all duration-200 disabled:opacity-50 cursor-pointer"
           aria-label={t("goalModal.deleteAria")}
         >
@@ -527,7 +554,13 @@ export function GoalModal({ isOpen, onClose }: GoalModalProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            <Reorder.Group axis="y" values={sortedItems} onReorder={handleReorder} className="space-y-2">
+            <Reorder.Group
+              key={`${activeTab}-${period}`}
+              axis="y"
+              values={sortedItems}
+              onReorder={handleReorder}
+              className="space-y-2"
+            >
               <AnimatePresence initial={false} mode="popLayout">
                 {sortedItems.map((item) => (
                   <ReorderItem key={item.id} item={item} isMobile={isMobile} layoutId={item.id}>

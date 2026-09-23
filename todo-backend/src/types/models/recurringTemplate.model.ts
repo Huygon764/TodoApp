@@ -16,6 +16,8 @@ export interface IRecurringTemplateItem {
   target?: number;
   /** 1-7, 1 = Monday, 7 = Sunday (for type = "week") */
   daysOfWeek?: number[];
+  /** One random weekday per ISO week. Takes precedence over daysOfWeek. */
+  weeklyRandom?: boolean;
   /** 1-31 (for type = "month") */
   daysOfMonth?: number[];
   /** Specific days in year (for type = "year") */

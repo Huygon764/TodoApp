@@ -18,11 +18,14 @@ import { TargetBadge } from "@/components/shared/TargetBadge";
 import { LinkifiedText } from "@/components/shared/LinkifiedText";
 import { parseTarget } from "@/lib/parseTarget";
 import { ListSkeleton } from "@/components/shared/ListSkeleton";
+import { getWeekPeriod } from "@/lib/datePeriod";
 import {
+  WEEKDAY_SHORT,
   isLegacyRecurringItem,
   isMonthItemVisible,
-  isWeekItemVisible,
+  isWeekItemInContext,
   isYearItemVisible,
+  pickWeeklyRandomWeekday,
 } from "@/lib/recurringSchedule";
 
 /** Recurring template: week/month/year; items are added to day todo based on schedule */
@@ -52,6 +55,7 @@ export function RecurringTemplateModal({
 
   // Context-level schedule selectors (single-day context per tab)
   const [weeklyContextDay, setWeeklyContextDay] = useState<number>(1); // 1 = Monday
+  const [weeklyRandomMode, setWeeklyRandomMode] = useState(false);
   const [monthlyContextDay, setMonthlyContextDay] = useState<number>(1); // 1-31
   const [yearlyContext, setYearlyContext] = useState<{ month: number; day: number }>(() => {
     const today = new Date();
@@ -81,7 +85,7 @@ export function RecurringTemplateModal({
     .map((item, idx) => ({ item, idx }))
     .filter(({ item }) => {
       if (activeTab === "week") {
-        return isWeekItemVisible(item, weeklyContextDay);
+        return isWeekItemInContext(item, weeklyContextDay, weeklyRandomMode);
       }
       if (activeTab === "month") {
         return isMonthItemVisible(item, monthlyContextDay);
@@ -99,7 +103,11 @@ export function RecurringTemplateModal({
         title,
         order: items.length,
         ...(target ? { target } : {}),
-        ...(activeTab === "week" ? { daysOfWeek: [weeklyContextDay] } : {}),
+        ...(activeTab === "week"
+          ? weeklyRandomMode
+            ? { weeklyRandom: true }
+            : { daysOfWeek: [weeklyContextDay] }
+          : {}),
         ...(activeTab === "month" ? { daysOfMonth: [monthlyContextDay] } : {}),
         ...(activeTab === "year"
           ? { datesOfYear: [{ month: yearlyContext.month, day: yearlyContext.day }] }
@@ -266,12 +274,16 @@ export function RecurringTemplateModal({
                           { label: "Sat", value: 6 },
                           { label: "Sun", value: 7 },
                         ].map((day) => {
-                          const active = weeklyContextDay === day.value;
+                          const active =
+                            !weeklyRandomMode && weeklyContextDay === day.value;
                           return (
                             <button
                               key={day.value}
                               type="button"
-                              onClick={() => setWeeklyContextDay(day.value)}
+                              onClick={() => {
+                                setWeeklyRandomMode(false);
+                                setWeeklyContextDay(day.value);
+                              }}
                               className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                                 active
                                   ? "bg-accent-primary/20 border-accent-primary/60 text-accent-hover"
@@ -282,6 +294,17 @@ export function RecurringTemplateModal({
                             </button>
                           );
                         })}
+                        <button
+                          type="button"
+                          onClick={() => setWeeklyRandomMode(true)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                            weeklyRandomMode
+                              ? "bg-accent-primary/20 border-accent-primary/60 text-accent-hover"
+                              : "bg-bg-surface/60 border-border-subtle text-text-tertiary hover:bg-bg-surface/60 hover:text-text-secondary"
+                          }`}
+                        >
+                          {t("recurringModal.randomChip")}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -411,6 +434,19 @@ export function RecurringTemplateModal({
                                     >
                                       <LinkifiedText text={item.title} />
                                     </span>
+                                    {item.weeklyRandom && template?.userId && (
+                                      <span className="text-[11px] text-text-muted leading-tight">
+                                        {t("recurringModal.randomBadge", {
+                                          day: WEEKDAY_SHORT[
+                                            pickWeeklyRandomWeekday(
+                                              template.userId,
+                                              item.title,
+                                              getWeekPeriod(),
+                                            ) - 1
+                                          ],
+                                        })}
+                                      </span>
+                                    )}
                                     {isLegacy && (
                                       <span className="text-[11px] text-text-muted leading-tight">
                                         {activeTab === "week"

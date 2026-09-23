@@ -30,6 +30,10 @@ const recurringTemplateItemSchema = new Schema<IRecurringTemplateItem>(
         message: "daysOfWeek must contain integers between 1 and 7",
       },
     },
+    weeklyRandom: {
+      type: Boolean,
+      default: undefined,
+    },
     // For monthly templates: 1-31
     daysOfMonth: {
       type: [Number],

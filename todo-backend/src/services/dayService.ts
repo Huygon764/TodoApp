@@ -1,5 +1,7 @@
 import { DefaultItem, RecurringTemplate, DateTemplate, DayTodo } from "../models/index.js";
 import type { IDayTodoItem, IRecurringTemplateItem } from "../types/index.js";
+import { getWeekPeriod } from "../utils/datePeriod.js";
+import { shouldIncludeWeeklyItem } from "../utils/weeklyRandom.js";
 
 /** Parse YYYY-MM-DD to Date at noon UTC for weekday/monthday checks */
 export function parseDateString(dateStr: string): Date {
@@ -59,17 +61,6 @@ export function toWeekdayIndexMondayFirst(dateObj: Date): number {
   return ((jsDay + 6) % 7) + 1; // 1-7
 }
 
-function shouldIncludeWeeklyItem(
-  item: IRecurringTemplateItem,
-  weekdayIndex: number,
-  isMonday: boolean
-): boolean {
-  if (Array.isArray(item.daysOfWeek) && item.daysOfWeek.length > 0) {
-    return item.daysOfWeek.includes(weekdayIndex);
-  }
-  // Backward compatibility: items without schedule behave like Monday-only
-  return isMonday;
-}
 
 function shouldIncludeMonthlyItem(
   item: IRecurringTemplateItem,
@@ -100,6 +91,7 @@ function shouldIncludeYearlyItem(
 /** Fetch recurring templates (week/month/year) and filter items by the given date's schedule */
 export async function fetchAndFilterTemplateItems(
   userId: string,
+  date: string,
   weekdayIndex: number,
   isMonday: boolean,
   dayOfMonth: number,
@@ -108,13 +100,21 @@ export async function fetchAndFilterTemplateItems(
 ): Promise<{ title: string; target?: number; subTasks?: { title: string; target?: number }[] }[]> {
   const types = ["week", "month", "year"] as const;
   const templates = await RecurringTemplate.find({ userId, type: { $in: types } });
+  const weekPeriod = getWeekPeriod(parseDateString(date));
 
   const filtered: { title: string; target?: number; subTasks?: { title: string; target?: number }[] }[] = [];
   for (const tpl of templates) {
     for (const item of tpl.items) {
       let include = false;
-      if (tpl.type === "week") include = shouldIncludeWeeklyItem(item, weekdayIndex, isMonday);
-      else if (tpl.type === "month") include = shouldIncludeMonthlyItem(item, dayOfMonth, isFirstOfMonth);
+      if (tpl.type === "week") {
+        include = shouldIncludeWeeklyItem(
+          item,
+          weekdayIndex,
+          isMonday,
+          userId,
+          weekPeriod,
+        );
+      } else if (tpl.type === "month") include = shouldIncludeMonthlyItem(item, dayOfMonth, isFirstOfMonth);
       else if (tpl.type === "year") include = shouldIncludeYearlyItem(item, month, dayOfMonth);
       if (include) filtered.push(item);
     }
@@ -145,7 +145,7 @@ export async function initializeDayItems(
   });
 
   const recurringItems = await fetchAndFilterTemplateItems(
-    userId, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
+    userId, date, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
   );
   if (recurringItems.length) {
     items = mergeItemsByTitle(items, recurringItems, items.length);
@@ -183,7 +183,7 @@ export async function mergeNewItemsIntoExistingDay(
 
   // Merge recurring templates (week / month / year) based on schedule
   const recurringItems = await fetchAndFilterTemplateItems(
-    userId, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
+    userId, date, weekdayIndex, isMonday, dayOfMonth, isFirstOfMonth, month
   );
   if (recurringItems.length) {
     const before = items.length;

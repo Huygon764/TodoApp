@@ -37,7 +37,7 @@ export const getRecurringTemplate = catchAsync(
 export const addRecurringTemplateItem = catchAsync(
   async (req: Request, res: Response) => {
     const userId = req.user!.userId;
-    const { type, title, order, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
+    const { type, title, order, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks, weeklyRandom } = req.body as {
       type: "week" | "month" | "year";
       title: string;
       order?: number;
@@ -46,6 +46,7 @@ export const addRecurringTemplateItem = catchAsync(
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
       subTasks?: { title: string }[];
+      weeklyRandom?: boolean;
     };
 
     const template = await getOrCreate(RecurringTemplate, { userId, type }, { items: [] });
@@ -58,13 +59,19 @@ export const addRecurringTemplateItem = catchAsync(
       order: newOrder,
     };
 
+    const isWeeklyRandom = type === "week" && weeklyRandom === true;
     const normalizedDaysOfWeek =
-      type === "week" ? normalizeUniqueSortedInts(daysOfWeek, 1, 7) : undefined;
+      type === "week" && !isWeeklyRandom
+        ? normalizeUniqueSortedInts(daysOfWeek, 1, 7)
+        : undefined;
     const normalizedDaysOfMonth =
       type === "month" ? normalizeUniqueSortedInts(daysOfMonth, 1, 31) : undefined;
     const normalizedDatesOfYear =
       type === "year" ? normalizeDatesOfYear(datesOfYear) : undefined;
 
+    if (isWeeklyRandom) {
+      itemBase.weeklyRandom = true;
+    }
     if (normalizedDaysOfWeek) {
       itemBase.daysOfWeek = normalizedDaysOfWeek;
     }
@@ -99,13 +106,14 @@ export const patchRecurringTemplateItem = catchAsync(
     const userId = req.user!.userId;
     const { type, idx } = req.params;
     const index = parseInt(idx!, 10);
-    const { title, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks } = req.body as {
+    const { title, target, daysOfWeek, daysOfMonth, datesOfYear, subTasks, weeklyRandom } = req.body as {
       title?: string;
       target?: number;
       daysOfWeek?: number[];
       daysOfMonth?: number[];
       datesOfYear?: { month: number; day: number }[];
       subTasks?: { title: string }[];
+      weeklyRandom?: boolean;
     };
 
     const template = await RecurringTemplate.findOne({
@@ -130,8 +138,17 @@ export const patchRecurringTemplateItem = catchAsync(
       item.target = normalizeTargetField(target);
     }
 
+    if (type === "week" && "weeklyRandom" in req.body) {
+      if (weeklyRandom === true) {
+        item.weeklyRandom = true;
+        item.daysOfWeek = undefined;
+      } else {
+        item.weeklyRandom = undefined;
+      }
+    }
+
     const normalizedDaysOfWeek =
-      type === "week" && "daysOfWeek" in req.body
+      type === "week" && "daysOfWeek" in req.body && !item.weeklyRandom
         ? normalizeUniqueSortedInts(daysOfWeek, 1, 7)
         : undefined;
     const normalizedDaysOfMonth =

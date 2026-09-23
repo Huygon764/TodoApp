@@ -97,6 +97,8 @@
     "addPlaceholder": "Add item...",
     "add": "Add",
     "empty": "No items yet",
+    "randomChip": "Random",
+    "randomBadge": "Random · {{day}} this week",
     "legacyBadgeWeek": "Legacy — no schedule set, applies on Monday only",
     "legacyBadgeMonth": "Legacy — no schedule set, applies on the 1st only",
     "legacyBadgeYear": "Legacy — no schedule set, applies on Jan 1 only",

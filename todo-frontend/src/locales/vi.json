@@ -97,6 +97,8 @@
     "addPlaceholder": "Thêm item...",
     "add": "Thêm",
     "empty": "Chưa có item nào",
+    "randomChip": "Ngẫu nhiên",
+    "randomBadge": "Ngẫu nhiên · {{day}} tuần này",
     "legacyBadgeWeek": "Cũ — chưa có lịch, chỉ áp dụng thứ Hai",
     "legacyBadgeMonth": "Cũ — chưa có lịch, chỉ áp dụng ngày 1",
     "legacyBadgeYear": "Cũ — chưa có lịch, chỉ áp dụng 1/1",

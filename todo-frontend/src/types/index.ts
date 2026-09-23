@@ -115,6 +115,8 @@ export interface RecurringTemplateItem {
   target?: number;
   /** 1-7, 1 = Monday, 7 = Sunday (for weekly templates) */
   daysOfWeek?: number[];
+  /** One random weekday per ISO week. Takes precedence over daysOfWeek. */
+  weeklyRandom?: boolean;
   /** 1-31 (for monthly templates) */
   daysOfMonth?: number[];
   /** Specific days in year (for yearly templates) */

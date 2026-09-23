@@ -14,3 +14,7 @@ export {
   normalizeUniqueSortedInts,
   normalizeDatesOfYear,
 } from "./normalizeRecurringData.js";
+export {
+  pickWeeklyRandomWeekday,
+  shouldIncludeWeeklyItem,
+} from "./weeklyRandom.js";

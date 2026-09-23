@@ -152,6 +152,7 @@ export const validatePostRecurringTemplateBody = [
   ...daysOfMonthValidators(),
   ...datesOfYearValidators(),
   ...subTasksValidators(),
+  body("weeklyRandom").optional().isBoolean().withMessage("weeklyRandom must be a boolean"),
 ];
 
 export const validateRecurringTemplateTypeParam = [
@@ -168,6 +169,7 @@ export const validatePatchRecurringTemplateItemBody = [
   ...daysOfMonthValidators(),
   ...datesOfYearValidators(),
   ...subTasksValidators(),
+  body("weeklyRandom").optional().isBoolean().withMessage("weeklyRandom must be a boolean"),
 ];
 
 export const validateGetReviewsQuery = [

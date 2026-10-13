@@ -21,7 +21,6 @@ const INVITE_REASON_MESSAGE: Record<string, string> = {
 
 interface InviteCheck {
   valid: boolean;
-  name?: string;
   reason?: string;
 }
 
@@ -35,7 +34,7 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const { code, checking, invalid, invalidMessage, data: invite } =
+  const { code, checking, invalid, invalidMessage } =
     useCodeCheck<InviteCheck>({
       queryKey: "invite",
       pathFn: API_PATHS.AUTH_REGISTER_CHECK,
@@ -93,12 +92,6 @@ export function RegisterPage() {
         checkingLabel="Đang kiểm tra mã mời..."
       >
         <form onSubmit={handleSubmit} className="space-y-5">
-          {invite?.name && (
-            <p className="text-text-tertiary text-sm text-center">
-              Lời mời cho: <span className="text-white">{invite.name}</span>
-            </p>
-          )}
-
           <div>
             <label className="block text-text-secondary text-sm font-medium mb-2">
               Tên đăng nhập

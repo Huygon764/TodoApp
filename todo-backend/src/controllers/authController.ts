@@ -20,11 +20,7 @@ import {
   findOrCreateGoogleUser,
 } from "../services/googleAuth.js";
 import { notifyPendingSignup } from "../services/pendingApproval.js";
-import type {
-  IUserDocument,
-  IInviteCodeDocument,
-  InviteKind,
-} from "../types/index.js";
+import type { IUserDocument, InviteKind } from "../types/index.js";
 
 const INVITE_REASON_MESSAGE: Record<InviteInvalidReason, string> = {
   not_found: MESSAGES.INVITE.NOT_FOUND,
@@ -35,30 +31,22 @@ const INVITE_REASON_MESSAGE: Record<InviteInvalidReason, string> = {
 
 /**
  * Shared non-consuming code check for the register/reset pages.
- * Returns { valid:true, ...extra } only when the code is valid AND of
- * the expected kind; otherwise { valid:false, reason }.
+ * Returns only { valid }. A wrong kind is the same as an unknown code.
  */
 async function respondCodeCheck(
   req: Request,
   res: Response,
   expectedKind: InviteKind,
-  buildExtra: (invite: IInviteCodeDocument) => Record<string, unknown>
 ): Promise<void> {
   const code = typeof req.query.code === "string" ? req.query.code : "";
   if (!code) {
-    sendSuccess(res, 200, { valid: false, reason: "not_found" });
+    sendSuccess(res, 200, { valid: false });
     return;
   }
   const result = await validateInviteCode(code);
-  if (result.valid && (result.invite.kind ?? "signup") === expectedKind) {
-    sendSuccess(res, 200, {
-      valid: true,
-      ...buildExtra(result.invite),
-    });
-    return;
-  }
-  const reason = result.valid ? "not_found" : result.reason;
-  sendSuccess(res, 200, { valid: false, reason });
+  const valid =
+    result.valid && (result.invite.kind ?? "signup") === expectedKind;
+  sendSuccess(res, 200, { valid });
 }
 
 const COOKIE_OPTIONS = {
@@ -176,7 +164,7 @@ export const me = catchAsync(async (req: Request, res: Response) => {
  * show an error instead of a form when the invite is bad.
  */
 export const checkInvite = catchAsync((req: Request, res: Response) =>
-  respondCodeCheck(req, res, "signup", (invite) => ({ name: invite.name }))
+  respondCodeCheck(req, res, "signup")
 );
 
 /**
@@ -246,9 +234,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
  * Non-consuming validity check for a password-reset code.
  */
 export const checkReset = catchAsync((req: Request, res: Response) =>
-  respondCodeCheck(req, res, "reset", (invite) => ({
-    username: invite.targetUsername,
-  }))
+  respondCodeCheck(req, res, "reset")
 );
 
 /**

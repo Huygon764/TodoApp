@@ -20,7 +20,6 @@ const RESET_REASON_MESSAGE: Record<string, string> = {
 
 interface ResetCheck {
   valid: boolean;
-  username?: string;
   reason?: string;
 }
 
@@ -33,7 +32,7 @@ export function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const { code, checking, invalid, invalidMessage, data: reset } =
+  const { code, checking, invalid, invalidMessage } =
     useCodeCheck<ResetCheck>({
       queryKey: "reset",
       pathFn: API_PATHS.AUTH_RESET_CHECK,
@@ -81,13 +80,6 @@ export function ResetPasswordPage() {
         checkingLabel="Đang kiểm tra link..."
       >
         <form onSubmit={handleSubmit} className="space-y-5">
-          {reset?.username && (
-            <p className="text-text-tertiary text-sm text-center">
-              Đặt lại mật khẩu cho:{" "}
-              <span className="text-white">{reset.username}</span>
-            </p>
-          )}
-
           <PasswordField
             label="Mật khẩu mới"
             value={password}

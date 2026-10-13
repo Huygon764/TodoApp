@@ -29,6 +29,11 @@ const isDuplicateKeyError = (error: Error): error is MongooseDuplicateKeyError =
 const isJwtError = (error: Error): boolean =>
   error.name === "JsonWebTokenError" || error.name === "TokenExpiredError";
 
+const isJsonParseError = (error: Error): boolean =>
+  error instanceof SyntaxError &&
+  (error as SyntaxError & { status?: number; type?: string }).status === 400 &&
+  (error as SyntaxError & { type?: string }).type === "entity.parse.failed";
+
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (env.nodeEnv === "development") {
     console.error("❌ Error:", err);
@@ -55,6 +60,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 
   if (isJwtError(err)) {
     return sendError(res, 401, MESSAGES.AUTH.TOKEN_INVALID);
+  }
+
+  if (isJsonParseError(err)) {
+    return sendError(res, 400, "Invalid JSON body");
   }
 
   return sendError(res, 500, MESSAGES.COMMON.SERVER_ERROR);

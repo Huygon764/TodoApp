@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.js";
+import { createRateLimit } from "../middleware/rateLimit.js";
 import {
   validateGetReviewsQuery,
   validateReviewDraftQuery,
@@ -18,6 +19,12 @@ import {
 } from "../controllers/reviewController.js";
 
 const router = Router();
+
+const analyzeLimiter = createRateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  key: (req) => req.user?.userId ?? req.ip ?? "unknown",
+});
 
 router.use(authenticate);
 
@@ -44,6 +51,7 @@ router.post(
 
 router.post(
   "/analyze",
+  analyzeLimiter,
   validateAnalyzeReviewsBody,
   validateRequest,
   analyzeReviews

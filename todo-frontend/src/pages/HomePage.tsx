@@ -3,11 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { DefaultListIcon } from "@/components/icons/DefaultListIcon";
-import { ExpenseIcon } from "@/components/icons/ExpenseIcon";
 import { FreetimeIcon } from "@/components/icons/FreetimeIcon";
 import { API_PATHS } from "@/constants/api";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
-import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, ExpenseSummary, User } from "@/types";
+import type { DayTodo, DayTodoItem, DayReflectionMeta, DefaultItem, User } from "@/types";
 import { getTodayInTimezone } from "@/lib/datePeriod";
 import { DateNav } from "@/components/DateNav";
 import { DayGoalsPanel } from "@/components/DayGoalsPanel";
@@ -48,9 +47,6 @@ const HabitStatsModal = lazy(() =>
   import("@/components/HabitStatsModal").then((m) => ({
     default: m.HabitStatsModal,
   })),
-);
-const ExpenseModal = lazy(() =>
-  import("@/components/ExpenseModal").then((m) => ({ default: m.ExpenseModal })),
 );
 const SettingsModal = lazy(() =>
   import("@/components/SettingsModal").then((m) => ({
@@ -129,16 +125,6 @@ export function HomePage() {
     queryFn: async () => {
       const res = await apiGet<{ items: DefaultItem[] }>(API_PATHS.DEFAULT);
       return res.data?.items ?? [];
-    },
-  });
-
-  const { data: dayExpenseSummary } = useQuery({
-    queryKey: ["expenses-summary", selectedDate, selectedDate],
-    queryFn: async () => {
-      const res = await apiGet<ExpenseSummary>(
-        API_PATHS.EXPENSES_SUMMARY(selectedDate, selectedDate),
-      );
-      return res.data;
     },
   });
 
@@ -296,21 +282,6 @@ export function HomePage() {
               </span>
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => openM("expense")}
-            className="w-full flex items-center justify-between gap-3 p-4 rounded-xl bg-bg-card border border-border-default hover:border-accent-primary/30 hover:bg-bg-card/80 transition-colors text-left"
-          >
-            <span className="flex items-center gap-3 min-w-0">
-              <ExpenseIcon className="w-5 h-5 shrink-0 text-accent-hover" />
-              <span className="font-medium text-text-secondary">
-                {t("expense.title")}
-              </span>
-            </span>
-            <span className="shrink-0 text-lg font-semibold text-white tabular-nums">
-              {(dayExpenseSummary?.total ?? 0).toLocaleString("vi-VN")}đ
-            </span>
-          </button>
         </motion.section>
       </main>
 
@@ -367,9 +338,6 @@ export function HomePage() {
         )}
         {loadedModals.habitStats && (
           <HabitStatsModal isOpen={openModal === "habitStats"} onClose={closeM} />
-        )}
-        {loadedModals.expense && (
-          <ExpenseModal isOpen={openModal === "expense"} onClose={closeM} />
         )}
         {loadedModals.settings && (
           <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />

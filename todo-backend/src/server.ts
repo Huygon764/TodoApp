@@ -13,6 +13,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.disable("x-powered-by");
+// One reverse proxy (Cloud Run). A client-supplied X-Forwarded-For is not req.ip.
+app.set("trust proxy", 1);
 
 app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -33,8 +35,14 @@ app.use(
 
 app.use(cookieParser());
 
-// 25mb so a full data-import upload (many days of history) fits.
-app.use(express.json({ limit: "25mb" }));
+const defaultJson = express.json({ limit: "1mb" });
+const importJson = express.json({ limit: "25mb" });
+app.use((req, res, next) => {
+  if (req.method === "POST" && req.path === "/api/data/import") {
+    return importJson(req, res, next);
+  }
+  return defaultJson(req, res, next);
+});
 app.use(express.urlencoded({ extended: true }));
 
 // Telegram webhook. Mounted at the app root (no path prefix) so Express

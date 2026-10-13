@@ -40,7 +40,6 @@ export type ModalKey =
   | "peopleNotes"
   | "habits"
   | "habitStats"
-  | "expense"
   | "settings";
 
 interface HeaderProps {

@@ -5,6 +5,8 @@ interface RateLimitOptions {
   windowMs: number;
   max: number;
   message?: string;
+  /** Defaults to the client IP (respects `trust proxy`). */
+  key?: (req: Request) => string;
 }
 
 /**
@@ -17,6 +19,7 @@ export function createRateLimit({
   windowMs,
   max,
   message = "Too many requests, please try again later",
+  key = (req) => req.ip ?? "unknown",
 }: RateLimitOptions) {
   const hits = new Map<string, { count: number; resetAt: number }>();
 
@@ -31,12 +34,12 @@ export function createRateLimit({
   sweep.unref?.();
 
   return (req: Request, _res: Response, next: NextFunction): void => {
-    const key = req.ip ?? "unknown";
+    const bucket = key(req);
     const now = Date.now();
-    const entry = hits.get(key);
+    const entry = hits.get(bucket);
 
     if (!entry || now > entry.resetAt) {
-      hits.set(key, { count: 1, resetAt: now + windowMs });
+      hits.set(bucket, { count: 1, resetAt: now + windowMs });
       next();
       return;
     }

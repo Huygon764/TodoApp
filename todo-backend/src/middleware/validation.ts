@@ -225,8 +225,8 @@ export const validatePostReviewBody = [
 export const validateAnalyzeReviewsBody = [
   body("reviewIds")
     .optional()
-    .isArray()
-    .withMessage("reviewIds must be an array"),
+    .isArray({ max: 30 })
+    .withMessage("reviewIds must be an array of at most 30 ids"),
   body("reviewIds.*").optional().isString(),
   body("from").optional().trim().isString(),
   body("to").optional().trim().isString(),

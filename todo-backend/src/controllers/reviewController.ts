@@ -158,6 +158,8 @@ export const analyzeReviews = catchAsync(async (req: Request, res: Response) => 
     }).sort({ period: 1 });
   }
 
+  reviews = reviews.slice(0, 30);
+
   if (reviews.length === 0) {
     return sendSuccess(res, 200, {
       analysis: "No reviews to analyze. Add some reviews first.",

@@ -15,7 +15,7 @@ export interface IHabitDocument extends IHabit, Document {
   _id: Types.ObjectId;
 }
 
-export type HabitLogKind = "done" | "skipped";
+export type HabitLogKind = "done" | "skipped" | "slack";
 
 export interface IHabitLog {
   userId: Types.ObjectId;

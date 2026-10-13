@@ -160,6 +160,136 @@ test("rate excludes skipped scheduled days from the denominator", () => {
   expect(r).toEqual({ scheduled: 2, done: 1, rate: 0.5 });
 });
 
+test("one slack between dones bridges without incrementing", () => {
+  const logDates = new Set(["2026-07-13", "2026-07-15"]);
+  const slackDates = new Set(["2026-07-14"]);
+  expect(
+    computeStreak({
+      today: "2026-07-15",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(2);
+});
+
+test("two consecutive slacks break the streak", () => {
+  const logDates = new Set(["2026-07-13", "2026-07-16"]);
+  const slackDates = new Set(["2026-07-14", "2026-07-15"]);
+  expect(
+    computeStreak({
+      today: "2026-07-16",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(1);
+});
+
+test("a skip between two slacks still breaks the streak", () => {
+  const slackDates = new Set(["2026-07-13", "2026-07-15"]);
+  const skipDates = new Set(["2026-07-14"]);
+  expect(
+    computeStreak({
+      today: "2026-07-15",
+      daysOfWeek: EVERY_DAY,
+      logDates: new Set(["2026-07-12"]),
+      skipDates,
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(0);
+});
+
+test("an off day between two slacks still breaks the streak", () => {
+  // Mon 13 and Wed 15 are scheduled; Tue 14 is off.
+  const slackDates = new Set(["2026-07-13", "2026-07-15"]);
+  expect(
+    computeStreak({
+      today: "2026-07-15",
+      daysOfWeek: [1, 3, 5],
+      logDates: new Set(["2026-07-10"]),
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(0);
+});
+
+test("alternating done and slack does not break the streak", () => {
+  const logDates = new Set(["2026-07-13", "2026-07-15"]);
+  const slackDates = new Set(["2026-07-14", "2026-07-16"]);
+  expect(
+    computeStreak({
+      today: "2026-07-16",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(2);
+});
+
+test("marking the second slack today breaks the streak immediately", () => {
+  const slackDates = new Set(["2026-07-15", "2026-07-16"]);
+  expect(
+    computeStreak({
+      today: "2026-07-16",
+      daysOfWeek: EVERY_DAY,
+      logDates: new Set(["2026-07-14"]),
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(0);
+});
+
+test("rate excludes slack days from the denominator", () => {
+  const logDates = new Set(["2026-07-13"]);
+  const slackDates = new Set(["2026-07-14"]);
+  const r = computeRate(
+    "2026-07-13",
+    "2026-07-15",
+    EVERY_DAY,
+    logDates,
+    "2026-07-01",
+    new Set(),
+    slackDates,
+  );
+  expect(r).toEqual({ scheduled: 2, done: 1, rate: 0.5 });
+});
+
+test("best streak survives one slack and ends at the second", () => {
+  const logDates = new Set(["2026-07-13", "2026-07-14", "2026-07-17"]);
+  const slackDates = new Set(["2026-07-15", "2026-07-16"]);
+  expect(
+    computeBestStreak({
+      today: "2026-07-17",
+      daysOfWeek: EVERY_DAY,
+      logDates,
+      slackDates,
+      createdDate: "2026-07-01",
+    }),
+  ).toBe(2);
+});
+
+test("windowStates marks slack cells", () => {
+  const states = windowStates(
+    "2026-07-15",
+    3,
+    EVERY_DAY,
+    new Set(["2026-07-13"]),
+    "2026-07-01",
+    new Set(),
+    new Set(["2026-07-14"]),
+  );
+  expect(states).toEqual([
+    { date: "2026-07-13", state: "done" },
+    { date: "2026-07-14", state: "slack" },
+    { date: "2026-07-15", state: "missed" },
+  ]);
+});
+
 test("windowStates marks skipped cells", () => {
   const states = windowStates(
     "2026-07-15",

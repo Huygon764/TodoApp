@@ -10,7 +10,7 @@ files after actual product domains, such as `overview.md`, `billing.md`,
 
 ## Current Product Contract
 
-- [`discipline.md`](discipline.md): habit ticks, skip-as-bridge, two-day window,
+- [`discipline.md`](discipline.md): habit ticks, skip, slack, two-day window,
   streak and rate rules.
 
 

@@ -37,7 +37,7 @@ export function isWeekItemVisible(
   item: RecurringTemplateItem,
   weekday: number,
 ): boolean {
-  if (item.weeklyRandom) return true;
+  if (item.weeklyRandom) return false;
   if (Array.isArray(item.daysOfWeek) && item.daysOfWeek.length > 0) {
     return item.daysOfWeek.includes(weekday);
   }

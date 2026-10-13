@@ -214,6 +214,10 @@
     "pastDay": "Habit chỉ tick trong chính ngày đó.",
     "skip": "Bỏ qua {{name}}",
     "unskip": "Huỷ bỏ qua {{name}}",
+    "slack": "Lười {{name}}",
+    "unslack": "Bỏ lười {{name}}",
+    "markSkip": "Bỏ qua",
+    "markSlack": "Lười",
     "skipDay": "Bỏ qua ngày",
     "unskipDay": "Huỷ bỏ qua ngày"
   },
@@ -238,6 +242,7 @@
     "legendDone": "xong",
     "legendMissed": "trượt",
     "legendSkipped": "bỏ qua",
+    "legendSlack": "lười",
     "legendOff": "nghỉ",
     "skips30": "Bỏ qua (30n)",
     "skipsN": "{{n}} bỏ qua"

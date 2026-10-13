@@ -5,7 +5,7 @@
  * testable in isolation.
  */
 
-export type HabitDayState = "done" | "missed" | "off" | "skipped";
+export type HabitDayState = "done" | "missed" | "off" | "skipped" | "slack";
 
 /** ISO weekday for a date string: 1 = Monday .. 7 = Sunday. */
 export function isoWeekday(dateStr: string): number {
@@ -44,12 +44,18 @@ interface StreakInput {
   logDates: Set<string>;
   /** Set of skipped dates; bridges like unscheduled days. */
   skipDates?: Set<string>;
+  /** Set of slack dates. One bridges; two consecutive scheduled slacks break. */
+  slackDates?: Set<string>;
   /** Habit creation date ("YYYY-MM-DD"); dates before it never break a streak. */
   createdDate: string;
 }
 
 function skipsOf(input: { skipDates?: Set<string> }): Set<string> {
   return input.skipDates ?? new Set();
+}
+
+function slacksOf(input: { slackDates?: Set<string> }): Set<string> {
+  return input.slackDates ?? new Set();
 }
 
 /**
@@ -61,13 +67,19 @@ function skipsOf(input: { skipDates?: Set<string> }): Set<string> {
 export function computeStreak(input: StreakInput): number {
   const { today, daysOfWeek, logDates, createdDate } = input;
   const skipDates = skipsOf(input);
+  const slackDates = slacksOf(input);
   let streak = 0;
+  let consecutiveSlacks = 0;
   let cursor = today;
   while (cursor >= createdDate) {
     if (isScheduled(cursor, daysOfWeek)) {
-      if (skipDates.has(cursor)) {
-        // Bridge: neither increment nor break.
+      if (slackDates.has(cursor)) {
+        consecutiveSlacks += 1;
+        if (consecutiveSlacks >= 2) break;
+      } else if (skipDates.has(cursor)) {
+        // Bridge. A skip does not separate two slacks.
       } else if (logDates.has(cursor)) {
+        consecutiveSlacks = 0;
         streak += 1;
       } else if (cursor !== today) {
         break;
@@ -85,11 +97,19 @@ export function computeStreak(input: StreakInput): number {
 export function computeBestStreak(input: StreakInput): number {
   const { today, daysOfWeek, logDates, createdDate } = input;
   const skipDates = skipsOf(input);
+  const slackDates = slacksOf(input);
   let best = 0;
   let run = 0;
+  let consecutiveSlacks = 0;
   for (const date of enumerateDates(createdDate, today)) {
     if (!isScheduled(date, daysOfWeek)) continue;
+    if (slackDates.has(date)) {
+      consecutiveSlacks += 1;
+      if (consecutiveSlacks >= 2) run = 0;
+      continue;
+    }
     if (skipDates.has(date)) continue;
+    consecutiveSlacks = 0;
     if (logDates.has(date)) {
       run += 1;
       if (run > best) best = run;
@@ -111,13 +131,14 @@ export function computeRate(
   logDates: Set<string>,
   createdDate: string,
   skipDates: Set<string> = new Set(),
+  slackDates: Set<string> = new Set(),
 ): { scheduled: number; done: number; rate: number } {
   let scheduled = 0;
   let done = 0;
   for (const date of enumerateDates(from, to)) {
     if (date < createdDate) continue;
     if (!isScheduled(date, daysOfWeek)) continue;
-    if (skipDates.has(date)) continue;
+    if (skipDates.has(date) || slackDates.has(date)) continue;
     scheduled += 1;
     if (logDates.has(date)) done += 1;
   }
@@ -138,6 +159,7 @@ export function windowStates(
   logDates: Set<string>,
   createdDate: string,
   skipDates: Set<string> = new Set(),
+  slackDates: Set<string> = new Set(),
 ): { date: string; state: HabitDayState }[] {
   const from = addDays(today, -(days - 1));
   return enumerateDates(from, today).map((date) => {
@@ -145,6 +167,7 @@ export function windowStates(
       return { date, state: "off" as const };
     }
     if (skipDates.has(date)) return { date, state: "skipped" as const };
+    if (slackDates.has(date)) return { date, state: "slack" as const };
     return { date, state: logDates.has(date) ? "done" : "missed" };
   });
 }

@@ -217,7 +217,7 @@ export interface ExpenseSummary {
   total: number;
 }
 
-export type HabitDayState = "done" | "missed" | "off" | "skipped";
+export type HabitDayState = "done" | "missed" | "off" | "skipped" | "slack";
 
 export interface Habit {
   _id: string;
@@ -243,6 +243,7 @@ export interface HabitTodayEntry {
   order: number;
   doneToday: boolean;
   skippedToday: boolean;
+  slackToday: boolean;
   streak: number;
   last7: HabitDayCell[];
 }

@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -80,6 +82,7 @@ const dotClass = (state: HabitDayState, isToday: boolean) => {
   if (state === "done") return `${base} bg-accent-primary border-accent-primary${ring}`;
   if (state === "missed") return `${base} bg-transparent border-danger/45${ring}`;
   if (state === "skipped") return `${base} bg-sky-400/80 border-sky-400${ring}`;
+  if (state === "slack") return `${base} bg-slack border-slack${ring}`;
   return `${base} bg-bg-elevated border-border-strong${ring}`;
 };
 
@@ -117,6 +120,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
             ...h,
             doneToday,
             skippedToday: false,
+            slackToday: false,
             last7: h.last7.map((cell) =>
               cell.date === date
                 ? { ...cell, state: doneToday ? "done" : "missed" }
@@ -138,6 +142,11 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
     onSettled: invalidate,
   });
 
+  const slackMutation = useMutation({
+    mutationFn: (habitId: string) => apiPost(API_PATHS.HABIT_SLACK(habitId), { date }),
+    onSettled: invalidate,
+  });
+
   const skipDayMutation = useMutation({
     mutationFn: () => apiPost(API_PATHS.HABITS_SKIP_DAY, { date }),
     onSettled: invalidate,
@@ -153,11 +162,11 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
   const yesterday = today ? addDays(today, -1) : null;
   const canMutate = today != null && (date === today || date === yesterday);
   const doneCount = habits.filter((h) => h.doneToday).length;
-  const countable = habits.filter((h) => !h.skippedToday).length;
+  const countable = habits.filter((h) => !h.skippedToday && !h.slackToday).length;
   const total = habits.length;
   const pct = countable > 0 ? Math.round((doneCount / countable) * 100) : total > 0 ? 100 : 0;
   const anySkipped = habits.some((h) => h.skippedToday);
-  const needsSkip = habits.some((h) => !h.doneToday && !h.skippedToday);
+  const needsSkip = habits.some((h) => !h.doneToday && !h.skippedToday && !h.slackToday);
   const maxDots = isMobile ? 5 : 7;
   const showBody = expanded;
 
@@ -185,6 +194,7 @@ export function HabitPanel({ date, onManage, onStats }: HabitPanelProps) {
               canMutate={canMutate}
               onToggle={() => toggleMutation.mutate(h.id)}
               onSkip={() => skipMutation.mutate(h.id)}
+              onSlack={() => slackMutation.mutate(h.id)}
             />
           </motion.div>
         ))}
@@ -298,16 +308,26 @@ interface HabitRowProps {
   canMutate: boolean;
   onToggle: () => void;
   onSkip: () => void;
+  onSlack: () => void;
 }
 
-function HabitRow({ habit, maxDots, showSchedule, canMutate, onToggle, onSkip }: HabitRowProps) {
+function HabitRow({ habit, maxDots, showSchedule, canMutate, onToggle, onSkip, onSlack }: HabitRowProps) {
   const { t } = useTranslation();
   const dots = habit.last7.slice(habit.last7.length - maxDots);
+  const moonRef = useRef<HTMLButtonElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+  const openMenu = () => {
+    const rect = moonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setMenuPos({ top: rect.top, right: window.innerWidth - rect.right });
+  };
   return (
     <div
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${
         habit.doneToday
           ? "bg-accent-primary/[0.06] border-accent-primary/20"
+          : habit.slackToday
+            ? "bg-slack/10 border-slack/30"
           : habit.skippedToday
             ? "bg-sky-400/[0.06] border-sky-400/20"
             : "bg-bg-surface border-border-subtle"
@@ -331,8 +351,10 @@ function HabitRow({ habit, maxDots, showSchedule, canMutate, onToggle, onSkip }:
       </motion.button>
       <div className="flex-1 min-w-0">
         <span
-          className={`block text-[14.5px] [overflow-wrap:anywhere] ${
-            habit.doneToday || habit.skippedToday ? "text-text-tertiary" : "text-text-secondary"
+          className={`block [overflow-wrap:anywhere] text-[14.5px] ${
+            habit.doneToday || habit.skippedToday || habit.slackToday
+              ? "text-text-tertiary"
+              : "text-text-secondary"
           }`}
         >
           {habit.name}
@@ -343,22 +365,69 @@ function HabitRow({ habit, maxDots, showSchedule, canMutate, onToggle, onSkip }:
       </div>
       {canMutate && (
         <button
+          ref={moonRef}
           type="button"
-          onClick={onSkip}
+          onClick={openMenu}
           className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors cursor-pointer ${
-            habit.skippedToday
-              ? "border-sky-400/50 text-sky-300 bg-sky-400/10"
-              : "border-border-default text-text-muted hover:text-sky-300 hover:border-sky-400/40"
+            habit.slackToday
+              ? "border-slack/50 text-slack bg-slack/10"
+              : habit.skippedToday
+                ? "border-sky-400/50 text-sky-300 bg-sky-400/10"
+                : "border-border-default text-text-muted hover:text-sky-300 hover:border-sky-400/40"
           }`}
           aria-label={
-            habit.skippedToday
-              ? t("habits.unskip", "Unskip {{name}}", { name: habit.name })
-              : t("habits.skip", "Skip {{name}}", { name: habit.name })
+            habit.slackToday
+              ? t("habits.unslack", "Clear slack {{name}}", { name: habit.name })
+              : habit.skippedToday
+                ? t("habits.unskip", "Unskip {{name}}", { name: habit.name })
+                : t("habits.skip", "Skip {{name}}", { name: habit.name })
           }
+          aria-expanded={menuPos != null}
         >
           <Moon className="w-3.5 h-3.5" />
         </button>
       )}
+      {menuPos &&
+        createPortal(
+          <>
+            <button
+              type="button"
+              className="fixed inset-0 z-40 cursor-default"
+              aria-label={t("common.cancel", "Cancel")}
+              onClick={() => setMenuPos(null)}
+            />
+            <div
+              className="fixed z-50 flex flex-col gap-1 rounded-lg border border-border-default bg-bg-elevated p-1 shadow-lg"
+              style={{ top: menuPos.top - 4, right: menuPos.right, transform: "translateY(-100%)" }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuPos(null);
+                  onSkip();
+                }}
+                className={`px-3 h-8 text-left text-xs font-medium rounded-md cursor-pointer ${
+                  habit.skippedToday ? "text-sky-300 bg-sky-400/10" : "text-text-secondary hover:bg-bg-surface"
+                }`}
+              >
+                {t("habits.markSkip", "Skip")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuPos(null);
+                  onSlack();
+                }}
+                className={`px-3 h-8 text-left text-xs font-medium rounded-md cursor-pointer ${
+                  habit.slackToday ? "text-slack bg-slack/10" : "text-text-secondary hover:bg-bg-surface"
+                }`}
+              >
+                {t("habits.markSlack", "Slack")}
+              </button>
+            </div>
+          </>,
+          document.body,
+        )}
       <span
         className={`shrink-0 inline-flex items-center gap-1 text-[12.5px] font-bold tabular-nums ${
           habit.streak === 0 ? "text-text-faint" : "text-amber-400"

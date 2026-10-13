@@ -22,6 +22,7 @@ const cellClass = (state: HabitDayState) => {
   if (state === "done") return `${base} bg-accent-primary`;
   if (state === "missed") return `${base} bg-danger/[0.16]`;
   if (state === "skipped") return `${base} bg-sky-400/70`;
+  if (state === "slack") return `${base} bg-slack`;
   return `${base} bg-white/[0.03]`;
 };
 
@@ -97,11 +98,12 @@ export function HabitStatsModal({ isOpen, onClose }: HabitStatsModalProps) {
             <Kpi label={t("habitStats.skips30", "Skips (30d)")} value={data.overall.skips30} />
           </div>
 
-          <div className="flex items-center gap-4 px-5 py-2.5 border-b border-border-subtle text-[11.5px] text-text-muted">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-5 py-2.5 border-b border-border-subtle text-[11.5px] text-text-muted">
             <span className="text-text-faint">{t("habitStats.legendHint", "Each square is a day · last 13 weeks")}</span>
             <span className="ml-auto flex items-center gap-1.5"><span className={cellClass("done")} /> {t("habitStats.legendDone", "done")}</span>
             <span className="flex items-center gap-1.5"><span className={cellClass("missed")} /> {t("habitStats.legendMissed", "missed")}</span>
             <span className="flex items-center gap-1.5"><span className={cellClass("skipped")} /> {t("habitStats.legendSkipped", "skip")}</span>
+            <span className="flex items-center gap-1.5"><span className={cellClass("slack")} /> {t("habitStats.legendSlack", "slack")}</span>
             <span className="flex items-center gap-1.5"><span className={cellClass("off")} /> {t("habitStats.legendOff", "off")}</span>
           </div>
 

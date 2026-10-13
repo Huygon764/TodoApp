@@ -16,12 +16,18 @@ function createdDateOf(habit: IHabitDocument, tz?: string | null): string {
 }
 
 function logKind(kind?: HabitLogKind | null): HabitLogKind {
-  return kind === "skipped" ? "skipped" : "done";
+  if (kind === "skipped" || kind === "slack") return kind;
+  return "done";
 }
 
 interface SplitLogs {
   done: Set<string>;
   skip: Set<string>;
+  slack: Set<string>;
+}
+
+function emptySplit(): SplitLogs {
+  return { done: new Set(), skip: new Set(), slack: new Set() };
 }
 
 async function logsByHabit(
@@ -33,14 +39,14 @@ async function logsByHabit(
     habitId: { $in: habitIds },
   }).select("habitId date kind");
   const map = new Map<string, SplitLogs>();
-  for (const id of habitIds) map.set(id, { done: new Set(), skip: new Set() });
+  for (const id of habitIds) map.set(id, emptySplit());
   for (const log of logs) {
     const split = map.get(String(log.habitId));
     if (!split) continue;
-    if (logKind(log.kind)) {
-      if (logKind(log.kind) === "skipped") split.skip.add(log.date);
-      else split.done.add(log.date);
-    }
+    const kind = logKind(log.kind);
+    if (kind === "skipped") split.skip.add(log.date);
+    else if (kind === "slack") split.slack.add(log.date);
+    else split.done.add(log.date);
   }
   return map;
 }
@@ -58,6 +64,7 @@ export interface HabitTodayEntry {
   order: number;
   doneToday: boolean;
   skippedToday: boolean;
+  slackToday: boolean;
   streak: number;
   last7: { date: string; state: HabitDayState }[];
 }
@@ -79,7 +86,7 @@ export async function getTodayPanel(
 
   const entries = scheduled.map((h) => {
     const id = String(h._id);
-    const split = logs.get(id) ?? { done: new Set<string>(), skip: new Set<string>() };
+    const split = logs.get(id) ?? emptySplit();
     const createdDate = createdDateOf(h, tz);
     return {
       id,
@@ -88,14 +95,24 @@ export async function getTodayPanel(
       order: h.order,
       doneToday: split.done.has(date),
       skippedToday: split.skip.has(date),
+      slackToday: split.slack.has(date),
       streak: computeStreak({
         today,
         daysOfWeek: h.daysOfWeek,
         logDates: split.done,
         skipDates: split.skip,
+        slackDates: split.slack,
         createdDate,
       }),
-      last7: windowStates(date, 7, h.daysOfWeek, split.done, createdDate, split.skip),
+      last7: windowStates(
+        date,
+        7,
+        h.daysOfWeek,
+        split.done,
+        createdDate,
+        split.skip,
+        split.slack,
+      ),
     };
   });
 
@@ -111,7 +128,7 @@ export async function toggleDone(
   habitId: string,
   tz?: string | null,
   date?: string,
-): Promise<{ date: string; done: boolean; skipped: boolean }> {
+): Promise<{ date: string; done: boolean; skipped: boolean; slack: boolean }> {
   const habit = await Habit.findOne({ _id: habitId, userId, archivedAt: null });
   if (!habit) throw new Error("NOT_FOUND");
 
@@ -125,7 +142,7 @@ export async function toggleDone(
   const existing = await HabitLog.findOne({ userId, habitId, date: target });
   if (existing && logKind(existing.kind) === "done") {
     await existing.deleteOne();
-    return { date: target, done: false, skipped: false };
+    return { date: target, done: false, skipped: false, slack: false };
   }
   if (existing) {
     existing.kind = "done";
@@ -133,7 +150,7 @@ export async function toggleDone(
   } else {
     await HabitLog.create({ userId, habitId, date: target, kind: "done" });
   }
-  return { date: target, done: true, skipped: false };
+  return { date: target, done: true, skipped: false, slack: false };
 }
 
 export async function toggleSkip(
@@ -141,7 +158,7 @@ export async function toggleSkip(
   habitId: string,
   tz?: string | null,
   date?: string,
-): Promise<{ date: string; done: boolean; skipped: boolean }> {
+): Promise<{ date: string; done: boolean; skipped: boolean; slack: boolean }> {
   const habit = await Habit.findOne({ _id: habitId, userId, archivedAt: null });
   if (!habit) throw new Error("NOT_FOUND");
 
@@ -155,7 +172,7 @@ export async function toggleSkip(
   const existing = await HabitLog.findOne({ userId, habitId, date: target });
   if (existing && logKind(existing.kind) === "skipped") {
     await existing.deleteOne();
-    return { date: target, done: false, skipped: false };
+    return { date: target, done: false, skipped: false, slack: false };
   }
   if (existing) {
     existing.kind = "skipped";
@@ -163,7 +180,37 @@ export async function toggleSkip(
   } else {
     await HabitLog.create({ userId, habitId, date: target, kind: "skipped" });
   }
-  return { date: target, done: false, skipped: true };
+  return { date: target, done: false, skipped: true, slack: false };
+}
+
+export async function toggleSlack(
+  userId: string,
+  habitId: string,
+  tz?: string | null,
+  date?: string,
+): Promise<{ date: string; done: boolean; skipped: boolean; slack: boolean }> {
+  const habit = await Habit.findOne({ _id: habitId, userId, archivedAt: null });
+  if (!habit) throw new Error("NOT_FOUND");
+
+  const today = formatDateInTimeZone(new Date(), tz);
+  const target = date ?? today;
+  assertMutableDate(target, today);
+  if (!isScheduled(target, habit.daysOfWeek)) {
+    throw new Error("NOT_SCHEDULED");
+  }
+
+  const existing = await HabitLog.findOne({ userId, habitId, date: target });
+  if (existing && logKind(existing.kind) === "slack") {
+    await existing.deleteOne();
+    return { date: target, done: false, skipped: false, slack: false };
+  }
+  if (existing) {
+    existing.kind = "slack";
+    await existing.save();
+  } else {
+    await HabitLog.create({ userId, habitId, date: target, kind: "slack" });
+  }
+  return { date: target, done: false, skipped: false, slack: true };
 }
 
 export async function skipDay(
@@ -180,14 +227,8 @@ export async function skipDay(
   let skipped = 0;
   for (const habit of scheduled) {
     const existing = await HabitLog.findOne({ userId, habitId: habit._id, date: target });
-    if (existing && logKind(existing.kind) === "done") continue;
-    if (existing && logKind(existing.kind) === "skipped") continue;
-    if (existing) {
-      existing.kind = "skipped";
-      await existing.save();
-    } else {
-      await HabitLog.create({ userId, habitId: habit._id, date: target, kind: "skipped" });
-    }
+    if (existing) continue;
+    await HabitLog.create({ userId, habitId: habit._id, date: target, kind: "skipped" });
     skipped += 1;
   }
   return { date: target, skipped };
@@ -236,6 +277,7 @@ function countBreaks(
   createdDate: string,
   today: string,
   skipDates: Set<string>,
+  slackDates: Set<string>,
 ): number {
   const states = windowStates(
     today,
@@ -244,6 +286,7 @@ function countBreaks(
     logDates,
     createdDate,
     skipDates,
+    slackDates,
   );
   return states.filter((s) => s.state === "missed" && s.date !== today).length;
 }
@@ -275,9 +318,17 @@ export async function getStats(
 
   const entries: HabitStatsEntry[] = habits.map((h) => {
     const id = String(h._id);
-    const split = logs.get(id) ?? { done: new Set<string>(), skip: new Set<string>() };
+    const split = logs.get(id) ?? emptySplit();
     const createdDate = createdDateOf(h, tz);
-    const rate30 = computeRate(from30, today, h.daysOfWeek, split.done, createdDate, split.skip).rate;
+    const rate30 = computeRate(
+      from30,
+      today,
+      h.daysOfWeek,
+      split.done,
+      createdDate,
+      split.skip,
+      split.slack,
+    ).rate;
     return {
       id,
       name: h.name,
@@ -286,6 +337,7 @@ export async function getStats(
         daysOfWeek: h.daysOfWeek,
         logDates: split.done,
         skipDates: split.skip,
+        slackDates: split.slack,
         createdDate,
       }),
       bestStreak: computeBestStreak({
@@ -293,11 +345,20 @@ export async function getStats(
         daysOfWeek: h.daysOfWeek,
         logDates: split.done,
         skipDates: split.skip,
+        slackDates: split.slack,
         createdDate,
       }),
       rate30,
       skips30: countSkips(from30, today, split.skip, createdDate),
-      days: windowStates(today, days, h.daysOfWeek, split.done, createdDate, split.skip),
+      days: windowStates(
+        today,
+        days,
+        h.daysOfWeek,
+        split.done,
+        createdDate,
+        split.skip,
+        split.slack,
+      ),
     };
   });
 
@@ -316,7 +377,7 @@ export async function getStats(
     );
     const countable = scheduled.filter((h) => {
       const split = logs.get(String(h._id));
-      return !split?.skip.has(date);
+      return !split?.skip.has(date) && !split?.slack.has(date);
     });
     if (countable.length === 0) continue;
     const allDone = countable.every((h) =>
@@ -328,10 +389,27 @@ export async function getStats(
   let worst: HabitStats["worst"] = null;
   for (const h of habits) {
     const id = String(h._id);
-    const split = logs.get(id) ?? { done: new Set<string>(), skip: new Set<string>() };
+    const split = logs.get(id) ?? emptySplit();
     const createdDate = createdDateOf(h, tz);
-    const rate = computeRate(from30, today, h.daysOfWeek, split.done, createdDate, split.skip).rate;
-    const breaks = countBreaks(from30, today, h.daysOfWeek, split.done, createdDate, today, split.skip);
+    const rate = computeRate(
+      from30,
+      today,
+      h.daysOfWeek,
+      split.done,
+      createdDate,
+      split.skip,
+      split.slack,
+    ).rate;
+    const breaks = countBreaks(
+      from30,
+      today,
+      h.daysOfWeek,
+      split.done,
+      createdDate,
+      today,
+      split.skip,
+      split.slack,
+    );
     if (worst === null || rate < worst.rate30) {
       worst = { id, name: h.name, rate30: rate, breaks30: breaks };
     }

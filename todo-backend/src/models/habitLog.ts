@@ -25,7 +25,7 @@ const habitLogSchema = new Schema<IHabitLogDocument>(
     },
     kind: {
       type: String,
-      enum: ["done", "skipped"],
+      enum: ["done", "skipped", "slack"],
       default: "done",
     },
   },

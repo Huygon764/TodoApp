@@ -17,6 +17,7 @@ import {
   archiveHabit,
   toggleHabit,
   skipHabit,
+  slackHabit,
   skipHabitsDay,
   unskipHabitsDay,
   getHabitStats,
@@ -53,6 +54,13 @@ router.post(
   validateHabitDateBody,
   validateRequest,
   skipHabit,
+);
+router.post(
+  "/:id/slack",
+  validateMongoIdParam,
+  validateHabitDateBody,
+  validateRequest,
+  slackHabit,
 );
 
 export default router;

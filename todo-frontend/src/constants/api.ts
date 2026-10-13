@@ -56,6 +56,7 @@ export const API_PATHS = {
   HABIT_BY_ID: (id: string) => `/api/habits/${id}`,
   HABIT_TOGGLE: (id: string) => `/api/habits/${id}/toggle`,
   HABIT_SKIP: (id: string) => `/api/habits/${id}/skip`,
+  HABIT_SLACK: (id: string) => `/api/habits/${id}/slack`,
   HABITS_SKIP_DAY: "/api/habits/skip-day",
   HABITS_UNSKIP_DAY: "/api/habits/unskip-day",
   HABIT_STATS: (days: number) => `/api/habits/stats?days=${days}`,

@@ -6,6 +6,7 @@ import {
   listHabits,
   toggleDone,
   toggleSkip,
+  toggleSlack,
   skipDay,
   unskipDay,
   getStats,
@@ -92,6 +93,18 @@ export const toggleHabit = catchAsync(async (req: Request, res: Response) => {
   const date = typeof req.body?.date === "string" ? req.body.date : undefined;
   try {
     const result = await toggleDone(userId, id!, req.userDoc?.timezone, date);
+    sendSuccess(res, 200, result);
+  } catch (err) {
+    mapHabitError(err);
+  }
+});
+
+export const slackHabit = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { id } = req.params;
+  const date = typeof req.body?.date === "string" ? req.body.date : undefined;
+  try {
+    const result = await toggleSlack(userId, id!, req.userDoc?.timezone, date);
     sendSuccess(res, 200, result);
   } catch (err) {
     mapHabitError(err);

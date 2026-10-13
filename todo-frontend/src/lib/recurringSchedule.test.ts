@@ -19,10 +19,20 @@ test("pickWeeklyRandomWeekday trims the title", () => {
   );
 });
 
-test("isWeekItemVisible always shows weeklyRandom items in the modal", () => {
+test("isWeekItemVisible hides weeklyRandom items from weekday lists", () => {
   expect(
     isWeekItemVisible({ title: "Gym", order: 0, weeklyRandom: true }, 3),
-  ).toBe(true);
+  ).toBe(false);
+});
+
+test("isWeekItemInContext hides weeklyRandom items outside random mode", () => {
+  expect(
+    isWeekItemInContext(
+      { title: "Gym", order: 0, weeklyRandom: true },
+      3,
+      false,
+    ),
+  ).toBe(false);
 });
 
 test("isWeekItemInContext in random mode hides fixed-day items", () => {

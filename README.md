@@ -16,7 +16,9 @@ username/password. English and Vietnamese.
   to count up, and it completes at the target. Works across every list.
 - **Discipline (habits)** – Things you must do daily (get up early, no phone at work).
   Tick them for today or yesterday; skip a habit or the whole day when you
-  cannot (illness). Skip bridges the streak without counting as done. Streaks,
+  cannot. Skip bridges the streak without counting as done. Any habit can
+  record one Slack day; a second consecutive Slack breaks the streak.
+  Streaks,
   a 7-day strip, and a 90-day heatmap. No back-fill older than yesterday.
 - **Goals** – Week, month, and year goals with an optional template.
 - **Reflection** – One-line journal, mood/energy, gratitude, and an "on this day" flashback.

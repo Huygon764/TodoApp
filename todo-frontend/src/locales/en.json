@@ -214,6 +214,10 @@
     "pastDay": "Habits are ticked on the day itself.",
     "skip": "Skip {{name}}",
     "unskip": "Unskip {{name}}",
+    "slack": "Slack {{name}}",
+    "unslack": "Clear slack {{name}}",
+    "markSkip": "Skip",
+    "markSlack": "Slack",
     "skipDay": "Skip day",
     "unskipDay": "Unskip day"
   },
@@ -238,6 +242,7 @@
     "legendDone": "done",
     "legendMissed": "missed",
     "legendSkipped": "skip",
+    "legendSlack": "slack",
     "legendOff": "off",
     "skips30": "Skips (30d)",
     "skipsN": "{{n}} skip"

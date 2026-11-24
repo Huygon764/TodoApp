@@ -5,7 +5,8 @@ Status: Draft for owner review (not implemented)
 
 Mockup: [`assets/2026-11-24-stay-pomodoro/index.html`](assets/2026-11-24-stay-pomodoro/index.html)
 (open it over a local HTTP server; the bottom bar switches desktop/mobile and
-speeds time up 600x).
+speeds time up 600x). Start the server at the repo root: the sound path climbs
+four levels to `todo-frontend/public/sounds/`.
 
 ## Problem
 

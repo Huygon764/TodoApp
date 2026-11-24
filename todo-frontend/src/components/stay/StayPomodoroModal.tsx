@@ -3,8 +3,14 @@ import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { ModalContainer } from "@/components/shared/ModalContainer";
 import { useModalClose } from "@/hooks/useModalClose";
-import { useTimerSummary } from "@/hooks/useTimerSummary";
-import { StateDot } from "@/components/stay/StateDot";
+import { useStay } from "@/hooks/useStay";
+import { usePomodoro } from "@/hooks/usePomodoro";
+import {
+  StateDot,
+  pomodoroDotState,
+  stayDotState,
+  type DotState,
+} from "@/components/stay/StateDot";
 import { StayTab } from "@/components/stay/StayTab";
 import { PomodoroTab } from "@/components/stay/PomodoroTab";
 
@@ -21,11 +27,14 @@ export function StayPomodoroModal({ isOpen, onClose, tab, onTabChange }: StayPom
   const { t } = useTranslation();
   const contentRef = useRef<HTMLDivElement>(null);
   useModalClose(isOpen, onClose, contentRef);
-  const summary = useTimerSummary();
+  // Dots come from the stored statuses, not a ticking clock: this modal stays
+  // mounted after first use and must not re-render every second.
+  const stayState = useStay().state;
+  const pomodoroState = usePomodoro().state;
 
-  const tabs: { key: TimerTab; label: string; dot: typeof summary.stay.dot }[] = [
-    { key: "stay", label: t("stay.name"), dot: summary.stay.dot },
-    { key: "pomodoro", label: t("pomodoro.name"), dot: summary.pomodoro.dot },
+  const tabs: { key: TimerTab; label: string; dot: DotState }[] = [
+    { key: "stay", label: t("stay.name"), dot: stayDotState(stayState?.today.status ?? "idle") },
+    { key: "pomodoro", label: t("pomodoro.name"), dot: pomodoroDotState(pomodoroState) },
   ];
 
   return (

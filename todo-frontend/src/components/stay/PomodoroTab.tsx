@@ -32,6 +32,8 @@ export function PomodoroTab() {
 
   const idle = p.phase === "idle";
   const current = presetIndex(p.workMin, p.restMin);
+  // The Custom panel only exists while stopped; never let it highlight a running timer.
+  const customShown = customOpen && idle;
 
   const pickPreset = (i: number) => {
     if (!idle) return;
@@ -87,9 +89,9 @@ export function PomodoroTab() {
             key={i}
             type="button"
             disabled={!idle}
-            aria-pressed={current === i && !customOpen}
+            aria-pressed={current === i && !customShown}
             onClick={() => pickPreset(i)}
-            className={segClass(current === i && !customOpen)}
+            className={segClass(current === i && !customShown)}
           >
             {w} / {r}
           </button>
@@ -97,15 +99,15 @@ export function PomodoroTab() {
         <button
           type="button"
           disabled={!idle}
-          aria-pressed={current === CUSTOM || customOpen}
+          aria-pressed={current === CUSTOM || customShown}
           onClick={() => pickPreset(CUSTOM)}
-          className={segClass(current === CUSTOM || customOpen)}
+          className={segClass(current === CUSTOM || customShown)}
         >
           {current === CUSTOM ? `${p.workMin} / ${p.restMin}` : t("pomodoro.custom")}
         </button>
       </div>
 
-      {customOpen && idle && (
+      {customShown && (
         <div className="flex items-center justify-center gap-2 mt-2.5 text-xs text-text-muted">
           <label className="flex items-center gap-2">
             {t("pomodoro.focus")}
@@ -164,7 +166,10 @@ export function PomodoroTab() {
         <button
           type="button"
           disabled={pomo.busy}
-          onClick={() => pomo.start.mutate()}
+          onClick={() => {
+            setCustomOpen(false); // an unsaved Custom panel must not reopen after Stop
+            pomo.start.mutate();
+          }}
           className="w-full mt-[18px] rounded-xl bg-accent-primary hover:bg-accent-hover text-white font-semibold py-3 transition-colors disabled:opacity-50"
         >
           {t("pomodoro.start")}

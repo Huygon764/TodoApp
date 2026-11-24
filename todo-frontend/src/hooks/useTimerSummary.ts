@@ -5,7 +5,11 @@ import {
   pomodoroPaused,
   pomodoroRemainingMs,
 } from "@/lib/pomodoroClock";
-import type { DotState } from "@/components/stay/StateDot";
+import {
+  pomodoroDotState,
+  stayDotState,
+  type DotState,
+} from "@/components/stay/StateDot";
 import type { StayStatus } from "@/types/stay";
 
 export interface TimerSummary {
@@ -46,17 +50,9 @@ export function useTimerSummary(): TimerSummary {
   const pomoNow = useNow(pomo.offsetMs, pomoRunning);
 
   const status: StayStatus = day?.status ?? "idle";
-  const stayDot: DotState =
-    status === "running" ? "run" : status === "paused" ? "pause" : status === "done" ? "done" : "idle";
-
+  const stayDot = stayDotState(status);
   const pomoPaused = p != null && pomodoroPaused(p);
-  const pomoDot: DotState = !pomoOn
-    ? "idle"
-    : pomoPaused
-      ? "pause"
-      : p.phase === "rest"
-        ? "done"
-        : "run";
+  const pomoDot = pomodoroDotState(p);
 
   return {
     stay: {

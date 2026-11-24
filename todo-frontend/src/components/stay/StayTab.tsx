@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNow, useStay } from "@/hooks/useStay";
 import {
@@ -26,11 +26,19 @@ export function StayTab() {
     day?.status === "running" || (day?.status === "paused" && day.pausedAs === "out");
   const now = useNow(stay.offsetMs, ticking);
 
+  // The Escape / Out choice belongs to a running day. If the day leaves
+  // running (another device paused it), drop the choice so a later resume
+  // does not bring it back.
+  const status = day?.status;
+  useEffect(() => {
+    if (status !== "running") setPicking(false);
+  }, [status]);
+
   if (!day || !stay.state) {
     return <div className="h-80" aria-busy="true" />;
   }
 
-  const { status, level } = day;
+  const { level } = day;
   const stayed = stayStayedMs(day, now);
   const remaining = stayRemainingMs(day, now);
   const out = stayOutMs(day, now);

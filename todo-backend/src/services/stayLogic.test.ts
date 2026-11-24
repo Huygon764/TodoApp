@@ -26,6 +26,42 @@ test("zonedMidnightMs gives local midnight, not UTC midnight", () => {
   );
 });
 
+test("zonedMidnightMs follows DST in New York", () => {
+  // Spring forward 2026-03-08: midnight on the 8th is EST, on the 9th EDT.
+  expect(new Date(zonedMidnightMs("2026-03-08", "America/New_York")).toISOString()).toBe(
+    "2026-03-08T05:00:00.000Z",
+  );
+  expect(new Date(zonedMidnightMs("2026-03-09", "America/New_York")).toISOString()).toBe(
+    "2026-03-09T04:00:00.000Z",
+  );
+  // Fall back 2026-11-01.
+  expect(new Date(zonedMidnightMs("2026-11-01", "America/New_York")).toISOString()).toBe(
+    "2026-11-01T04:00:00.000Z",
+  );
+  expect(new Date(zonedMidnightMs("2026-11-02", "America/New_York")).toISOString()).toBe(
+    "2026-11-02T05:00:00.000Z",
+  );
+});
+
+test("zonedMidnightMs when DST skips 00:00 (Santiago) is the first instant of the day", () => {
+  // 2026-09-06: clocks go from 23:59 Sat straight to 01:00 Sun (04:00Z).
+  expect(new Date(zonedMidnightMs("2026-09-06", "America/Santiago")).toISOString()).toBe(
+    "2026-09-06T04:00:00.000Z",
+  );
+  expect(new Date(zonedMidnightMs("2026-09-05", "America/Santiago")).toISOString()).toBe(
+    "2026-09-05T04:00:00.000Z",
+  );
+});
+
+test("level changes before Start are recorded; a no-op change is not", () => {
+  let d = changeLevel(idleDay(DAY), 12, T0);
+  expect(d.levelChanges).toEqual([{ at: T0, from: 8, to: 12 }]);
+  d = changeLevel(d, 12, at(M));
+  expect(d.levelChanges.length).toBe(1);
+  d = changeLevel(d, 6, at(2 * M));
+  expect(d.levelChanges.map((c) => [c.from, c.to])).toEqual([[8, 12], [12, 6]]);
+});
+
 test("mondayOf and addDays are calendar arithmetic", () => {
   expect(mondayOf("2026-11-24")).toBe("2026-11-23"); // Tuesday
   expect(mondayOf("2026-11-29")).toBe("2026-11-23"); // Sunday

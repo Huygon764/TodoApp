@@ -50,8 +50,9 @@ export async function runPomodoro(
 
   const before = toData(doc!);
   let data = advancePomodoro(before, now, tz);
-  if (mutate) data = pruneRounds(mutate(data, now), now, tz);
+  if (mutate) data = mutate(data, now);
   if (data !== before) {
+    data = pruneRounds(data, now, tz);
     applyData(doc!, data);
     await doc!.save();
   }

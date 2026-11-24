@@ -48,7 +48,10 @@ export function zonedMidnightMs(date: string, tz?: string | null): number {
   const { y, m, d } = parseDate(date);
   const asUtc = Date.UTC(y, m - 1, d);
   const guess = asUtc - offsetMs(asUtc, zone);
-  return asUtc - offsetMs(guess, zone);
+  const resolved = asUtc - offsetMs(guess, zone);
+  // When a DST jump skips 00:00, the second step lands on the previous date;
+  // the first instant of the day is then the guess.
+  return dateAt(resolved, zone) === date ? resolved : guess;
 }
 
 /** Calendar arithmetic on YYYY-MM-DD strings (no timezone involved). */

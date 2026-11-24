@@ -53,7 +53,23 @@ export async function runStay(
   now: Date = new Date(),
 ): Promise<StayState> {
   const today = formatDateInTimeZone(now, tz);
-  const dates = dateRange(mondayOf(today), today);
+  const monday = mondayOf(today);
+  const dates = dateRange(monday, today);
+
+  // Days before this week that were left running or paused still need closing.
+  const stale = await StayDay.find({
+    userId,
+    date: { $lt: monday },
+    status: { $in: ["running", "paused"] },
+  });
+  for (const doc of stale) {
+    const before = toData(doc);
+    const data = settleDay(before, now, tz, today);
+    if (data !== before) {
+      applyData(doc, data);
+      await doc.save();
+    }
+  }
 
   const docs = await StayDay.find({ userId, date: { $in: dates } });
   const byDate = new Map<string, IStayDayDocument>(docs.map((d) => [d.date, d]));

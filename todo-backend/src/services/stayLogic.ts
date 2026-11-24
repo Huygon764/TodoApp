@@ -163,7 +163,14 @@ export function resumeDay(day: StayData, now: Date): StayData {
 
 export function changeLevel(day: StayData, level: StayLevel, now: Date): StayData {
   if (day.status === "done") throw conflict("The level is locked once Stay is done");
-  if (day.status === "idle") return { ...day, level };
+  if (day.status === "idle") {
+    if (level === day.level) return day;
+    return {
+      ...day,
+      level,
+      levelChanges: [...day.levelChanges, { at: now, from: day.level, to: level }],
+    };
+  }
   if (level >= day.level) {
     throw conflict("After Start the level can only go down");
   }

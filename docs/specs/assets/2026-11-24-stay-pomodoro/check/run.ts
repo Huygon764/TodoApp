@@ -21,8 +21,8 @@ const iso = (ms: number) => new Date(ms).toISOString();
 const H = 3_600_000;
 const M = 60_000;
 
-type StayScn = "idle" | "running" | "done";
-type PomoScn = "idle" | "focus" | "rest";
+type StayScn = "idle" | "running" | "escaped" | "out" | "done";
+type PomoScn = "idle" | "focus" | "rest" | "paused";
 interface Scn {
   stay: StayScn;
   pomo: PomoScn;
@@ -77,7 +77,13 @@ function stayState(stay: StayScn) {
             runningSince: iso(T),
             outMs: 40 * M,
           })
-        : dayView("2026-11-29", 8, "done", 8 * H, 2, { outMs: 40 * M, doneAt: iso(T) });
+        : stay === "escaped" || stay === "out"
+          ? dayView("2026-11-29", 8, "paused", 3.2 * H, 2, {
+              pausedAs: stay === "escaped" ? "escape" : "out",
+              pausedSince: iso(T),
+              outMs: 40 * M,
+            })
+          : dayView("2026-11-29", 8, "done", 8 * H, 2, { outMs: 40 * M, doneAt: iso(T) });
   return { serverNow: iso(T), today, week: [...past, today] };
 }
 
@@ -93,6 +99,9 @@ function pomodoroState(p: PomoScn) {
     roundsToday: p === "rest" ? 4 : 3,
   };
   if (p === "focus") return { ...base, phase: "work", phaseStartedAt: iso(T - 7 * M - 28_000) };
+  if (p === "paused") {
+    return { ...base, phase: "work", phaseStartedAt: iso(T - 7 * M - 28_000), pausedAt: iso(T) };
+  }
   if (p === "rest") return { ...base, phase: "rest", phaseStartedAt: iso(T - 90_000) };
   return base;
 }
@@ -248,7 +257,17 @@ async function mockupShot(
       const s = g("s");
       if (scn.stay === "running") Object.assign(s, { status: "running", remaining: 8 * 3600 - 11520, esc: 2, out: 2400 });
       if (scn.stay === "done") Object.assign(s, { status: "done", remaining: 0, esc: 2, out: 2400 });
-      if (scn.pomo === "focus") Object.assign(s.p, { phase: "work", left: 1052, rounds: 3 });
+      if (scn.stay === "escaped" || scn.stay === "out") {
+        Object.assign(s, {
+          status: "paused",
+          why: scn.stay === "escaped" ? "escape" : "out",
+          remaining: 8 * 3600 - 11520,
+          esc: 2,
+          out: 2400,
+        });
+      }
+      if (scn.pomo === "paused") Object.assign(s.p, { phase: "work", left: 1052, rounds: 3, paused: true });
+      else if (scn.pomo === "focus") Object.assign(s.p, { phase: "work", left: 1052, rounds: 3 });
       else if (scn.pomo === "rest") Object.assign(s.p, { phase: "rest", left: 210, rounds: 4 });
       else s.p.rounds = 3;
       w.setMobile(width === "mobile");
@@ -292,6 +311,10 @@ const SHOTS: Shot[] = [
   { name: "pomo-custom", scn: customScn, open: "pomo-custom", widths: ["desktop", "mobile"] },
   { name: "pomo-rest", scn: rest, open: "pomo", widths: ["desktop", "mobile"] },
   { name: "done", scn: done, open: "stay", widths: ["desktop", "mobile"] },
+  { name: "done-chip", scn: done, open: "none", widths: ["desktop"], clip: { desktop: 80 } },
+  { name: "stay-escaped", scn: { stay: "escaped", pomo: "idle" }, open: "stay", widths: ["desktop", "mobile"] },
+  { name: "stay-out", scn: { stay: "out", pomo: "idle" }, open: "stay", widths: ["desktop", "mobile"] },
+  { name: "pomo-paused", scn: { stay: "running", pomo: "paused" }, open: "pomo", widths: ["desktop", "mobile"] },
 ];
 
 const server = Bun.serve({

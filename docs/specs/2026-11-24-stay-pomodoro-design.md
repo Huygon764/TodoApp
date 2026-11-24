@@ -95,8 +95,8 @@ count.
 Sounds play only while an Orbit tab is open (a web app cannot play otherwise).
 A phase or Stay end that happens while closed plays nothing.
 
-Sound files: `work-start.wav` and `rest-start.wav`, copied from
-`site-blocker/public/sounds/`.
+Sound files: `work-start.wav` and `rest-start.wav`, from
+`site-blocker/public/sounds/`, now in `todo-frontend/public/sounds/`.
 
 ## UI
 

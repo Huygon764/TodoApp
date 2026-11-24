@@ -93,6 +93,46 @@ test("export settles a past stay day left running", () => {
   expect(idle!.status).toBe("idle");
 });
 
+test("export settles a past day that missed its level", () => {
+  const doc = {
+    date: "2026-11-20",
+    level: 8,
+    status: "running",
+    stayedMs: 0,
+    runningSince: new Date("2026-11-20T20:00:00Z"),
+    escapes: 0,
+    outMs: 0,
+  };
+  const now = new Date("2026-11-24T12:00:00Z");
+  const [out] = settleStayExport([doc], "UTC", now);
+  expect(out!.status).toBe("idle");
+  expect(out!.stayedMs).toBe(4 * 3_600_000);
+  expect(out!.runningSince).toBeNull();
+  expect(out!.pausedAs).toBeNull();
+  expect(out!.pausedSince).toBeNull();
+});
+
+test("export settles a past day paused as out", () => {
+  const doc = {
+    date: "2026-11-20",
+    level: 8,
+    status: "paused",
+    stayedMs: 2 * 3_600_000,
+    runningSince: null,
+    pausedAs: "out",
+    pausedSince: new Date("2026-11-20T22:00:00Z"),
+    escapes: 0,
+    outMs: 0,
+  };
+  const now = new Date("2026-11-24T12:00:00Z");
+  const [out] = settleStayExport([doc], "UTC", now);
+  expect(out!.status).toBe("idle");
+  expect(out!.stayedMs).toBe(2 * 3_600_000);
+  expect(out!.outMs).toBe(2 * 3_600_000);
+  expect(out!.pausedAs).toBeNull();
+  expect(out!.pausedSince).toBeNull();
+});
+
 test("accepts a well-formed payload with missing keys", () => {
   const r = validateImportPayload({
     version: EXPORT_VERSION,

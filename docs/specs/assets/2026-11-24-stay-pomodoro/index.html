@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Orbit - Stay mockup v3</title>
+<style>
+  :root {
+    --page:#0D0E12; --surface:#17181C; --card:#1C1D22; --elev:#23242A;
+    --accent:#5E6AD2; --accent-h:#7C85E0;
+    --t1:#FFFFFF; --t2:#CBD5E1; --t3:#94A3B8; --mute:#64748B;
+    --b1:rgba(255,255,255,.04); --b2:rgba(255,255,255,.06); --b3:rgba(255,255,255,.1);
+    /* state colors: low chroma, same lightness band, picked to sit next to the navy accent */
+    --escape:#C98A7E;   /* dusty clay */
+    --pause:#B8A77F;    /* dry sand */
+    --done:#8FAE9B;     /* sage */
+    --rest:#8FAE9B;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--t2); font:500 14px/1.45 system-ui,-apple-system,sans-serif; }
+  button { font:inherit; cursor:pointer; color:inherit; }
+  .num { font-variant-numeric:tabular-nums; }
+
+  .demo { position:fixed; bottom:12px; left:50%; transform:translateX(-50%); z-index:100; display:flex; gap:4px; padding:4px; background:#000; border:1px solid var(--b3); border-radius:10px; font-size:12px; }
+  .demo button { background:transparent; border:none; color:var(--mute); border-radius:6px; padding:4px 8px; }
+  .demo button.on { background:var(--elev); color:var(--t2); }
+
+  .frame { margin:0 auto; min-height:100vh; }
+  .frame.mobile { max-width:390px; border-left:1px solid var(--b2); border-right:1px solid var(--b2); }
+  header { position:sticky; top:0; z-index:20; background:var(--surface); border-bottom:1px solid var(--b2); }
+  .hwrap { max-width:768px; margin:0 auto; padding:16px; display:flex; align-items:center; justify-content:space-between; gap:8px; position:relative; }
+  .logo { display:flex; align-items:center; gap:2px; color:var(--t1); font-weight:700; font-size:20px; }
+  .logo i { width:36px; height:36px; border-radius:50%; border:2px solid var(--accent); position:relative; }
+  .logo i::after { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:var(--accent-h); top:-3px; right:3px; }
+  .hicons { display:flex; gap:8px; align-items:center; }
+  .ibtn { width:42px; height:42px; border-radius:12px; background:var(--card); border:1px solid var(--b2); color:var(--t3); display:grid; place-items:center; }
+
+  .chip { display:flex; align-items:center; height:42px; border-radius:12px; background:var(--card); border:1px solid var(--b2); color:var(--t3); padding:0; overflow:hidden; }
+  .chip:hover { border-color:var(--b3); }
+  .chip .part { display:flex; align-items:center; gap:7px; padding:0 13px; height:100%; }
+  .chip .part + .part { border-left:1px solid var(--b2); }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--mute); flex:none; }
+  .dot.run { background:var(--accent-h); } .dot.pause { background:var(--pause); } .dot.done { background:var(--done); } .dot.rest { background:var(--rest); }
+  .chip .v { color:var(--t1); } .chip .e { color:var(--escape); font-size:12px; }
+
+  .strip { display:none; position:sticky; top:75px; z-index:19; background:var(--surface); border-bottom:1px solid var(--b2); }
+  .strip button { width:100%; display:flex; align-items:center; gap:14px; padding:8px 16px; background:none; border:none; }
+  .strip .it { display:flex; align-items:center; gap:7px; color:var(--t1); font-size:13px; }
+  .strip .it small { color:var(--mute); font-size:12px; }
+  .strip .e { color:var(--escape); font-size:12px; margin-left:auto; }
+
+  main { max-width:768px; margin:0 auto; padding:24px 16px 100px; }
+  .card { border-radius:16px; background:rgba(28,29,34,.5); border:1px solid var(--b2); }
+  .ghead { display:flex; justify-content:space-between; color:var(--t1); font-weight:600; padding:18px 20px 0; }
+  .gbar { height:8px; background:var(--elev); margin:14px 20px 16px; border-radius:99px; overflow:hidden; } .gbar i { display:block; height:100%; width:69%; background:var(--accent); }
+  .row { height:56px; border-top:1px solid var(--b1); display:flex; align-items:center; padding:0 20px; gap:14px; }
+  .cb { width:24px; height:24px; border-radius:7px; border:2px solid var(--mute); }
+  .menu { display:none; position:absolute; right:16px; top:68px; width:240px; background:var(--card); border:1px solid var(--b2); border-radius:12px; padding:6px; box-shadow:0 20px 40px rgba(0,0,0,.4); z-index:30; }
+  .menu.open { display:block; }
+  .menu div { padding:11px 12px; border-radius:8px; color:var(--t2); display:flex; justify-content:space-between; }
+  .menu div:hover { background:var(--b1); } .menu div span { color:var(--mute); font-size:12px; }
+
+  .backdrop { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); display:none; align-items:flex-start; justify-content:center; padding:56px 12px; z-index:50; overflow:auto; }
+  .backdrop.open { display:flex; }
+  .frame.mobile ~ .backdrop { backdrop-filter:none; padding:0; }
+  .modal { width:100%; max-width:440px; background:var(--card); border:1px solid var(--b2); border-radius:12px; box-shadow:0 25px 50px rgba(0,0,0,.5); }
+  .frame.mobile ~ .backdrop .modal { max-width:390px; border-radius:0; min-height:100vh; }
+  .mhead { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--b1); }
+  .tabs { flex:1; display:flex; gap:4px; }
+  .tab { background:none; border:none; padding:7px 12px; border-radius:8px; color:var(--t3); display:flex; align-items:center; gap:7px; }
+  .tab.on { background:var(--elev); color:var(--t1); }
+  .x { background:none; border:none; color:var(--t3); font-size:20px; padding:4px 8px; }
+  .body { padding:20px; }
+
+  .seg { display:flex; background:var(--surface); border:1px solid var(--b1); border-radius:10px; padding:3px; }
+  .seg button { flex:1; background:none; border:none; padding:7px 0; border-radius:7px; color:var(--t3); font-size:13px; }
+  .seg button.on { background:var(--elev); color:var(--t1); }
+  .seg button:disabled { color:#3a3d46; cursor:not-allowed; }
+  .hint { color:var(--mute); font-size:12px; text-align:center; margin-top:8px; min-height:17px; }
+
+  .ring { position:relative; width:256px; height:256px; margin:16px auto 8px; }
+  .ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+  .ring .trk { stroke:var(--elev); }
+  .ring .arc { transition:stroke-dashoffset .5s ease-out, stroke .2s; }
+  .ring .in { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring .tm { color:var(--t1); font-size:46px; font-weight:600; letter-spacing:-1.5px; line-height:1.1; }
+  .ring .tm.dim { color:var(--t3); }
+  .ring .lb { color:var(--t3); font-size:13px; margin-top:4px; }
+  .ring .lb.escape { color:var(--escape); } .ring .lb.pause { color:var(--pause); } .ring .lb.done, .ring .lb.rest { color:var(--done); }
+
+  .meta { display:flex; justify-content:center; gap:20px; color:var(--mute); font-size:13px; }
+  .meta b { color:var(--t2); font-weight:600; } .meta .esc b { color:var(--escape); }
+
+  .primary { width:100%; margin-top:18px; background:var(--accent); color:#fff; border:none; border-radius:12px; padding:13px; font-weight:600; }
+  .primary:hover { background:var(--accent-h); }
+  .ghost { width:100%; margin-top:18px; background:transparent; color:var(--t2); border:1px solid var(--b3); border-radius:12px; padding:12px; font-weight:600; }
+  .ghost:hover { background:var(--b1); }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:18px; } .pair button { margin-top:0; }
+  .choices { margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .choice { background:var(--surface); border:1px solid var(--b2); border-radius:12px; padding:12px 14px; text-align:left; }
+  .choice b { display:block; font-weight:600; color:var(--t1); } .choice span { color:var(--mute); font-size:12px; }
+  .choice.esc { border-color:rgba(201,138,126,.35); } .choice.esc b { color:var(--escape); }
+  .choice:hover { background:var(--elev); }
+  .cancel { grid-column:1/-1; background:none; border:none; color:var(--mute); font-size:12px; padding:4px; }
+
+  .custom { display:none; gap:8px; margin-top:10px; align-items:center; justify-content:center; color:var(--mute); font-size:12px; }
+  .custom.open { display:flex; }
+  .custom input { width:56px; background:var(--surface); border:1px solid var(--b2); border-radius:8px; color:var(--t1); padding:6px 8px; font:inherit; }
+  .sbtn { background:var(--elev); border:1px solid var(--b2); color:var(--t2); border-radius:8px; padding:6px 12px; font-size:12px; }
+
+  .week { margin-top:22px; padding-top:18px; border-top:1px solid var(--b1); }
+  .wlab { display:flex; justify-content:space-between; font-size:12px; color:var(--mute); margin-bottom:10px; } .wlab b { color:var(--t2); font-weight:600; font-size:13px; }
+  .hist { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; height:84px; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .col .bw { width:100%; max-width:26px; flex:1; display:flex; align-items:flex-end; background:var(--surface); border-radius:6px; overflow:hidden; }
+  .col .bw i { display:block; width:100%; background:var(--accent); opacity:.5; }
+  .col .bw i.full { background:var(--done); opacity:1; }
+  .col small { color:var(--mute); font-size:11px; } .col small.today { color:var(--t2); }
+  .col em { font-style:normal; font-size:11px; color:var(--escape); min-height:15px; }
+
+  .toast { position:fixed; bottom:60px; left:50%; transform:translateX(-50%); background:var(--elev); border:1px solid var(--b3); color:var(--t1); padding:10px 16px; border-radius:10px; z-index:200; display:none; }
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <header>
+    <div class="hwrap">
+      <div class="logo"><i></i><span>rbit</span></div>
+      <div class="hicons">
+        <button class="chip desk" id="chip"></button>
+        <div class="ibtn desk">◎</div><div class="ibtn desk">✎</div><div class="ibtn desk">☰</div><div class="ibtn desk">⚙</div>
+        <button class="ibtn mob" style="display:none" onclick="menu.classList.toggle('open')">≡</button>
+      </div>
+      <div class="menu" id="menu">
+        <div onclick="menu.classList.remove('open');openModal('stay')">Stay <span class="num" id="mS"></span></div>
+        <div onclick="menu.classList.remove('open');openModal('pomo')">Pomodoro <span class="num" id="mP"></span></div>
+        <div>Goals</div><div>Notes</div><div>Review</div><div>Settings</div>
+      </div>
+    </div>
+  </header>
+  <div class="strip" id="strip"><button id="stripBtn"></button></div>
+  <main>
+    <div class="card">
+      <div class="ghead"><span>Today's tasks</span><span style="color:var(--accent-h)">69%</span></div>
+      <div class="gbar"><i></i></div>
+      <div class="row"><div class="cb"></div>Do gym</div>
+      <div class="row"><div class="cb"></div>Learn English</div>
+      <div class="row"><div class="cb"></div>Explore the world</div>
+    </div>
+  </main>
+</div>
+
+<div class="backdrop" id="backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mhead"><div class="tabs" id="tabs"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="demo">
+  <button id="dD" class="on" onclick="setMobile(false)">Desktop</button>
+  <button id="dM" onclick="setMobile(true)">Mobile</button>
+  <button id="dS" onclick="speed=speed===1?600:1;this.textContent='Speed '+(speed===1?'1x':'600x');this.classList.toggle('on',speed>1)">Speed 1x</button>
+  <button onclick="reset()">Reset day</button>
+</div>
+
+<script>
+const LEVELS=[{h:6,t:'Out a lot today'},{h:8,t:'Hanging out today'},{h:12,t:'Home all day'}];
+const PRESETS=[[25,5],[50,10]];
+const snd={work:new Audio('sounds/work-start.wav'),rest:new Audio('sounds/rest-start.wav')};
+const C=2*Math.PI*46;
+let speed=1,s,tab='stay',picking=false,customOpen=false;
+function reset(){ s={level:8,status:'idle',remaining:8*3600,esc:0,out:0,why:null,
+  p:{work:25,rest:5,phase:'idle',left:25*60,paused:false,rounds:0}}; picking=false; customOpen=false; render(); }
+const clock=(x,h=true)=>{x=Math.max(0,Math.round(x));const H=Math.floor(x/3600),M=Math.floor(x%3600/60),S=x%60;
+  return h?`${H}:${String(M).padStart(2,'0')}:${String(S).padStart(2,'0')}`:`${String(H*60+M).padStart(2,'0')}:${String(S).padStart(2,'0')}`;};
+const hm=x=>{x=Math.round(x);const H=Math.floor(x/3600),M=Math.floor(x%3600/60);return H?`${H}h ${String(M).padStart(2,'0')}m`:`${M}m`;};
+function toast(t){toast_.textContent=t;toast_.style.display='block';clearTimeout(toast_._t);toast_._t=setTimeout(()=>toast_.style.display='none',2600);}
+const toast_=document.getElementById('toast');
+
+/* Stay */
+function setLevel(h){ if(s.status==='done')return; const stayed=s.level*3600-s.remaining;
+  if(s.status!=='idle'&&h>=s.level)return; s.level=h; s.remaining=Math.max(0,h*3600-stayed); if(!s.remaining&&s.status!=='idle')finish(); render(); }
+function sStart(){ s.status='running'; s.why=null; picking=false; render(); }
+function sPause(why){ s.status='paused'; s.why=why; if(why==='escape')s.esc++; picking=false; render(); }
+function finish(){ s.status='done'; s.remaining=0; snd.rest.play().catch(()=>{}); toast(`Stay done. ${s.level}h, ${s.esc} escapes.`); }
+/* Pomodoro, independent of Stay */
+function preset(i){ const p=s.p; if(p.phase!=='idle')return; if(i===2){customOpen=!customOpen;render();return;} customOpen=false; [p.work,p.rest]=PRESETS[i]; p.left=p.work*60; render(); }
+function applyCustom(){ const p=s.p; p.work=Math.min(120,Math.max(1,+cw.value||25)); p.rest=Math.min(60,Math.max(1,+cr.value||5)); p.left=p.work*60; customOpen=false; render(); }
+function pStart(){ const p=s.p; p.phase='work'; p.left=p.work*60; p.paused=false; snd.work.play().catch(()=>{}); render(); }
+function pToggle(){ s.p.paused=!s.p.paused; render(); }
+function pStop(){ const p=s.p; p.phase='idle'; p.left=p.work*60; p.paused=false; render(); }
+
+function tick(){ const d=speed;
+  if(s.status==='running'){ s.remaining-=d; if(s.remaining<=0)finish(); }
+  if(s.status==='paused'&&s.why==='out') s.out+=d;
+  const p=s.p; if(p.phase!=='idle'&&!p.paused){ p.left-=d; if(p.left<=0){
+    if(p.phase==='work'){p.phase='rest';p.left=p.rest*60;p.rounds++;snd.rest.play().catch(()=>{});toast(`Focus done. Rest ${p.rest}m.`);}
+    else{p.phase='work';p.left=p.work*60;snd.work.play().catch(()=>{});toast(`Rest done. Focus ${p.work}m.`);} } }
+  render(); }
+
+function ring(frac,color,time,label,lclass,dim){
+  return `<div class="ring"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="46" fill="none" stroke-width="3"/>
+    <circle class="arc" cx="50" cy="50" r="46" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-frac)}"/></svg>
+    <div class="in"><div class="tm num ${dim?'dim':''}">${time}</div><div class="lb ${lclass}">${label}</div></div></div>`;
+}
+function stayBody(){
+  const st=s.status,total=s.level*3600,stayed=total-s.remaining;
+  const col={idle:'var(--accent)',running:'var(--accent)',paused:'var(--pause)',done:'var(--done)'}[st];
+  const lab={idle:`of ${s.level}h`,running:'staying',done:`${s.level}h stayed`,paused:s.why==='escape'?'escaped':'out'}[st];
+  const lcls={idle:'',running:'',done:'done',paused:s.why==='escape'?'escape':'pause'}[st];
+  const act = picking
+    ? `<div class="choices"><button class="choice esc" onclick="sPause('escape')"><b>Escape</b><span>Phone, or sleep to run away</span></button>
+        <button class="choice" onclick="sPause('out')"><b>Out</b><span>Going out, not counted</span></button>
+        <button class="cancel" onclick="picking=false;render()">Keep staying</button></div>`
+    : {idle:`<button class="primary" onclick="sStart()">Start</button>`, running:`<button class="ghost" onclick="picking=true;render()">Pause</button>`,
+       paused:`<button class="primary" onclick="sStart()">Resume</button>`, done:''}[st];
+  const past=[['M',12,12,0],['T',8,6.3,3],['W',8,8,1],['T',6,6,0],['F',12,9.5,4],['S',8,8,2]];
+  const days=[...past,['Today',s.level,stayed/3600,s.esc]];
+  const reached=days.filter(([,l,h])=>h>=l).length;
+  return `<div class="seg">${LEVELS.map(l=>`<button class="${l.h===s.level?'on':''}" ${(st==='done'||(st!=='idle'&&l.h>s.level))?'disabled':''} onclick="setLevel(${l.h})">${l.h}h</button>`).join('')}</div>
+    <div class="hint">${LEVELS.find(l=>l.h===s.level).t}</div>
+    ${ring(stayed/total,col,clock(s.remaining),lab,lcls,st==='idle')}
+    <div class="meta num"><span><b>${hm(stayed)}</b> stayed</span><span class="esc"><b>${s.esc}</b> escapes</span><span><b>${hm(s.out)}</b> out</span></div>
+    ${act}
+    <div class="week"><div class="wlab"><b>This week</b><span>${reached} of 7 reached</span></div>
+    <div class="hist">${days.map(([d,l,h,e],i)=>`<div class="col"><em class="num">${e||''}</em><div class="bw"><i class="${h>=l?'full':''}" style="height:${Math.min(100,h/l*100)}%"></i></div><small class="${i===6?'today':''}">${i===6?'Today':d}</small></div>`).join('')}</div></div>`;
+}
+function pomoBody(){
+  const p=s.p, idle=p.phase==='idle', ci=PRESETS.findIndex(([w,r])=>w===p.work&&r===p.rest);
+  const len=(p.phase==='rest'?p.rest:p.work)*60, frac=idle?0:1-p.left/len;
+  const col=p.paused?'var(--pause)':p.phase==='rest'?'var(--rest)':'var(--accent)';
+  const lab=idle?`${p.work} min focus, ${p.rest} min rest`:p.paused?'paused':p.phase==='work'?'focus':'rest';
+  const lcls=p.paused?'pause':p.phase==='rest'?'rest':'';
+  return `<div class="seg">${PRESETS.map(([w,r],i)=>`<button class="${ci===i&&!customOpen?'on':''}" ${idle?'':'disabled'} onclick="preset(${i})">${w} / ${r}</button>`).join('')}
+      <button class="${ci<0||customOpen?'on':''}" ${idle?'':'disabled'} onclick="preset(2)">${ci<0?`${p.work} / ${p.rest}`:'Custom'}</button></div>
+    <div class="custom ${customOpen?'open':''}">Focus <input id="cw" type="number" value="40"> min · Rest <input id="cr" type="number" value="8"> min <button class="sbtn" onclick="applyCustom()">Set</button></div>
+    <div class="hint">${p.rounds} round${p.rounds===1?'':'s'} today</div>
+    ${ring(frac,col,clock(p.left,false),lab,lcls,idle)}
+    ${idle?`<button class="primary" onclick="pStart()">Start</button>`
+      :`<div class="pair"><button class="${p.paused?'primary':'ghost'}" onclick="pToggle()">${p.paused?'Resume':'Pause'}</button><button class="ghost" onclick="pStop()">Stop</button></div>`}`;
+}
+function render(){
+  const st=s.status,p=s.p,sOn=st==='running'||st==='paused',pOn=p.phase!=='idle';
+  const sDot=st==='running'?'run':st==='paused'?'pause':st==='done'?'done':'';
+  const pDot=p.paused?'pause':p.phase==='rest'?'rest':'run';
+  tabs.innerHTML=`<button class="tab ${tab==='stay'?'on':''}" onclick="tab='stay';picking=false;render()"><span class="dot ${sDot}"></span>Stay</button>
+    <button class="tab ${tab==='pomo'?'on':''}" onclick="tab='pomo';render()"><span class="dot ${pOn?pDot:''}"></span>Pomodoro</button>`;
+  if(backdrop.classList.contains('open')&&!(document.activeElement&&document.activeElement.tagName==='INPUT')) body.innerHTML=tab==='stay'?stayBody():pomoBody();
+
+  let chipHtml=`<span class="part" onclick="openModal('stay')"><span class="dot ${sDot}"></span><span class="v num">${st==='idle'?'Stay':st==='done'?`${s.level}h done`:clock(s.remaining)}</span>${sOn&&s.esc?`<span class="e num">${s.esc}</span>`:''}</span>`;
+  if(pOn) chipHtml+=`<span class="part" onclick="openModal('pomo')"><span class="dot ${pDot}"></span><span class="v num">${clock(p.left,false)}</span></span>`;
+  chip.innerHTML=chipHtml;
+  mS.textContent=st==='idle'?'':st==='done'?'done':clock(s.remaining); mP.textContent=pOn?clock(p.left,false):'';
+  const mob=frame.classList.contains('mobile');
+  strip.style.display=mob&&(sOn||pOn)?'block':'none';
+  stripBtn.innerHTML=(sOn?`<span class="it" onclick="openModal('stay')"><span class="dot ${sDot}"></span><span class="num">${clock(s.remaining)}</span><small>stay</small></span>`:'')
+    +(pOn?`<span class="it" onclick="event.stopPropagation();openModal('pomo')"><span class="dot ${pDot}"></span><span class="num">${clock(p.left,false)}</span><small>${p.phase}</small></span>`:'')
+    +(sOn&&s.esc?`<span class="e num">${s.esc} esc</span>`:'');
+}
+function openModal(t){ tab=t; backdrop.classList.add('open'); render(); }
+function closeModal(){ backdrop.classList.remove('open'); picking=false; customOpen=false; render(); }
+function setMobile(m){frame.classList.toggle('mobile',m);dD.classList.toggle('on',!m);dM.classList.toggle('on',m);
+  document.querySelectorAll('.desk').forEach(e=>e.style.display=m?'none':(e.classList.contains('chip')?'flex':'grid'));
+  document.querySelector('.mob').style.display=m?'grid':'none'; menu.classList.remove('open'); render();}
+reset(); setInterval(tick,1000);
+</script>
+</body>
+</html>

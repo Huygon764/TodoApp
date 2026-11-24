@@ -12,6 +12,8 @@ files after actual product domains, such as `overview.md`, `billing.md`,
 
 - [`discipline.md`](discipline.md): habit ticks, skip, slack, two-day window,
   streak and rate rules.
+- [`stay-pomodoro.md`](stay-pomodoro.md): Stay daily countdown (levels,
+  Escape/Out pauses, day close) and the Pomodoro cycle.
 
 
 ## Update Rule

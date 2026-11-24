@@ -23,7 +23,7 @@ export function StayChip({ onOpen }: TimerEntryProps) {
         : stay.clock;
 
   return (
-    <div className="flex items-center h-[42px] rounded-xl bg-bg-card border border-border-default hover:border-border-strong text-text-tertiary overflow-hidden transition-colors">
+    <div className="flex items-center h-[42px] font-medium rounded-xl bg-bg-card border border-border-default hover:border-border-strong text-text-tertiary overflow-hidden transition-colors">
       <button type="button" onClick={() => onOpen("stay")} className={PART}>
         <StateDot state={stay.dot} />
         <span className="text-sm text-white tabular-nums">{stayText}</span>
@@ -59,7 +59,7 @@ export function StayStrip({ onOpen }: TimerEntryProps) {
       : t("pomodoro.phaseFocus");
 
   return (
-    <div className="flex items-center gap-3.5 px-4 border-t border-border-default bg-bg-surface">
+    <div className="flex items-center gap-3.5 px-4 font-medium border-t border-border-default bg-bg-surface">
       {stay.on && (
         <button type="button" onClick={() => onOpen("stay")} className={item}>
           <StateDot state={stay.dot} />

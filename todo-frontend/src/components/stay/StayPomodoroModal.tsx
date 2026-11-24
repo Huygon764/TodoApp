@@ -54,7 +54,7 @@ export function StayPomodoroModal({ isOpen, onClose, tab, onTabChange }: StayPom
               role="tab"
               aria-selected={tab === item.key}
               onClick={() => onTabChange(item.key)}
-              className={`flex items-center gap-[7px] px-3 py-[7px] rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-[7px] px-3 py-[7px] rounded-lg text-sm font-medium transition-colors ${
                 tab === item.key
                   ? "bg-bg-elevated text-white"
                   : "text-text-tertiary hover:text-text-secondary"

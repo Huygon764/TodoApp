@@ -71,7 +71,7 @@ export function StayTab() {
   };
 
   return (
-    <div>
+    <div className="text-sm font-medium">
       <div className="flex bg-bg-surface border border-border-subtle rounded-[10px] p-[3px]">
         {STAY_LEVELS.map((l) => {
           const disabled = stay.busy || status === "done" || (status !== "idle" && l > level);
@@ -84,7 +84,7 @@ export function StayTab() {
               onClick={() => changeLevel(l)}
               className={`flex-1 py-[7px] rounded-[7px] text-[13px] transition-colors disabled:cursor-not-allowed ${
                 l === level
-                  ? "bg-bg-elevated text-white"
+                  ? "bg-bg-elevated text-white disabled:text-text-faint"
                   : "text-text-tertiary hover:text-text-secondary disabled:text-text-faint disabled:hover:text-text-faint"
               }`}
             >
@@ -195,7 +195,7 @@ export function StayTab() {
                 />
               </div>
               <small
-                className={`text-[11px] ${c.isToday ? "text-text-secondary" : "text-text-muted"}`}
+                className={`text-[11px] whitespace-nowrap ${c.isToday ? "text-text-secondary" : "text-text-muted"}`}
               >
                 {c.isToday ? t("stay.today") : (weekdays[c.index] ?? "")}
               </small>

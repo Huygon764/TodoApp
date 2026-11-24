@@ -82,14 +82,14 @@ export function PomodoroTab() {
   const segBase = "flex-1 py-[7px] rounded-[7px] text-[13px] transition-colors disabled:cursor-not-allowed";
   const segClass = (on: boolean) =>
     on
-      ? `${segBase} bg-bg-elevated text-white`
+      ? `${segBase} bg-bg-elevated text-white disabled:text-text-faint`
       : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-text-faint disabled:hover:text-text-faint`;
 
   const inputClass =
     "w-14 bg-bg-surface border border-border-default rounded-lg text-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-primary/40";
 
   return (
-    <div>
+    <div className="text-sm font-medium">
       <div className="flex bg-bg-surface border border-border-subtle rounded-[10px] p-[3px]">
         {POMODORO_PRESETS.map(([w, r], i) => (
           <button

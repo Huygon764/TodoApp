@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { validateImportPayload, COLLECTIONS, EXPORT_VERSION } from "./dataTransfer.js";
+import { validateImportPayload, COLLECTIONS, EXPORT_VERSION, pickFields } from "./dataTransfer.js";
 
 test("COLLECTIONS keys are unique", () => {
   const keys = COLLECTIONS.map((c) => c.key);
@@ -32,6 +32,47 @@ test("rejects freetimeTodo that is an array", () => {
 test("accepts freetimeTodo as null", () => {
   const r = validateImportPayload({ version: EXPORT_VERSION, data: { freetimeTodo: null } });
   expect(r.ok).toBe(true);
+});
+
+test("export/import covers StayDay and only the pomodoro settings", () => {
+  const stay = COLLECTIONS.find((c) => c.key === "stayDays");
+  const pomo = COLLECTIONS.find((c) => c.key === "pomodoroSettings");
+  expect(stay?.kind).toBe("many");
+  expect(pomo?.kind).toBe("one");
+  expect(pomo?.fields).toEqual(["workMin", "restMin"]);
+});
+
+test("pickFields drops runtime pomodoro state", () => {
+  const doc = { workMin: 50, restMin: 10, phase: "work", roundsByDate: { a: 1 } };
+  expect(pickFields(doc, ["workMin", "restMin"])).toEqual({ workMin: 50, restMin: 10 });
+});
+
+test("accepts stayDays and pomodoroSettings, or neither", () => {
+  expect(
+    validateImportPayload({
+      version: EXPORT_VERSION,
+      data: { stayDays: [{ date: "2026-11-24", level: 8 }], pomodoroSettings: { workMin: 50, restMin: 10 } },
+    }).ok,
+  ).toBe(true);
+  expect(validateImportPayload({ version: EXPORT_VERSION, data: {} }).ok).toBe(true);
+  expect(
+    validateImportPayload({ version: EXPORT_VERSION, data: { pomodoroSettings: null } }).ok,
+  ).toBe(true);
+});
+
+test("rejects malformed stayDays and out-of-range pomodoro settings", () => {
+  expect(
+    validateImportPayload({ version: EXPORT_VERSION, data: { stayDays: {} } }).ok,
+  ).toBe(false);
+  expect(
+    validateImportPayload({ version: EXPORT_VERSION, data: { pomodoroSettings: [] } }).ok,
+  ).toBe(false);
+  expect(
+    validateImportPayload({
+      version: EXPORT_VERSION,
+      data: { pomodoroSettings: { workMin: 500, restMin: 5 } },
+    }).ok,
+  ).toBe(false);
 });
 
 test("accepts a well-formed payload with missing keys", () => {

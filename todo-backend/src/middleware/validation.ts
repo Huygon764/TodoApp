@@ -395,6 +395,32 @@ export const validatePatchExpenseBody = [
     .withMessage("description cannot be empty"),
 ];
 
+export const validateStayPauseBody = [
+  body("reason")
+    .isIn(["escape", "out"])
+    .withMessage("reason must be escape or out"),
+];
+
+export const validateStayLevelBody = [
+  body("level")
+    .isInt()
+    .bail()
+    .toInt()
+    .isIn([6, 8, 12])
+    .withMessage("level must be 6, 8 or 12"),
+];
+
+export const validatePomodoroSettingsBody = [
+  body("workMin")
+    .isInt({ min: 1, max: 120 })
+    .withMessage("workMin must be an integer between 1 and 120")
+    .toInt(),
+  body("restMin")
+    .isInt({ min: 1, max: 60 })
+    .withMessage("restMin must be an integer between 1 and 60")
+    .toInt(),
+];
+
 export const validatePatchReviewBody = [
   body("goodThings")
     .optional()

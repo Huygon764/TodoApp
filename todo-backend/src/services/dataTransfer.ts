@@ -1,6 +1,6 @@
 import {
   DayTodo, Goal, DefaultItem, RecurringTemplate, DateTemplate,
-  Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense,
+  Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense, StayDay, Pomodoro,
 } from "../models/index.js";
 import { Types, type Model } from "mongoose";
 
@@ -13,6 +13,8 @@ interface CollectionSpec {
   // find/insert/delete by userId, so a permissive model type is fine here.
   model: Model<any>;
   kind: Kind;
+  /** For kind "one": copy only these fields (the rest is runtime state). */
+  fields?: string[];
 }
 
 /** One source of truth for every user-owned collection. Export and import
@@ -29,12 +31,25 @@ export const COLLECTIONS: CollectionSpec[] = [
   { key: "habits", model: Habit, kind: "many" },
   { key: "habitLogs", model: HabitLog, kind: "many" },
   { key: "expenses", model: Expense, kind: "many" },
+  { key: "stayDays", model: StayDay, kind: "many" },
+  // Only the preset travels; the running phase and rounds do not.
+  { key: "pomodoroSettings", model: Pomodoro, kind: "one", fields: ["workMin", "restMin"] },
 ];
 
 export interface ExportDoc {
   version: number;
   exportedAt: string;
   data: Record<string, unknown>;
+}
+
+/** Keep only the listed fields of a doc. */
+export function pickFields(
+  doc: Record<string, unknown>,
+  fields: string[],
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const f of fields) if (f in doc) out[f] = doc[f];
+  return out;
 }
 
 /** Remove userId (and mongoose __v) from a lean doc; keep _id and timestamps. */
@@ -50,7 +65,8 @@ export async function buildExport(userId: string): Promise<ExportDoc> {
   for (const c of COLLECTIONS) {
     if (c.kind === "one") {
       const doc = await c.model.findOne({ userId }).lean();
-      data[c.key] = doc ? stripUserId(doc as Record<string, unknown>) : null;
+      const clean = doc ? stripUserId(doc as Record<string, unknown>) : null;
+      data[c.key] = clean && c.fields ? pickFields(clean, c.fields) : clean;
     } else {
       const docs = await c.model.find({ userId }).lean();
       data[c.key] = (docs as Record<string, unknown>[]).map(stripUserId);
@@ -83,6 +99,17 @@ export function validateImportPayload(
       }
     } else if (value !== null && (typeof value !== "object" || Array.isArray(value))) {
       return { ok: false, error: `${c.key} must be an object or null` };
+    }
+  }
+  const ps = data.pomodoroSettings as
+    | { workMin?: unknown; restMin?: unknown }
+    | null
+    | undefined;
+  if (ps) {
+    const inRange = (v: unknown, max: number) =>
+      v === undefined || (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= max);
+    if (!inRange(ps.workMin, 120) || !inRange(ps.restMin, 60)) {
+      return { ok: false, error: "pomodoroSettings out of range" };
     }
   }
   return { ok: true };
@@ -131,7 +158,8 @@ export async function applyImport(
 
     if (c.kind === "one") {
       if (value && typeof value === "object" && !Array.isArray(value)) {
-        await c.model.create({ ...withoutId(value as Record<string, unknown>), userId });
+        const body = withoutId(value as Record<string, unknown>);
+        await c.model.create({ ...(c.fields ? pickFields(body, c.fields) : body), userId });
         counts[c.key] = 1;
       } else {
         counts[c.key] = 0;

@@ -19,3 +19,16 @@ _Avoid_: lazy, rest, skip, color
 **Random week task**:
 A week-template task that belongs to one weekday of a given week.
 _Avoid_: daily task, everyday task
+
+**Stay**:
+The daily countdown of time not spent running away.
+_Avoid_: seat, work time, focus
+
+**Level**:
+The hours Stay asks of a day: 6, 8 or 12.
+
+**Escape**:
+A pause to run away (phone, sleep). Counted.
+
+**Out**:
+A pause to go out. Not counted.

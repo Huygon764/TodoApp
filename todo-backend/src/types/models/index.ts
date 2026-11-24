@@ -10,3 +10,4 @@ export * from "./personNote.model.js";
 export * from "./habit.model.js";
 export * from "./inviteCode.model.js";
 export * from "./expense.model.js";
+export * from "./stay.model.js";

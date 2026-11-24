@@ -22,6 +22,9 @@ export const forbidden = (message: string = "Forbidden"): AppError =>
 export const notFound = (message: string = "Not found"): AppError =>
   new AppError(404, message);
 
+export const conflict = (message: string = "Conflict"): AppError =>
+  new AppError(409, message);
+
 export const tooManyRequests = (
   message: string = "Too many requests"
 ): AppError => new AppError(429, message);

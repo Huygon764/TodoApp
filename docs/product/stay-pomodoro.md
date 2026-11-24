@@ -72,4 +72,4 @@ happened while closed is silent.
 Export and import include the stay days and the pomodoro settings (preset
 only); import without them leaves them empty. Export first settles a past day
 left running or paused: done if it reached its level, otherwise idle with its
-counts kept and marked closed.
+counts kept, so it reads as closed.

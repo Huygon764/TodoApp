@@ -301,6 +301,8 @@ interface Shot {
   open: Open;
   widths: Width[];
   clip?: Partial<Record<Width, number>>;
+  /** Vietnamese shots are app only; the mockup is English. */
+  lang?: "en" | "vi";
 }
 const SHOTS: Shot[] = [
   { name: "idle", scn: idle, open: "none", widths: ["desktop", "mobile"], clip: { desktop: 80, mobile: 140 } },
@@ -315,6 +317,15 @@ const SHOTS: Shot[] = [
   { name: "stay-escaped", scn: { stay: "escaped", pomo: "idle" }, open: "stay", widths: ["desktop", "mobile"] },
   { name: "stay-out", scn: { stay: "out", pomo: "idle" }, open: "stay", widths: ["desktop", "mobile"] },
   { name: "pomo-paused", scn: { stay: "running", pomo: "paused" }, open: "pomo", widths: ["desktop", "mobile"] },
+  // Header only: chip (desktop), strip and menu (mobile) in paused, done and Vietnamese.
+  { name: "chip-escaped", scn: { stay: "escaped", pomo: "idle" }, open: "none", widths: ["desktop"], clip: { desktop: 80 } },
+  { name: "chip-pomo-paused", scn: { stay: "running", pomo: "paused" }, open: "none", widths: ["desktop"], clip: { desktop: 80 } },
+  { name: "strip-escaped", scn: { stay: "escaped", pomo: "idle" }, open: "none", widths: ["mobile"], clip: { mobile: 140 } },
+  { name: "strip-pomo-paused", scn: { stay: "running", pomo: "paused" }, open: "none", widths: ["mobile"], clip: { mobile: 140 } },
+  { name: "menu-done", scn: done, open: "menu", widths: ["mobile"], clip: { mobile: 560 } },
+  { name: "chip-vi", scn: running, open: "none", widths: ["desktop"], clip: { desktop: 80 }, lang: "vi" },
+  { name: "strip-vi", scn: running, open: "none", widths: ["mobile"], clip: { mobile: 140 }, lang: "vi" },
+  { name: "menu-vi", scn: running, open: "menu", widths: ["mobile"], clip: { mobile: 560 }, lang: "vi" },
 ];
 
 const server = Bun.serve({
@@ -350,8 +361,13 @@ try {
     for (const width of shot.widths) {
       const clip = shot.clip?.[width] ? { height: shot.clip[width]! } : undefined;
       console.log(`${shot.name} ${width}`);
-      await appShot(browser, `${shot.name}-${width}-app.png`, width, shot.scn, shot.open, { clip });
-      await mockupShot(browser, `${shot.name}-${width}-mockup.png`, width, shot.scn, shot.open, { clip });
+      await appShot(browser, `${shot.name}-${width}-app.png`, width, shot.scn, shot.open, {
+        clip,
+        lang: shot.lang,
+      });
+      if (shot.lang !== "vi") {
+        await mockupShot(browser, `${shot.name}-${width}-mockup.png`, width, shot.scn, shot.open, { clip });
+      }
     }
   }
   // Vietnamese: app only (the mockup is English).

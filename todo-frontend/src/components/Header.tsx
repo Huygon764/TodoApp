@@ -33,7 +33,7 @@ function HeaderMenuItem({ icon: Icon, label, trailing, onClick }: HeaderMenuItem
       <Icon className="w-5 h-5 shrink-0" />
       <span className="text-sm font-medium">{label}</span>
       {trailing && (
-        <span className="ml-auto text-xs text-text-muted tabular-nums">{trailing}</span>
+        <span className="ml-auto text-xs font-medium text-text-muted tabular-nums">{trailing}</span>
       )}
     </button>
   );

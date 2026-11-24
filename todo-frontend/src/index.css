@@ -29,6 +29,11 @@
   --color-success: #34D399;
   --color-success-to: #2DD4BF;
   --color-slack: #F97316;
+
+  /* Stay and Pomodoro states: low chroma, sit next to the navy accent */
+  --color-escape: #C98A7E;
+  --color-pause: #B8A77F;
+  --color-done: #8FAE9B;
 }
 
 body {

@@ -18,6 +18,9 @@ import { ParticleBackground } from "@/components/ParticleBackground";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { Header, type ModalKey } from "@/components/Header";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useTimerAlerts } from "@/hooks/useTimerAlerts";
+import { Toaster } from "@/components/shared/Toaster";
+import type { TimerTab } from "@/components/stay/StayPomodoroModal";
 
 const TemplatesHubModal = lazy(() =>
   import("@/components/TemplatesHubModal").then((m) => ({
@@ -51,6 +54,12 @@ const HabitStatsModal = lazy(() =>
 const SettingsModal = lazy(() =>
   import("@/components/SettingsModal").then((m) => ({
     default: m.SettingsModal,
+  })),
+);
+
+const StayPomodoroModal = lazy(() =>
+  import("@/components/stay/StayPomodoroModal").then((m) => ({
+    default: m.StayPomodoroModal,
   })),
 );
 
@@ -102,6 +111,12 @@ export function HomePage() {
     setOpenModal(key);
   };
   const closeM = () => setOpenModal(null);
+  const [timerTab, setTimerTab] = useState<TimerTab>("stay");
+  const openTimer = (tab: TimerTab) => {
+    setTimerTab(tab);
+    openM("stayPomodoro");
+  };
+  useTimerAlerts();
   const [reviewModalSlot, setReviewModalSlot] = useState<{
     type: "week" | "month";
     period: string;
@@ -211,7 +226,11 @@ export function HomePage() {
     <div className="min-h-screen text-slate-100 relative">
       <AnimatedBackground />
 
-      <Header onOpenModal={openM} onOpenReview={handleOpenReview} />
+      <Header
+        onOpenModal={openM}
+        onOpenReview={handleOpenReview}
+        onOpenTimer={openTimer}
+      />
 
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-6 space-y-6">
         <motion.section {...getSectionMotion()}>
@@ -342,6 +361,14 @@ export function HomePage() {
         {loadedModals.settings && (
           <SettingsModal isOpen={openModal === "settings"} onClose={closeM} />
         )}
+        {loadedModals.stayPomodoro && (
+          <StayPomodoroModal
+            isOpen={openModal === "stayPomodoro"}
+            onClose={closeM}
+            tab={timerTab}
+            onTabChange={setTimerTab}
+          />
+        )}
         {loadedModals.reviewHistory && (
           <ReviewHistoryModal
             isOpen={openModal === "reviewHistory"}
@@ -353,6 +380,7 @@ export function HomePage() {
           />
         )}
       </Suspense>
+      <Toaster />
     </div>
   );
 }

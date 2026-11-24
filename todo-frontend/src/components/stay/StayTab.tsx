@@ -71,7 +71,7 @@ export function StayTab() {
   };
 
   return (
-    <div>
+    <div className="text-sm font-medium">
       <div className="flex bg-bg-surface border border-border-subtle rounded-[10px] p-[3px]">
         {STAY_LEVELS.map((l) => {
           const disabled = stay.busy || status === "done" || (status !== "idle" && l > level);

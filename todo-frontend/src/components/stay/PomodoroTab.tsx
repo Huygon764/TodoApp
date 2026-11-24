@@ -89,7 +89,7 @@ export function PomodoroTab() {
     "w-14 bg-bg-surface border border-border-default rounded-lg text-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-primary/40";
 
   return (
-    <div>
+    <div className="text-sm font-medium">
       <div className="flex bg-bg-surface border border-border-subtle rounded-[10px] p-[3px]">
         {POMODORO_PRESETS.map(([w, r], i) => (
           <button

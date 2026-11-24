@@ -195,7 +195,7 @@ export function StayTab() {
                 />
               </div>
               <small
-                className={`text-[11px] ${c.isToday ? "text-text-secondary" : "text-text-muted"}`}
+                className={`text-[11px] whitespace-nowrap ${c.isToday ? "text-text-secondary" : "text-text-muted"}`}
               >
                 {c.isToday ? t("stay.today") : (weekdays[c.index] ?? "")}
               </small>

@@ -1,5 +1,6 @@
+import "../testEnv.js"; // config/env.ts throws at import without these variables
 import { test, expect } from "bun:test";
-import { validateImportPayload, COLLECTIONS, EXPORT_VERSION, pickFields } from "./dataTransfer.js";
+import { validateImportPayload, COLLECTIONS, EXPORT_VERSION, pickFields, settleStayExport } from "./dataTransfer.js";
 
 test("COLLECTIONS keys are unique", () => {
   const keys = COLLECTIONS.map((c) => c.key);
@@ -73,6 +74,23 @@ test("rejects malformed stayDays and out-of-range pomodoro settings", () => {
       data: { pomodoroSettings: { workMin: 500, restMin: 5 } },
     }).ok,
   ).toBe(false);
+});
+
+test("export settles a past stay day left running", () => {
+  const doc = {
+    date: "2026-11-20",
+    level: 8,
+    status: "running",
+    stayedMs: 0,
+    runningSince: new Date("2026-11-20T10:00:00Z"),
+    escapes: 0,
+    outMs: 0,
+  };
+  const now = new Date("2026-11-24T12:00:00Z");
+  const [out] = settleStayExport([doc], "UTC", now);
+  expect(out!.status).toBe("done");
+  const [idle] = settleStayExport([{ ...doc, status: "idle" }], "UTC", now);
+  expect(idle!.status).toBe("idle");
 });
 
 test("accepts a well-formed payload with missing keys", () => {

@@ -166,8 +166,10 @@ translated.
 - `stayedMs` up to the last transition, `runningSince` (when running).
 - `pausedAs`: `escape | out` (when paused), `pausedSince`.
 - `escapes`, `outMs`.
-- `levelChanges`: `[{ at, from, to }]`.
+- `levelChanges`: `[{ at, from, to }]`, recorded before Start as well.
 - `doneAt`.
+- `startedAt`: when Start was pressed; marks a past started day that missed
+  its level as `closed`.
 
 `Pomodoro`, one document per user:
 

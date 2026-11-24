@@ -1,3 +1,4 @@
+import "../testEnv.js"; // config/env.ts throws at import without these variables
 import { expect, test } from "bun:test";
 import type { Response } from "express";
 import { errorHandler } from "./errorHandler.js";

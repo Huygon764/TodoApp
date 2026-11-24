@@ -9,7 +9,7 @@ import {
 
 export const exportData = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const dump = await buildExport(userId);
+  const dump = await buildExport(userId, req.userDoc?.timezone);
   sendSuccess(res, 200, dump);
 });
 

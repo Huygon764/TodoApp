@@ -1,3 +1,4 @@
+import "../testEnv.js"; // config/env.ts throws at import without these variables
 import { test, expect } from "bun:test";
 import { generateUsername } from "./googleAuth.js";
 

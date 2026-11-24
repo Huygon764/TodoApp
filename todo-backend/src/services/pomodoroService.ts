@@ -34,7 +34,7 @@ function applyData(doc: IPomodoroDocument, data: PomodoroData): void {
 
 /**
  * Advance the phases from the timestamps, optionally apply one write, and
- * return the state. A write also prunes rounds to the current week.
+ * return the state. Every save also prunes rounds to the current week.
  */
 export async function runPomodoro(
   userId: string,

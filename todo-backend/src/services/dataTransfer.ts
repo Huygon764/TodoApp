@@ -3,6 +3,8 @@ import {
   Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense, StayDay, Pomodoro,
 } from "../models/index.js";
 import { Types, type Model } from "mongoose";
+import { formatDateInTimeZone } from "../utils/datePeriod.js";
+import { idleDay, settleDay, type StayData } from "./stayLogic.js";
 
 export const EXPORT_VERSION = 1;
 
@@ -60,7 +62,39 @@ function stripUserId(doc: Record<string, unknown>): Record<string, unknown> {
   return rest;
 }
 
-export async function buildExport(userId: string): Promise<ExportDoc> {
+/**
+ * Settle StayDay docs as the Stay service would on a read: a past day still
+ * running or paused (no Stay request since its midnight) must not export as
+ * running. Pure; no DB access.
+ */
+export function settleStayExport(
+  docs: Record<string, unknown>[],
+  tz: string | null | undefined,
+  now: Date,
+): Record<string, unknown>[] {
+  const today = formatDateInTimeZone(now, tz);
+  return docs.map((doc) => {
+    if (doc.status !== "running" && doc.status !== "paused") return doc;
+    const before = {
+      ...idleDay(String(doc.date)),
+      ...doc,
+      runningSince: doc.runningSince ?? null,
+      pausedAs: doc.pausedAs ?? null,
+      pausedSince: doc.pausedSince ?? null,
+      doneAt: doc.doneAt ?? null,
+      startedAt: doc.startedAt ?? null,
+      levelChanges: doc.levelChanges ?? [],
+    } as StayData;
+    const settled = settleDay(before, now, tz, today);
+    return settled === before ? doc : { ...doc, ...settled };
+  });
+}
+
+export async function buildExport(
+  userId: string,
+  tz?: string | null,
+  now: Date = new Date(),
+): Promise<ExportDoc> {
   const data: Record<string, unknown> = {};
   for (const c of COLLECTIONS) {
     if (c.kind === "one") {
@@ -69,10 +103,11 @@ export async function buildExport(userId: string): Promise<ExportDoc> {
       data[c.key] = clean && c.fields ? pickFields(clean, c.fields) : clean;
     } else {
       const docs = await c.model.find({ userId }).lean();
-      data[c.key] = (docs as Record<string, unknown>[]).map(stripUserId);
+      const clean = (docs as Record<string, unknown>[]).map(stripUserId);
+      data[c.key] = c.key === "stayDays" ? settleStayExport(clean, tz, now) : clean;
     }
   }
-  return { version: EXPORT_VERSION, exportedAt: new Date().toISOString(), data };
+  return { version: EXPORT_VERSION, exportedAt: now.toISOString(), data };
 }
 
 /** Pure shape validation; no DB access. */

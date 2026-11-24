@@ -1,7 +1,7 @@
 # Stay and Pomodoro
 
 Date: 2026-11-24  
-Status: Draft for owner review (not implemented)
+Status: Implemented (task 66, 2026-11-24)
 
 Mockup: [`assets/2026-11-24-stay-pomodoro/index.html`](assets/2026-11-24-stay-pomodoro/index.html)
 (open it over a local HTTP server; the bottom bar switches desktop/mobile and

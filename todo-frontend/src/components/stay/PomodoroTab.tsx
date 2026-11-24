@@ -82,7 +82,7 @@ export function PomodoroTab() {
   const segBase = "flex-1 py-[7px] rounded-[7px] text-[13px] transition-colors disabled:cursor-not-allowed";
   const segClass = (on: boolean) =>
     on
-      ? `${segBase} bg-bg-elevated text-white`
+      ? `${segBase} bg-bg-elevated text-white disabled:text-text-faint`
       : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-text-faint disabled:hover:text-text-faint`;
 
   const inputClass =

@@ -21,7 +21,10 @@ export function StayTab() {
   const [picking, setPicking] = useState(false);
 
   const day = stay.state?.today ?? null;
-  const now = useNow(stay.offsetMs, day?.status === "running");
+  // Ticks while running, and while paused as Out so the out time counts up.
+  const ticking =
+    day?.status === "running" || (day?.status === "paused" && day.pausedAs === "out");
+  const now = useNow(stay.offsetMs, ticking);
 
   if (!day || !stay.state) {
     return <div className="h-80" aria-busy="true" />;
@@ -110,7 +113,7 @@ export function StayTab() {
         </span>
       </div>
 
-      {picking ? (
+      {picking && status === "running" ? (
         <div className="mt-[18px] grid grid-cols-2 gap-2">
           <button
             type="button"

@@ -18,7 +18,7 @@ import { ParticleBackground } from "@/components/ParticleBackground";
 import { FreetimeTodoModal } from "@/components/FreetimeTodoModal";
 import { Header, type ModalKey } from "@/components/Header";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useTimerAlerts } from "@/hooks/useTimerAlerts";
+import { TimerAlerts } from "@/components/stay/TimerAlerts";
 import { Toaster } from "@/components/shared/Toaster";
 import type { TimerTab } from "@/components/stay/StayPomodoroModal";
 
@@ -116,7 +116,6 @@ export function HomePage() {
     setTimerTab(tab);
     openM("stayPomodoro");
   };
-  useTimerAlerts();
   const [reviewModalSlot, setReviewModalSlot] = useState<{
     type: "week" | "month";
     period: string;
@@ -380,6 +379,7 @@ export function HomePage() {
           />
         )}
       </Suspense>
+      <TimerAlerts />
       <Toaster />
     </div>
   );

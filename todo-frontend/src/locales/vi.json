@@ -196,6 +196,7 @@
   },
   "common": {
     "deleteAria": "Xóa",
+    "close": "Đóng",
     "errorTitle": "Có lỗi xảy ra ở đây.",
     "reload": "Tải lại",
     "subTasksAria": "Việc con ({{count}})",
@@ -312,6 +313,8 @@
     "name": "Pomodoro",
     "focus": "Tập trung",
     "rest": "Nghỉ",
+    "phaseFocus": "tập trung",
+    "phaseRest": "nghỉ",
     "paused": "tạm dừng",
     "custom": "Tuỳ chỉnh",
     "minShort": "phút",

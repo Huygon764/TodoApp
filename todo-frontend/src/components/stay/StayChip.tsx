@@ -55,8 +55,8 @@ export function StayStrip({ onOpen }: TimerEntryProps) {
   const phaseLabel = pomodoro.paused
     ? t("pomodoro.paused")
     : pomodoro.phase === "rest"
-      ? t("pomodoro.rest")
-      : t("pomodoro.focus");
+      ? t("pomodoro.phaseRest")
+      : t("pomodoro.phaseFocus");
 
   return (
     <div className="flex items-center gap-3.5 px-4 border-t border-border-default bg-bg-surface">

@@ -20,6 +20,8 @@ username/password. English and Vietnamese.
   record one Slack day; a second consecutive Slack breaks the streak.
   Streaks,
   a 7-day strip, and a 90-day heatmap. No back-fill older than yesterday.
+- **Stay and Pomodoro** – A daily Stay countdown (6h, 8h or 12h) for time not spent running
+  away, with Escape and Out pauses and a week view, plus an independent Pomodoro timer.
 - **Goals** – Week, month, and year goals with an optional template.
 - **Reflection** – One-line journal, mood/energy, gratitude, and an "on this day" flashback.
 - **Reviews** – Week/month self-reviews with history, plus optional Gemini AI analysis.

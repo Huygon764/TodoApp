@@ -75,19 +75,50 @@ export interface WeekColumn {
   future: boolean;
 }
 
+const DAY_MS = 86_400_000;
+
+function dateMs(date: string): number {
+  return Date.parse(`${date}T00:00:00Z`);
+}
+
 /**
- * Seven columns Monday..Sunday from `week` (Monday to today). Only the last
- * entry (today) is live; past days are final.
+ * Seven columns Monday..Sunday from `week` (Monday to today). Each entry goes
+ * in the column of its `date`, so a missing day leaves a gap instead of
+ * shifting the rest. The latest date is today and the only live one; past
+ * days are final.
  */
 export function weekColumns(week: StayDayView[], nowMs: number): WeekColumn[] {
+  const byIndex = new Map<number, StayDayView>();
+  const latest = week.reduce<StayDayView | null>(
+    (acc, d) => (acc == null || d.date > acc.date ? d : acc),
+    null,
+  );
+  let todayIndex = -1;
+  if (latest) {
+    const latestMs = dateMs(latest.date);
+    const monday = latestMs - ((new Date(latestMs).getUTCDay() + 6) % 7) * DAY_MS;
+    todayIndex = Math.round((latestMs - monday) / DAY_MS);
+    for (const d of week) {
+      const i = Math.round((dateMs(d.date) - monday) / DAY_MS);
+      if (i >= 0 && i < 7) byIndex.set(i, d);
+    }
+  }
+
   const cols: WeekColumn[] = [];
   for (let i = 0; i < 7; i++) {
-    const day = week[i];
+    const day = byIndex.get(i);
     if (!day) {
-      cols.push({ index: i, share: 0, escapes: 0, reached: false, isToday: false, future: true });
+      cols.push({
+        index: i,
+        share: 0,
+        escapes: 0,
+        reached: false,
+        isToday: false,
+        future: i > todayIndex,
+      });
       continue;
     }
-    const isToday = i === week.length - 1;
+    const isToday = day === latest;
     const share = isToday
       ? stayShare(day, nowMs)
       : day.status === "done"

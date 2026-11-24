@@ -51,8 +51,9 @@ export function PomodoroTab() {
   };
 
   const applyCustom = () => {
-    const workMin = clamp(Number(workInput), WORK_RANGE.min, WORK_RANGE.max, p.workMin);
-    const restMin = clamp(Number(restInput), REST_RANGE.min, REST_RANGE.max, p.restMin);
+    // A blank or 0 field means "keep the current value", not 1 minute.
+    const workMin = clamp(Number(workInput) || p.workMin, WORK_RANGE.min, WORK_RANGE.max, p.workMin);
+    const restMin = clamp(Number(restInput) || p.restMin, REST_RANGE.min, REST_RANGE.max, p.restMin);
     setWorkInput(String(workMin));
     setRestInput(String(restMin));
     setCustomOpen(false);
@@ -66,8 +67,8 @@ export function PomodoroTab() {
     : paused
       ? t("pomodoro.paused")
       : p.phase === "work"
-        ? t("pomodoro.focus")
-        : t("pomodoro.rest");
+        ? t("pomodoro.phaseFocus")
+        : t("pomodoro.phaseRest");
 
   const segBase = "flex-1 py-[7px] rounded-[7px] text-[13px] transition-colors disabled:cursor-not-allowed";
   const segClass = (on: boolean) =>

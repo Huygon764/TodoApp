@@ -196,6 +196,7 @@
   },
   "common": {
     "deleteAria": "Delete",
+    "close": "Close",
     "errorTitle": "Something went wrong here.",
     "reload": "Reload",
     "subTasksAria": "Sub-tasks ({{count}})",
@@ -314,6 +315,8 @@
     "name": "Pomodoro",
     "focus": "Focus",
     "rest": "Rest",
+    "phaseFocus": "focus",
+    "phaseRest": "rest",
     "paused": "paused",
     "custom": "Custom",
     "minShort": "min",

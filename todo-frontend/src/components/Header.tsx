@@ -39,6 +39,34 @@ function HeaderMenuItem({ icon: Icon, label, trailing, onClick }: HeaderMenuItem
   );
 }
 
+/** Stay and Pomodoro menu items. Own component so only the open menu ticks. */
+function TimerMenuItems({ onPick }: { onPick: (tab: TimerTab) => void }) {
+  const { t } = useTranslation();
+  const timers = useTimerSummary();
+  return (
+    <>
+      <HeaderMenuItem
+        icon={Hourglass}
+        label={t("stay.name")}
+        trailing={
+          timers.stay.on
+            ? timers.stay.clock
+            : timers.stay.status === "done"
+              ? t("stay.menuDone")
+              : undefined
+        }
+        onClick={() => onPick("stay")}
+      />
+      <HeaderMenuItem
+        icon={Timer}
+        label={t("pomodoro.name")}
+        trailing={timers.pomodoro.on ? timers.pomodoro.clock : undefined}
+        onClick={() => onPick("pomodoro")}
+      />
+    </>
+  );
+}
+
 export type ModalKey =
   | "templates"
   | "goal"
@@ -59,7 +87,6 @@ interface HeaderProps {
 
 export function Header({ onOpenModal, onOpenReview, onOpenTimer }: HeaderProps) {
   const { t } = useTranslation();
-  const timers = useTimerSummary();
   const isMobile = useIsMobile();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -147,23 +174,8 @@ export function Header({ onOpenModal, onOpenReview, onOpenTimer }: HeaderProps) 
                   transition={{ duration: 0.16, ease: "easeOut" }}
                   className="absolute right-0 top-[calc(100%+0.75rem)] w-64 rounded-xl bg-bg-card border border-border-default shadow-2xl shadow-black/30 p-2 z-30"
                 >
-                  <HeaderMenuItem
-                    icon={Hourglass}
-                    label={t("stay.name")}
-                    trailing={
-                      timers.stay.on
-                        ? timers.stay.clock
-                        : timers.stay.status === "done"
-                          ? t("stay.menuDone")
-                          : undefined
-                    }
-                    onClick={() => menuAction(() => onOpenTimer("stay"))}
-                  />
-                  <HeaderMenuItem
-                    icon={Timer}
-                    label={t("pomodoro.name")}
-                    trailing={timers.pomodoro.on ? timers.pomodoro.clock : undefined}
-                    onClick={() => menuAction(() => onOpenTimer("pomodoro"))}
+                  <TimerMenuItems
+                    onPick={(tab) => menuAction(() => onOpenTimer(tab))}
                   />
                   <HeaderMenuItem
                     icon={GoalsIcon}

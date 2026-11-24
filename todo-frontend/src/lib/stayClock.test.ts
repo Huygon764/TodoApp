@@ -109,14 +109,30 @@ test("week has seven columns, today live, future empty", () => {
   expect(cols[0]).toMatchObject({ share: 1, escapes: 2, reached: true, isToday: false });
   expect(cols[1]).toMatchObject({ share: 0.5, reached: false, isToday: true });
   expect(cols[2]).toMatchObject({ future: true, share: 0 });
+  expect(cols[1].future).toBe(false);
   expect(weekReached(cols)).toBe(1);
 });
 
-test("a closed past day shows its stayed share, not reached", () => {
+test("a closed past day (idle + closed, as the backend sends it) shows its stayed share, not reached", () => {
   const week = [
-    day({ date: "2026-11-23", status: "running", closed: true, level: 8, stayedMs: 4 * H }),
+    day({ date: "2026-11-23", status: "idle", closed: true, level: 8, stayedMs: 4 * H, escapes: 1 }),
     day({ date: "2026-11-24" }),
   ];
   const cols = weekColumns(week, T0);
-  expect(cols[0]).toMatchObject({ share: 0.5, reached: false });
+  expect(cols[0]).toMatchObject({ share: 0.5, reached: false, escapes: 1 });
+});
+
+test("columns are placed by date: a missing day leaves a gap", () => {
+  // 2026-11-24 is a Tuesday; Monday 11-23 is missing from the list.
+  const week = [day({ date: "2026-11-24", status: "done", stayedMs: 8 * H })];
+  const cols = weekColumns(week, T0);
+  expect(cols[0]).toMatchObject({ share: 0, reached: false, isToday: false, future: false });
+  expect(cols[1]).toMatchObject({ share: 1, reached: true, isToday: true });
+  expect(cols[2].future).toBe(true);
+});
+
+test("an empty week gives seven empty columns", () => {
+  const cols = weekColumns([], T0);
+  expect(cols).toHaveLength(7);
+  expect(weekReached(cols)).toBe(0);
 });

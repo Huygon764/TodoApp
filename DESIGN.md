@@ -54,6 +54,16 @@ Use opacity modifiers for accent variations: `accent-primary/10` for light backg
 | `success` | `#34D399` | Success gradient start (emerald) |
 | `success-to` | `#2DD4BF` | Success gradient end (teal) |
 
+### Stay and Pomodoro states
+
+Low-chroma, same lightness band, chosen to sit next to the navy accent. No gradients, no glow; Tailwind red/amber/emerald are not used here.
+
+| Token | Hex | Role |
+|---|---|---|
+| `escape` | `#C98A7E` | Escape count, Escape choice, escaped state |
+| `pause` | `#B8A77F` | Paused ring and dot |
+| `done` | `#8FAE9B` | Done ring, reached week column, pomodoro rest |
+
 ## Typography Rules
 
 - **Font family:** system-ui, -apple-system, sans-serif

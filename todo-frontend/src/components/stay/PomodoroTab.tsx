@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNow } from "@/hooks/useStay";
 import { usePomodoro } from "@/hooks/usePomodoro";
@@ -27,6 +27,13 @@ export function PomodoroTab() {
   const p = pomo.state;
   const paused = p != null && pomodoroPaused(p);
   const now = useNow(pomo.offsetMs, p != null && p.phase !== "idle" && !paused);
+
+  // Custom is a stopped-only panel. If the timer starts elsewhere (another
+  // device), drop it so it does not reopen after Stop. Only act once loaded.
+  const phase = p?.phase;
+  useEffect(() => {
+    if (phase != null && phase !== "idle") setCustomOpen(false);
+  }, [phase]);
 
   if (!p) return <div className="h-80" aria-busy="true" />;
 

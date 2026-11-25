@@ -13,8 +13,6 @@ interface ModalContainerProps {
   zContent?: string;
   /** When false, the card does not scroll; children manage their own overflow. Default true. */
   scrollable?: boolean;
-  /** On mobile the card fills the screen (no padding, radius or border). Default false. */
-  fullScreenOnMobile?: boolean;
 }
 
 const EXIT_DURATION_MS = 220;
@@ -28,7 +26,6 @@ export function ModalContainer({
   zBackdrop = "z-[60]",
   zContent = "z-[70]",
   scrollable = true,
-  fullScreenOnMobile = false,
 }: ModalContainerProps) {
   // Drive mount state from React, not framer-motion's AnimatePresence.
   // AnimatePresence can leave the backdrop stuck in the DOM (opacity: 0) when
@@ -51,8 +48,6 @@ export function ModalContainer({
 
   if (!shouldRender) return null;
 
-  const fullScreen = fullScreenOnMobile && isMobile;
-
   return (
     <>
       <motion.div
@@ -74,20 +69,16 @@ export function ModalContainer({
               : { opacity: 0, scale: 0.95, y: 20 }
         }
         transition={{ duration: durationMs / 1000 }}
-        className={`fixed inset-0 ${zContent} flex items-center justify-center ${
-          fullScreen ? "" : "p-4"
-        } pointer-events-none`}
+        className={`fixed inset-0 ${zContent} flex items-center justify-center p-4 pointer-events-none`}
       >
         <div
-          className={`relative w-full ${fullScreen ? "h-full" : `${maxWidth} max-h-[90dvh]`} pointer-events-auto`}
+          className={`relative w-full ${maxWidth} max-h-[90dvh] pointer-events-auto`}
           ref={contentRef as React.RefObject<HTMLDivElement>}
         >
           <div
-            className={`relative bg-bg-card shadow-2xl overflow-hidden ${
-              fullScreen
-                ? "h-full"
-                : "rounded-xl border border-border-default max-h-[90dvh]"
-            } ${scrollable ? "overflow-y-auto" : "flex flex-col"}`}
+            className={`relative bg-bg-card rounded-xl border border-border-default shadow-2xl overflow-hidden max-h-[90dvh] ${
+              scrollable ? "overflow-y-auto" : "flex flex-col"
+            }`}
           >
             {children}
           </div>

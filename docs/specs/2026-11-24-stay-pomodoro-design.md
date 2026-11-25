@@ -121,7 +121,9 @@ Follows `DESIGN.md`. The mockup is the reference.
 ### Modal
 
 One modal with two tabs, **Stay** and **Pomodoro**, each tab with a state dot.
-Desktop: centered modal. Mobile: full screen, no blur (as other modals).
+A centered card on desktop and mobile, no blur on mobile, as other modals
+(changed 2026-11-25 by the owner: "Okay let's fix it"; it was full screen on
+mobile).
 
 Stay tab, top to bottom:
 

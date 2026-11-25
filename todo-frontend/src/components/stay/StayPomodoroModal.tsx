@@ -43,7 +43,6 @@ export function StayPomodoroModal({ isOpen, onClose, tab, onTabChange }: StayPom
       onClose={onClose}
       contentRef={contentRef}
       maxWidth="max-w-[440px]"
-      fullScreenOnMobile
     >
       <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border-subtle">
         <div className="flex flex-1 gap-1" role="tablist">

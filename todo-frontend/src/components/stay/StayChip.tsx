@@ -59,7 +59,7 @@ export function StayStrip({ onOpen }: TimerEntryProps) {
       : t("pomodoro.phaseFocus");
 
   return (
-    <div className="flex items-center gap-3.5 px-4 font-medium border-t border-border-default bg-bg-surface">
+    <div className="flex items-center justify-center gap-3.5 px-4 font-medium border-t border-border-default bg-bg-surface">
       {stay.on && (
         <button type="button" onClick={() => onOpen("stay")} className={item}>
           <StateDot state={stay.dot} />
@@ -74,14 +74,16 @@ export function StayStrip({ onOpen }: TimerEntryProps) {
           <small className="text-xs text-text-muted">{phaseLabel}</small>
         </button>
       )}
-      <button
-        type="button"
-        onClick={() => onOpen(stay.on ? "stay" : "pomodoro")}
-        aria-label={t("stay.openTimers")}
-        className="flex-1 self-stretch flex items-center justify-end text-xs text-escape tabular-nums"
-      >
-        {stay.on && stay.escapes > 0 ? t("stay.stripEscapes", { n: stay.escapes }) : ""}
-      </button>
+      {stay.on && stay.escapes > 0 && (
+        <button
+          type="button"
+          onClick={() => onOpen("stay")}
+          aria-label={t("stay.openTimers")}
+          className="py-2 text-xs text-escape tabular-nums"
+        >
+          {t("stay.stripEscapes", { n: stay.escapes })}
+        </button>
+      )}
     </div>
   );
 }

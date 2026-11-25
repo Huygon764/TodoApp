@@ -162,12 +162,11 @@ Framer Motion: whileHover scale 1.01, whileTap scale 0.99
 ```
 Backdrop: bg-black/60; desktop adds backdrop-blur-sm, mobile does not
 Container: bg-bg-card rounded-xl border border-border-default shadow-2xl
-Full-screen mobile variant (fullScreenOnMobile): bg-bg-card shadow-2xl, h-full, no radius, no border
 ```
 
 Mount is React state + timeout (not AnimatePresence). Desktop enter/exit: opacity + scale 0.95 + y 20, 220ms. Mobile: opacity only, 120ms, no initial scale/y.
 
-By default a modal is a centered card on mobile too (`p-4`, `max-h-[90dvh]`, `rounded-xl`, border). `ModalContainer` has an opt-in `fullScreenOnMobile` prop: on mobile the card fills the screen (no padding, no radius, no border, full height, still no blur); desktop is unchanged. Only the Stay/Pomodoro modal uses it; other modals keep the card.
+Every modal, Stay/Pomodoro included, is a centered card on mobile too (`p-4`, `max-h-[90dvh]`, `rounded-xl`, border).
 
 ### Checkbox
 
@@ -228,7 +227,7 @@ Framer Motion is used where it still earns the cost. Mobile drops hover, particl
   - Header: hamburger menu replaces inline buttons
   - Hover animations: disabled (tap only)
   - Particles: not rendered (desktop lazy-loads ~200 after first paint)
-  - Modal: no backdrop blur, no scale/y enter; modals with `fullScreenOnMobile` (Stay/Pomodoro) are full screen with no radius or border
+  - Modal: no backdrop blur, no scale/y enter
   - Progress bar: no width animation
   - Touch targets: minimum p-2.5 (40px)
 
@@ -240,7 +239,7 @@ Framer Motion is used where it still earns the cost. Mobile drops hover, particl
 - Use opacity modifiers on accent token (accent-primary/10, accent-primary/20)
 - Disable hover animations on mobile (check useIsMobile)
 - Use Framer Motion for all interactive scale animations
-- Use rounded-xl for modals (except the full-screen mobile variant, which has no radius), rounded-2xl for cards, rounded-xl for inputs
+- Use rounded-xl for modals, rounded-2xl for cards, rounded-xl for inputs
 - Use border-border-default for container borders, border-border-subtle for internal dividers
 - Add cursor-pointer to all interactive elements
 

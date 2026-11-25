@@ -66,8 +66,9 @@ happened while closed is silent.
 - Mobile: Stay and Pomodoro items in the menu (the time while on, "done" for
   Stay when done), and a strip under the header while either runs or is
   paused.
-- The modal has two tabs, each with a state dot. It is centered on desktop and
-  full screen on mobile.
+- The modal has two tabs, each with a state dot. It is a centered card on
+  desktop and on mobile, like the other modals.
+- The mobile strip is centered: each running timer, then the escape count.
 
 Export and import include the stay days and the pomodoro settings (preset
 only); import without them leaves them empty. Export first settles a past day

@@ -18,7 +18,7 @@ import { TimerRing, type LabelTone, type RingColor } from "@/components/stay/Tim
 const CUSTOM = TIMER_PRESETS_MIN.length;
 
 const PRIMARY =
-  "rounded-xl bg-accent-primary hover:bg-accent-hover text-white font-semibold py-3 transition-colors disabled:opacity-50";
+  "rounded-xl bg-accent-primary hover:bg-accent-hover text-white font-semibold py-[13px] transition-colors disabled:opacity-50";
 const GHOST =
   "rounded-xl border border-border-strong text-text-secondary font-semibold py-3 hover:bg-border-subtle transition-colors disabled:opacity-50";
 
@@ -106,10 +106,11 @@ export function CountdownTab() {
   const ringLabel = s.label || stateWord;
 
   const segBase = "flex-1 py-[7px] rounded-[7px] text-xs transition-colors disabled:cursor-not-allowed";
+  // The mockup greys a disabled preset (selected or not) to #3a3d46.
   const segClass = (on: boolean) =>
     on
-      ? `${segBase} bg-bg-elevated text-white disabled:text-text-faint`
-      : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-text-faint disabled:hover:text-text-faint`;
+      ? `${segBase} bg-bg-elevated text-white disabled:text-[#3a3d46]`
+      : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-[#3a3d46] disabled:hover:text-[#3a3d46]`;
   const inputClass =
     "w-14 bg-bg-surface border border-border-default rounded-lg text-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-primary/40";
 

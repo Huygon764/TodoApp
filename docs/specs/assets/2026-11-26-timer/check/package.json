@@ -1,0 +1,8 @@
+{
+  "name": "timer-browser-check",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.65.1"
+  }
+}

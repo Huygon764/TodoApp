@@ -330,5 +330,32 @@
     "stop": "Stop",
     "focusDoneToast": "Focus done. Rest {{rest}}m.",
     "restDoneToast": "Rest done. Focus {{work}}m."
+  },
+  "timer": {
+    "name": "Timer",
+    "chipDone": "Done",
+    "menuDone": "done",
+    "stripName": "timer",
+    "custom": "Custom",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "hoursShort": "h",
+    "minShort": "min",
+    "set": "Set",
+    "labelPlaceholder": "Label (optional)",
+    "state": {
+      "stopped": "ready",
+      "running": "running",
+      "paused": "paused",
+      "done": "done"
+    },
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "dismiss": "Dismiss",
+    "add": "+{{minutes}}m",
+    "doneToast": "Timer done.",
+    "doneToastLabel": "Timer done: {{label}}."
   }
 }

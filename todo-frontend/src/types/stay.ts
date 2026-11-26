@@ -40,3 +40,20 @@ export interface PomodoroState {
   pausedMs: number;
   roundsToday: number;
 }
+
+export type TimerStatus = "stopped" | "running" | "paused" | "done";
+
+export interface TimerState {
+  serverNow: string;
+  /** The length last set; the default for the next start. */
+  lengthMs: number;
+  /** "" when none. */
+  label: string;
+  status: TimerStatus;
+  /** Set only while running. */
+  endsAt: string | null;
+  /** Set only while paused. */
+  remainingMs: number | null;
+  /** Set only while done (the endsAt it reached). */
+  doneAt: string | null;
+}

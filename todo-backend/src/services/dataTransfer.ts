@@ -1,6 +1,6 @@
 import {
   DayTodo, Goal, DefaultItem, RecurringTemplate, DateTemplate,
-  Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense, StayDay, Pomodoro,
+  Review, FreetimeTodo, PersonNote, Habit, HabitLog, Expense, StayDay, Pomodoro, Timer,
 } from "../models/index.js";
 import { Types, type Model } from "mongoose";
 import { formatDateInTimeZone } from "../utils/datePeriod.js";
@@ -37,6 +37,10 @@ export const COLLECTIONS: CollectionSpec[] = [
   // Only the preset travels; the running phase and rounds do not.
   { key: "pomodoroSettings", model: Pomodoro, kind: "one", fields: ["workMin", "restMin"] },
 ];
+
+/** Collections that never travel but are reset by an import, so the user's
+ *  timer is left stopped at the default length. */
+export const RESET_ON_IMPORT: Model<any>[] = [Timer];
 
 export interface ExportDoc {
   version: number;
@@ -168,6 +172,9 @@ export async function applyImport(
   // Replace semantics: wipe the user's data first, then insert from the file.
   for (const c of COLLECTIONS) {
     await c.model.deleteMany({ userId });
+  }
+  for (const model of RESET_ON_IMPORT) {
+    await model.deleteMany({ userId });
   }
 
   // New _ids are generated on import: the source account's documents may still

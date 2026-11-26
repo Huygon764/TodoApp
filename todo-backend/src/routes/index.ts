@@ -11,6 +11,7 @@ import personNotesRouter from "./personNotes.js";
 import habitsRouter from "./habits.js";
 import stayRouter from "./stay.js";
 import pomodoroRouter from "./pomodoro.js";
+import timerRouter from "./timer.js";
 import dataRouter from "./data.js";
 import internalRouter from "./internal.js";
 
@@ -44,6 +45,7 @@ router.use("/people-notes", personNotesRouter);
 router.use("/habits", habitsRouter);
 router.use("/stay", stayRouter);
 router.use("/pomodoro", pomodoroRouter);
+router.use("/timer", timerRouter);
 router.use("/data", dataRouter);
 router.use("/internal", internalRouter);
 

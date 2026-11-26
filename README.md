@@ -22,6 +22,8 @@ username/password. English and Vietnamese.
   a 7-day strip, and a 90-day heatmap. No back-fill older than yesterday.
 - **Stay and Pomodoro** – A daily Stay countdown (6h, 8h or 12h) for time not spent running
   away, with Escape and Out pauses and a week view, plus an independent Pomodoro timer.
+- **Timer** – A one-off countdown (5m to 24h, optional label) with +1m/+5m, that rings
+  at zero until dismissed.
 - **Goals** – Week, month, and year goals with an optional template.
 - **Reflection** – One-line journal, mood/energy, gratitude, and an "on this day" flashback.
 - **Reviews** – Week/month self-reviews with history, plus optional Gemini AI analysis.

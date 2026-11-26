@@ -1,5 +1,5 @@
 import { pomodoroPaused } from "@/lib/pomodoroClock";
-import type { PomodoroState, StayStatus } from "@/types/stay";
+import type { PomodoroState, StayStatus, TimerStatus } from "@/types/stay";
 
 export type DotState = "idle" | "run" | "pause" | "done";
 
@@ -16,6 +16,17 @@ export function StateDot({ state }: { state: DotState }) {
 
 /** Dot for a Stay status; needs no clock. */
 export function stayDotState(status: StayStatus): DotState {
+  return status === "running"
+    ? "run"
+    : status === "paused"
+      ? "pause"
+      : status === "done"
+        ? "done"
+        : "idle";
+}
+
+/** Dot for the countdown timer; needs no clock. */
+export function timerDotState(status: TimerStatus): DotState {
   return status === "running"
     ? "run"
     : status === "paused"

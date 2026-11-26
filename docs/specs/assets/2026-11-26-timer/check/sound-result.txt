@@ -1,10 +1,12 @@
+PASS layout: Timer preset control height desktop, en 38.0 px, vi 38.0 px (no wrapped label)
+PASS layout: Timer preset control height mobile, en 38.0 px, vi 38.0 px (no wrapped label)
 PASS 1 toast 'Timer done.' appeared
 PASS 1 rest-start.wav played exactly 5 times (plays=5, ended=5)
-     1 gaps between end and next start (ms): 390, 329, 382, 338
+     1 gaps between end and next start (ms): 314, 328, 337, 303
 PASS 1 every gap is 300 ms or more
 PASS 1 header chip shows 'Done'
 PASS 1 Timer tab shows Dismiss
-     2 click 13277-13319 ms, pause at 13317 ms (40 ms after the click began)
+     2 click 13268-13298 ms, pause at 13295 ms (27 ms after the click began)
 PASS 2 no play after Dismiss (plays=2)
 PASS 2 pause called on the audio at the click
 PASS 2 timer stopped with the same length (stopped, 600000 ms)

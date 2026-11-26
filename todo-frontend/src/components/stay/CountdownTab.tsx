@@ -105,12 +105,11 @@ export function CountdownTab() {
   const stateWord = t(`timer.state.${s.status}`);
   const ringLabel = s.label || stateWord;
 
-  const segBase = "flex-1 py-[7px] rounded-[7px] text-xs transition-colors disabled:cursor-not-allowed";
-  // The mockup greys a disabled preset (selected or not) to #3a3d46.
+  const segBase = "flex-1 py-[7px] rounded-[7px] text-xs whitespace-nowrap transition-colors disabled:cursor-not-allowed";
   const segClass = (on: boolean) =>
     on
-      ? `${segBase} bg-bg-elevated text-white disabled:text-[#3a3d46]`
-      : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-[#3a3d46] disabled:hover:text-[#3a3d46]`;
+      ? `${segBase} bg-bg-elevated text-white disabled:text-text-faint`
+      : `${segBase} text-text-tertiary hover:text-text-secondary disabled:text-text-faint disabled:hover:text-text-faint`;
   const inputClass =
     "w-14 bg-bg-surface border border-border-default rounded-lg text-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent-primary/40";
 

@@ -169,19 +169,28 @@ class TimerServer {
     };
   }
 
-  /** Returns the HTTP status and the state (or an error message). */
-  post(action: string, body: Record<string, unknown>): { status: number; error?: string } {
+  /** Returns the HTTP status; on an error, the message the backend's error handler sends. */
+  post(action: string, body: Record<string, unknown>): { status: number; message?: string } {
     this.settle();
     const t = this.t;
     const now = this.now();
-    const conflict = (error: string) => ({ status: 409, error });
+    const conflict = (message: string) => ({ status: 409, message });
+    const bad = (message: string) => ({ status: 400, message });
     switch (action) {
       case "start": {
+        // Same order as startTimer: length, label, then the state.
+        if (typeof body.lengthMs !== "number" || !Number.isFinite(body.lengthMs)) {
+          return bad("lengthMs must be a finite number");
+        }
+        const length = Math.min(MAX_TIMER_MS, Math.max(60_000, Math.round(body.lengthMs)));
+        const raw = body.label ?? "";
+        if (typeof raw !== "string") return bad("label must be a string");
+        const label = raw.trim();
+        if (label.length > 40) return bad("label must be at most 40 characters");
         if (t.status !== "stopped") return conflict("Timer is not stopped");
-        const length = Math.min(MAX_TIMER_MS, Math.max(60_000, Math.round(Number(body.lengthMs))));
         this.t = {
           lengthMs: length,
-          label: String(body.label ?? "").trim().slice(0, 40),
+          label,
           status: "running",
           endsAt: now + length,
           remainingMs: null,
@@ -198,7 +207,10 @@ class TimerServer {
         this.t = { ...t, status: "running", endsAt: now + t.remainingMs, remainingMs: null };
         return { status: 200 };
       case "add": {
-        const ms = Math.round(Number(body.ms));
+        if (typeof body.ms !== "number" || !Number.isFinite(body.ms) || body.ms <= 0) {
+          return bad("ms must be a positive number");
+        }
+        const ms = Math.round(body.ms);
         if (t.status === "running" && t.endsAt !== null) {
           const next = Math.min(MAX_TIMER_MS, Math.max(0, t.endsAt - now) + ms);
           this.t = { ...t, endsAt: now + next };
@@ -221,7 +233,7 @@ class TimerServer {
         this.t = { ...t, status: "stopped", label: "", endsAt: null, remainingMs: null, doneAt: null };
         return { status: 200 };
     }
-    return { status: 404, error: "not found" };
+    return { status: 404, message: "not found" };
   }
 }
 
@@ -264,7 +276,7 @@ async function mockApi(page: Page, mock: Mock) {
         return route.fulfill({
           status: res.status,
           contentType: "application/json",
-          body: JSON.stringify({ success: false, error: res.error }),
+          body: JSON.stringify({ success: false, message: res.message }),
         });
       }
       return route.fulfill(ok(mock.timer.view()));
@@ -295,6 +307,9 @@ async function mockApi(page: Page, mock: Mock) {
 }
 
 type Open = "none" | "menu" | "timer" | "timer-custom";
+
+/** Height of the Timer tab's preset control per `<width>-<lang>`, from every shot that shows it. */
+const segHeights = new Map<string, number[]>();
 
 async function openTimerTab(page: Page, width: Width, lang: "en" | "vi") {
   if (width === "desktop") {
@@ -355,6 +370,17 @@ async function appShot(
     await openTimerTab(page, width, lang);
     if (open === "timer-custom") await page.getByRole("button", { name: /Custom|Tùy/ }).click();
     await page.waitForTimeout(300);
+  }
+
+  if (open.startsWith("timer")) {
+    // The preset control must keep one line of text in Vietnamese too.
+    const h = await page.evaluate(
+      () =>
+        [...document.querySelectorAll<HTMLElement>("button")]
+          .find((b) => b.textContent === "5m")!
+          .parentElement!.getBoundingClientRect().height,
+    );
+    segHeights.set(`${width}-${lang}`, [...(segHeights.get(`${width}-${lang}`) ?? []), h]);
   }
 
   const overflow = await page.evaluate(() => {
@@ -596,7 +622,10 @@ async function soundChecks(browser: Browser) {
     await page.getByRole("tab").nth(2).click();
     const lengthBefore = server.t.lengthMs;
     await page.waitForFunction(
-      () => ((window as any).__audio as AudioEvent[]).filter((x) => x.e === "play").length >= 2,
+      () =>
+        ((window as any).__audio as AudioEvent[]).filter(
+          (x) => x.e === "play" && x.src.endsWith("rest-start.wav"),
+        ).length >= 2,
       undefined,
       { timeout: 90_000, polling: 25 },
     );
@@ -692,6 +721,16 @@ try {
         }
       }
     }
+  }
+  for (const width of ["desktop", "mobile"] as const) {
+    const en = segHeights.get(`${width}-en`) ?? [];
+    const vi = segHeights.get(`${width}-vi`) ?? [];
+    if (!en.length || !vi.length) continue;
+    const all = [...en, ...vi];
+    report(
+      Math.max(...all) - Math.min(...all) < 1,
+      `layout: Timer preset control height ${width}, en ${en[0].toFixed(1)} px, vi ${vi[0].toFixed(1)} px (no wrapped label)`,
+    );
   }
   if (only !== "shots") {
     await soundChecks(browser);

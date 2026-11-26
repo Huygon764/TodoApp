@@ -2,12 +2,16 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNow, useStay } from "@/hooks/useStay";
 import { usePomodoro } from "@/hooks/usePomodoro";
+import { useTimer } from "@/hooks/useTimer";
 import { stayReachedZero, stayRemainingMs } from "@/lib/stayClock";
 import { pomodoroPaused, pomodoroPhaseEnded } from "@/lib/pomodoroClock";
-import { playSound } from "@/lib/sounds";
+import { timerReachedZero, timerRemainingMs } from "@/lib/timerClock";
+import { playSound, playSoundRepeated, stopRepeatedSound } from "@/lib/sounds";
 import { showToast } from "@/lib/toast";
 
 const RETRY_REFETCH_MS = 2000;
+const TIMER_RING_TIMES = 5;
+const TIMER_RING_GAP_MS = 300;
 
 /**
  * Sounds and toasts for transitions the open tab watches happen: the client
@@ -19,6 +23,14 @@ export function useTimerAlerts() {
   const { t } = useTranslation();
   const stay = useStay();
   const pomo = usePomodoro();
+  const timer = useTimer();
+
+  const timerState = timer.state;
+  const timerRunning = timerState?.status === "running";
+  const timerNow = useNow(timer.offsetMs, timerRunning);
+  const timerArmed = useRef<string | null>(null);
+  const timerFired = useRef<string | null>(null);
+  const refetchTimer = timer.refetch;
 
   const stayDay = stay.state?.today ?? null;
   const pomoState = pomo.state;
@@ -76,4 +88,32 @@ export function useTimerAlerts() {
     void refetchPomo();
     setTimeout(() => void refetchPomo(), RETRY_REFETCH_MS);
   }, [pomoState, pomoNow, refetchPomo, t]);
+
+  // Keyed by endsAt: +1m/+5m moves it (armed again), a refetch or reload of the
+  // same end never fires twice, and a timer already past zero on load is silent.
+  useEffect(() => {
+    if (!timerState || timerState.status === "done") return;
+    if (timerState.status !== "running") {
+      stopRepeatedSound(); // dismissed, stopped or paused from another device
+      return;
+    }
+    const key = timerState.endsAt ?? "";
+    if (!timerReachedZero(timerState, timerNow)) {
+      if (timerRemainingMs(timerState, timerNow) > 0) timerArmed.current = key;
+      stopRepeatedSound();
+      return;
+    }
+    if (timerFired.current === key) return;
+    timerFired.current = key;
+    if (timerArmed.current === key) {
+      playSoundRepeated("rest-start", TIMER_RING_TIMES, TIMER_RING_GAP_MS);
+      showToast(
+        timerState.label
+          ? t("timer.doneToastLabel", { label: timerState.label })
+          : t("timer.doneToast"),
+      );
+    }
+    void refetchTimer();
+    setTimeout(() => void refetchTimer(), RETRY_REFETCH_MS);
+  }, [timerState, timerNow, refetchTimer, t]);
 }

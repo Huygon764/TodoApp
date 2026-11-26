@@ -13,7 +13,7 @@ const PART =
 /** Desktop header chip: Stay part, plus a Pomodoro part while it runs. */
 export function StayChip({ onOpen }: TimerEntryProps) {
   const { t } = useTranslation();
-  const { stay, pomodoro } = useTimerSummary();
+  const { stay, pomodoro, timer } = useTimerSummary();
 
   const stayText =
     stay.status === "idle"
@@ -41,6 +41,18 @@ export function StayChip({ onOpen }: TimerEntryProps) {
           <span className="text-sm text-white tabular-nums">{pomodoro.clock}</span>
         </button>
       )}
+      {timer.on && (
+        <button
+          type="button"
+          onClick={() => onOpen("timer")}
+          className={`${PART} border-l border-border-default`}
+        >
+          <StateDot state={timer.dot} />
+          <span className="text-sm text-white tabular-nums">
+            {timer.status === "done" ? t("timer.chipDone") : timer.clock}
+          </span>
+        </button>
+      )}
     </div>
   );
 }
@@ -48,7 +60,7 @@ export function StayChip({ onOpen }: TimerEntryProps) {
 /** Mobile strip under the header while either timer runs or is paused. */
 export function StayStrip({ onOpen }: TimerEntryProps) {
   const { t } = useTranslation();
-  const { stay, pomodoro, any } = useTimerSummary();
+  const { stay, pomodoro, timer, any } = useTimerSummary();
   if (!any) return null;
 
   const item = "flex items-center gap-[7px] py-2 text-[13px] text-white";
@@ -72,6 +84,15 @@ export function StayStrip({ onOpen }: TimerEntryProps) {
           <StateDot state={pomodoro.dot} />
           <span className="tabular-nums">{pomodoro.clock}</span>
           <small className="text-xs text-text-muted">{phaseLabel}</small>
+        </button>
+      )}
+      {timer.on && (
+        <button type="button" onClick={() => onOpen("timer")} className={item}>
+          <StateDot state={timer.dot} />
+          <span className="tabular-nums">
+            {timer.status === "done" ? t("timer.chipDone") : timer.clock}
+          </span>
+          <small className="text-xs text-text-muted">{timer.label || t("timer.stripName")}</small>
         </button>
       )}
       {stay.on && stay.escapes > 0 && (

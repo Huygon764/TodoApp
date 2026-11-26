@@ -1,7 +1,7 @@
 # Timer
 
 Date: 2026-11-26  
-Status: Draft, for the owner's review
+Status: Implemented
 
 Mockup: [`assets/2026-11-26-timer/index.html`](assets/2026-11-26-timer/index.html)
 (open it over a local HTTP server started at the repo root, as for the Stay

@@ -1,5 +1,7 @@
 import { useNow, useStay } from "@/hooks/useStay";
 import { usePomodoro } from "@/hooks/usePomodoro";
+import { useTimer } from "@/hooks/useTimer";
+import { timerRemainingMs } from "@/lib/timerClock";
 import { formatClock, stayRemainingMs } from "@/lib/stayClock";
 import {
   pomodoroPaused,
@@ -8,9 +10,10 @@ import {
 import {
   pomodoroDotState,
   stayDotState,
+  timerDotState,
   type DotState,
 } from "@/components/stay/StateDot";
-import type { StayStatus } from "@/types/stay";
+import type { StayStatus, TimerStatus } from "@/types/stay";
 
 export interface TimerSummary {
   stay: {
@@ -30,7 +33,16 @@ export interface TimerSummary {
     phase: "idle" | "work" | "rest";
     paused: boolean;
   };
-  /** Either timer is running or paused. */
+  timer: {
+    status: TimerStatus;
+    /** Running, paused or done: shows in the chip, menu and strip. */
+    on: boolean;
+    dot: DotState;
+    /** Remaining time; "" while done (the UI shows "Done"). */
+    clock: string;
+    label: string;
+  };
+  /** Any timer is running, paused or (for the countdown timer) done. */
   any: boolean;
   loaded: boolean;
 }
@@ -39,6 +51,12 @@ export interface TimerSummary {
 export function useTimerSummary(): TimerSummary {
   const stay = useStay();
   const pomo = usePomodoro();
+  const timer = useTimer();
+
+  const tm = timer.state;
+  const timerStatus: TimerStatus = tm?.status ?? "stopped";
+  const timerOn = timerStatus !== "stopped";
+  const timerNow = useNow(timer.offsetMs, timerStatus === "running");
 
   const day = stay.state?.today ?? null;
   const p = pomo.state;
@@ -70,7 +88,14 @@ export function useTimerSummary(): TimerSummary {
       phase: p?.phase ?? "idle",
       paused: pomoPaused,
     },
-    any: stayOn || pomoOn,
+    timer: {
+      status: timerStatus,
+      on: timerOn,
+      dot: timerDotState(timerStatus),
+      clock: tm && timerStatus !== "done" ? formatClock(timerRemainingMs(tm, timerNow)) : "",
+      label: tm?.label ?? "",
+    },
+    any: stayOn || pomoOn || timerOn,
     loaded: day != null && p != null,
   };
 }

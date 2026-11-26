@@ -9,12 +9,15 @@ import {
   StateDot,
   pomodoroDotState,
   stayDotState,
+  timerDotState,
   type DotState,
 } from "@/components/stay/StateDot";
 import { StayTab } from "@/components/stay/StayTab";
 import { PomodoroTab } from "@/components/stay/PomodoroTab";
+import { CountdownTab } from "@/components/stay/CountdownTab";
+import { useTimer } from "@/hooks/useTimer";
 
-export type TimerTab = "stay" | "pomodoro";
+export type TimerTab = "stay" | "pomodoro" | "timer";
 
 interface StayPomodoroModalProps {
   isOpen: boolean;
@@ -31,10 +34,12 @@ export function StayPomodoroModal({ isOpen, onClose, tab, onTabChange }: StayPom
   // mounted after first use and must not re-render every second.
   const stayState = useStay().state;
   const pomodoroState = usePomodoro().state;
+  const timerState = useTimer().state;
 
   const tabs: { key: TimerTab; label: string; dot: DotState }[] = [
     { key: "stay", label: t("stay.name"), dot: stayDotState(stayState?.today.status ?? "idle") },
     { key: "pomodoro", label: t("pomodoro.name"), dot: pomodoroDotState(pomodoroState) },
+    { key: "timer", label: t("timer.name"), dot: timerDotState(timerState?.status ?? "stopped") },
   ];
 
   return (
@@ -73,7 +78,9 @@ export function StayPomodoroModal({ isOpen, onClose, tab, onTabChange }: StayPom
           <X className="w-5 h-5" />
         </button>
       </div>
-      <div className="p-5">{tab === "stay" ? <StayTab /> : <PomodoroTab />}</div>
+      <div className="p-5">
+        {tab === "stay" ? <StayTab /> : tab === "pomodoro" ? <PomodoroTab /> : <CountdownTab />}
+      </div>
     </ModalContainer>
   );
 }

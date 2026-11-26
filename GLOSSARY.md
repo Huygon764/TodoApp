@@ -32,3 +32,7 @@ A pause to run away (phone, sleep). Counted.
 
 **Out**:
 A pause to go out. Not counted.
+
+**Timer**:
+A one-off countdown with an optional label.
+_Avoid_: alarm, stopwatch

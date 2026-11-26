@@ -327,5 +327,32 @@
     "stop": "Dừng",
     "focusDoneToast": "Xong phần tập trung. Nghỉ {{rest}} phút.",
     "restDoneToast": "Xong phần nghỉ. Tập trung {{work}} phút."
+  },
+  "timer": {
+    "name": "Hẹn giờ",
+    "chipDone": "Xong",
+    "menuDone": "xong",
+    "stripName": "hẹn giờ",
+    "custom": "Tuỳ chỉnh",
+    "hours": "Giờ",
+    "minutes": "Phút",
+    "hoursShort": "giờ",
+    "minShort": "phút",
+    "set": "Đặt",
+    "labelPlaceholder": "Nhãn (không bắt buộc)",
+    "state": {
+      "stopped": "sẵn sàng",
+      "running": "đang chạy",
+      "paused": "tạm dừng",
+      "done": "xong"
+    },
+    "start": "Bắt đầu",
+    "pause": "Tạm dừng",
+    "resume": "Tiếp tục",
+    "stop": "Dừng",
+    "dismiss": "Đóng",
+    "add": "+{{minutes}} phút",
+    "doneToast": "Hết giờ.",
+    "doneToastLabel": "Hết giờ: {{label}}."
   }
 }

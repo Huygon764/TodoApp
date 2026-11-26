@@ -14,6 +14,8 @@ files after actual product domains, such as `overview.md`, `billing.md`,
   streak and rate rules.
 - [`stay-pomodoro.md`](stay-pomodoro.md): Stay daily countdown (levels,
   Escape/Out pauses, day close) and the Pomodoro cycle.
+- [`timer.md`](timer.md): the one-off countdown Timer (presets, label, +1m/+5m,
+  done and Dismiss, the sound at zero).
 
 
 ## Update Rule

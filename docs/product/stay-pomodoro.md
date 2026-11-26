@@ -1,6 +1,6 @@
 # Stay and Pomodoro
 
-Two independent timers in one modal. Stay is the daily countdown of time not
+Two independent timers in one modal, next to the one-off [Timer](timer.md). Stay is the daily countdown of time not
 spent running away; what you do inside it is free. Pomodoro is a focus/rest
 cycle. Neither is linked to Discipline.
 
@@ -62,12 +62,13 @@ happened while closed is silent.
 - Desktop: a chip in the header. The Stay part reads "Stay" before Start, the
   remaining time while running or paused (with the escape count when above
   zero), and "<level>h done" (e.g. "8h done") when done. A second part shows the pomodoro time while
-  it runs or is paused. Each part opens the modal on its tab.
-- Mobile: Stay and Pomodoro items in the menu (the time while on, "done" for
-  Stay when done), and a strip under the header while either runs or is
-  paused.
-- The modal has two tabs, each with a state dot. It is a centered card on
-  desktop and on mobile, like the other modals.
+  it runs or is paused. A third part shows the [Timer](timer.md) while it runs,
+  is paused or is done. Each part opens the modal on its tab.
+- Mobile: Stay, Pomodoro and Timer items in the menu (the time while on, "done"
+  for Stay and Timer when done), and a strip under the header while any of them
+  runs or is paused, or the Timer is done.
+- The modal has three tabs (Stay, Pomodoro, Timer), each with a state dot. It
+  is a centered card on desktop and on mobile, like the other modals.
 - The mobile strip is centered: each running timer, then the escape count.
 
 Export and import include the stay days and the pomodoro settings (preset

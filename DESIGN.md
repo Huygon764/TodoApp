@@ -62,7 +62,7 @@ Low-chroma, same lightness band, chosen to sit next to the navy accent. No gradi
 |---|---|---|
 | `escape` | `#C98A7E` | Escape count, Escape choice, escaped state |
 | `pause` | `#B8A77F` | Paused ring and dot |
-| `done` | `#8FAE9B` | Done ring, reached week column, pomodoro rest |
+| `done` | `#8FAE9B` | Done ring (also a done Timer), reached week column, pomodoro rest |
 
 ## Typography Rules
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ComponentType } from "react";
-import { Hourglass, Menu, Timer, X } from "lucide-react";
+import { Clock, Hourglass, Menu, Timer, X } from "lucide-react";
 import { StayChip, StayStrip } from "@/components/stay/StayChip";
 import { useTimerSummary } from "@/hooks/useTimerSummary";
 import type { TimerTab } from "@/components/stay/StayPomodoroModal";
@@ -39,7 +39,7 @@ function HeaderMenuItem({ icon: Icon, label, trailing, onClick }: HeaderMenuItem
   );
 }
 
-/** Stay and Pomodoro menu items. Own component so only the open menu ticks. */
+/** Stay, Pomodoro and Timer menu items. Own component so only the open menu ticks. */
 function TimerMenuItems({ onPick }: { onPick: (tab: TimerTab) => void }) {
   const { t } = useTranslation();
   const timers = useTimerSummary();
@@ -62,6 +62,18 @@ function TimerMenuItems({ onPick }: { onPick: (tab: TimerTab) => void }) {
         label={t("pomodoro.name")}
         trailing={timers.pomodoro.on ? timers.pomodoro.clock : undefined}
         onClick={() => onPick("pomodoro")}
+      />
+      <HeaderMenuItem
+        icon={Clock}
+        label={t("timer.name")}
+        trailing={
+          timers.timer.status === "done"
+            ? t("timer.menuDone")
+            : timers.timer.on
+              ? timers.timer.clock
+              : undefined
+        }
+        onClick={() => onPick("timer")}
       />
     </>
   );

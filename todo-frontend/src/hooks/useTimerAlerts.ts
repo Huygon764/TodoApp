@@ -5,7 +5,7 @@ import { usePomodoro } from "@/hooks/usePomodoro";
 import { useTimer } from "@/hooks/useTimer";
 import { stayReachedZero, stayRemainingMs } from "@/lib/stayClock";
 import { pomodoroPaused, pomodoroPhaseEnded } from "@/lib/pomodoroClock";
-import { timerReachedZero, timerRemainingMs } from "@/lib/timerClock";
+import { timerAlertStep, type TimerAlertMemory } from "@/lib/timerAlert";
 import { playSound, playSoundRepeated, stopRepeatedSound } from "@/lib/sounds";
 import { showToast } from "@/lib/toast";
 
@@ -28,8 +28,7 @@ export function useTimerAlerts() {
   const timerState = timer.state;
   const timerRunning = timerState?.status === "running";
   const timerNow = useNow(timer.offsetMs, timerRunning);
-  const timerArmed = useRef<string | null>(null);
-  const timerFired = useRef<string | null>(null);
+  const timerMemory = useRef<TimerAlertMemory>({ armed: null, fired: null });
   const refetchTimer = timer.refetch;
 
   const stayDay = stay.state?.today ?? null;
@@ -89,23 +88,15 @@ export function useTimerAlerts() {
     setTimeout(() => void refetchPomo(), RETRY_REFETCH_MS);
   }, [pomoState, pomoNow, refetchPomo, t]);
 
-  // Keyed by endsAt: +1m/+5m moves it (armed again), a refetch or reload of the
-  // same end never fires twice, and a timer already past zero on load is silent.
+  // Keyed by endsAt, see timerAlertStep.
   useEffect(() => {
-    if (!timerState || timerState.status === "done") return;
-    if (timerState.status !== "running") {
+    const action = timerAlertStep(timerMemory.current, timerState, timerNow);
+    if (action === "idle" || !timerState) return;
+    if (action === "silence") {
       stopRepeatedSound(); // dismissed, stopped or paused from another device
       return;
     }
-    const key = timerState.endsAt ?? "";
-    if (!timerReachedZero(timerState, timerNow)) {
-      if (timerRemainingMs(timerState, timerNow) > 0) timerArmed.current = key;
-      stopRepeatedSound();
-      return;
-    }
-    if (timerFired.current === key) return;
-    timerFired.current = key;
-    if (timerArmed.current === key) {
+    if (action === "ring") {
       playSoundRepeated("rest-start", TIMER_RING_TIMES, TIMER_RING_GAP_MS);
       showToast(
         timerState.label

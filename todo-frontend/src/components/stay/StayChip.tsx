@@ -10,7 +10,7 @@ interface TimerEntryProps {
 const PART =
   "flex items-center gap-[7px] px-[13px] h-full hover:bg-border-subtle transition-colors";
 
-/** Desktop header chip: Stay part, plus a Pomodoro part while it runs. */
+/** Desktop header chip: Stay part, plus Pomodoro and Timer parts while they are on. */
 export function StayChip({ onOpen }: TimerEntryProps) {
   const { t } = useTranslation();
   const { stay, pomodoro, timer } = useTimerSummary();
@@ -57,7 +57,7 @@ export function StayChip({ onOpen }: TimerEntryProps) {
   );
 }
 
-/** Mobile strip under the header while either timer runs or is paused. */
+/** Mobile strip under the header while a timer runs or is paused, or the Timer is done. */
 export function StayStrip({ onOpen }: TimerEntryProps) {
   const { t } = useTranslation();
   const { stay, pomodoro, timer, any } = useTimerSummary();

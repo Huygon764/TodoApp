@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNow } from "@/hooks/useStay";
 import { useTimer } from "@/hooks/useTimer";
@@ -40,6 +40,17 @@ export function CountdownTab() {
   const s = timer.state;
   const now = useNow(timer.offsetMs, s?.status === "running");
 
+  // Custom and the drafts are stopped-only. If the timer starts elsewhere
+  // (another device), drop them so they do not reappear after Stop.
+  const status = s?.status;
+  useEffect(() => {
+    if (status != null && status !== "stopped") {
+      setCustomOpen(false);
+      setLengthDraft(null);
+      setLabelDraft(null);
+    }
+  }, [status]);
+
   if (!s) return <div className="h-80" aria-busy="true" />;
 
   const stopped = s.status === "stopped";
@@ -75,9 +86,16 @@ export function CountdownTab() {
 
   const start = () => {
     setCustomOpen(false); // an unapplied Custom panel must not reopen after Stop
-    timer.start.mutate({ lengthMs: length, label: labelText.trim() });
-    setLengthDraft(null);
-    setLabelDraft(null);
+    // Drafts are cleared on success only, so a refused start keeps the choice.
+    timer.start.mutate(
+      { lengthMs: length, label: labelText.trim() },
+      {
+        onSuccess: () => {
+          setLengthDraft(null);
+          setLabelDraft(null);
+        },
+      },
+    );
   };
 
   const color: RingColor =

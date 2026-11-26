@@ -11,3 +11,4 @@ export * from "./habit.model.js";
 export * from "./inviteCode.model.js";
 export * from "./expense.model.js";
 export * from "./stay.model.js";
+export * from "./timer.model.js";

@@ -1,6 +1,8 @@
 import "../testEnv.js"; // config/env.ts throws at import without these variables
 import { test, expect } from "bun:test";
-import { validateImportPayload, COLLECTIONS, EXPORT_VERSION, pickFields, settleStayExport } from "./dataTransfer.js";
+import { validateImportPayload, COLLECTIONS, RESET_ON_IMPORT, EXPORT_VERSION, pickFields, settleStayExport } from "./dataTransfer.js";
+import { Timer } from "../models/index.js";
+import { defaultTimer } from "./timerLogic.js";
 
 test("COLLECTIONS keys are unique", () => {
   const keys = COLLECTIONS.map((c) => c.key);
@@ -41,6 +43,13 @@ test("export/import covers StayDay and only the pomodoro settings", () => {
   expect(stay?.kind).toBe("many");
   expect(pomo?.kind).toBe("one");
   expect(pomo?.fields).toEqual(["workMin", "restMin"]);
+});
+
+test("export does not carry the timer; import resets it to stopped at the default", () => {
+  expect(COLLECTIONS.some((c) => c.model === Timer || c.key.toLowerCase().includes("timer"))).toBe(false);
+  expect(RESET_ON_IMPORT).toContain(Timer);
+  const t = defaultTimer();
+  expect([t.status, t.lengthMs]).toEqual(["stopped", 600_000]);
 });
 
 test("pickFields drops runtime pomodoro state", () => {

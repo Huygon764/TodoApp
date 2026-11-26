@@ -421,6 +421,30 @@ export const validatePomodoroSettingsBody = [
     .toInt(),
 ];
 
+export const validateTimerStartBody = [
+  body("lengthMs")
+    .isFloat()
+    .withMessage("lengthMs must be a finite number")
+    .bail()
+    .toFloat(),
+  body("label")
+    .optional()
+    .isString()
+    .withMessage("label must be a string")
+    .bail()
+    .trim()
+    .isLength({ max: 40 })
+    .withMessage("label must be at most 40 characters"),
+];
+
+export const validateTimerAddBody = [
+  body("ms")
+    .isFloat({ gt: 0 })
+    .withMessage("ms must be a positive number")
+    .bail()
+    .toFloat(),
+];
+
 export const validatePatchReviewBody = [
   body("goodThings")
     .optional()
